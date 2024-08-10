@@ -1,35 +1,37 @@
-import { StyleSheet, Text, View, ImageBackground, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View, ImageBackground, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import React from 'react';
 
-const Login = (props) => {
+const Login = ({ navigation }) => {  
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-            <ImageBackground source={require('./../../assets/images/back.jpg')} style={styles.bg}>
-                <View style={styles.maincontainer}>
-                    <Text style={styles.logintext}>Login</Text>
-                  
-                    <View style={styles.formContainer}>
-                        <Text style={styles.heading}>Email Address</Text>
-                        <TextInput placeholder='Email'  placeholderTextColor="white" keyboardType={"email-address"} style={styles.input} />
-                        <Text style={styles.heading}>Password</Text>
-                        <TextInput placeholder='Password' placeholderTextColor="white" secureTextEntry={true} style={styles.input} />
-                        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                        <TouchableOpacity style={styles.submitButton}>
-                            <Text style={styles.submitText}>Submit</Text>
-                        </TouchableOpacity>
+            <View style={styles.container}>
+                <ImageBackground source={require('./../../assets/images/back.jpg')} style={styles.bg}>
+                    <TouchableOpacity style={styles.skipbtn} onPress={() => navigation.navigate('Signup')}>
+                        <Text style={styles.skipText}>Skip</Text> 
+                    </TouchableOpacity>
+                    <View style={styles.maincontainer}>
+                        <Text style={styles.logintext}>Login</Text>
+                        <View style={styles.formContainer}>
+                            <Text style={styles.heading}>Email Address</Text>
+                            <TextInput placeholder='Email' placeholderTextColor="white" keyboardType={"email-address"} style={styles.input} />
+                            <Text style={styles.heading}>Password</Text>
+                            <TextInput placeholder='Password' placeholderTextColor="white" secureTextEntry={true} style={styles.input} />
+                            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                            <TouchableOpacity style={styles.submitButton} onPress={() => navigation.navigate('Dashboard')}>
+                                <Text style={styles.submitText}>Submit</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
-                <TouchableOpacity onPress={() => props.navigation.navigate('Signup')}>
-                    <Text style={styles.register}>Don't have an account? Register</Text>
-                </TouchableOpacity>
-            </ImageBackground>
-        </View>
+                    <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                        <Text style={styles.register}>Don't have an account? Register</Text>
+                    </TouchableOpacity>
+                </ImageBackground>
+            </View>
         </TouchableWithoutFeedback>
-    )
+    );
 }
 
-export default Login
+export default Login;
 
 const styles = StyleSheet.create({
     container: {
@@ -93,6 +95,25 @@ const styles = StyleSheet.create({
         fontSize: 15,
         textAlign: 'center',
         marginTop: 30,
+        marginBottom: 15,
         textDecorationLine: 'underline',
     },
+    skipbtn: {
+        position: 'absolute',
+        top: 25,
+        right: 20,
+        BackgroundColor: '#0A1D56',
+        paddingHorizontal: 25,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'white',
+    },
+    skipText: {
+        color: 'white',
+        fontSize: 12,
+    },
 });
+
+
+
