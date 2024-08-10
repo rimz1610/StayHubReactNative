@@ -5,79 +5,97 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 const Signup = (props) => {
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-            <ImageBackground source={require('./../../assets/images/front.jpg')} style={styles.bg}>
-                <View style={styles.maincontainer}>
-                    <Text style={styles.logintext}>Register as guest</Text>
-                    <View style={styles.formContainer}>
-                        <View>
-                            <Text style={styles.heading}>First Name</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='First Name'
-                                placeholderTextColor="white"
-                            />
-                            <Text style={styles.heading}>Last Name</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Last Name'
-                                placeholderTextColor="white"
-                            />
-                        </View>
-                        <View>
-                            <Text style={styles.heading}>Address</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Address'
-                                placeholderTextColor="white"
-                            />
-                        </View>
-                        <View style={styles.box1}>
-                            <Text style={styles.heading}>City</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='City'
-                                placeholderTextColor="white"
-                            />
-                            <Text style={styles.heading}>State</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='State'
-                                placeholderTextColor="white"
-                            />
-                        </View>
-                        <View style={styles.row}>
-                            <View style={styles.phoneContainer}>
-                                <Text style={styles.heading}>Phone Number</Text>
+            <View style={styles.container}>
+                <ImageBackground source={require('./../../assets/images/front.jpg')} style={styles.bg}>
+                    <View style={styles.maincontainer}>
+                        <Text style={styles.logintext}>Register as guest</Text>
+                        <View style={styles.formContainer}>
+                            <View>
+                                <Text style={styles.heading}>First Name</Text>
                                 <TextInput
-                                    style={styles.shortInput}
-                                    placeholder='Phone Number'
+                                    style={styles.input}
+                                    placeholder='First Name'
                                     placeholderTextColor="white"
-                                    keyboardType='phone-pad'
+                                />
+                                <Text style={styles.heading}>Last Name</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Last Name'
+                                    placeholderTextColor="white"
                                 />
                             </View>
-                            <View style={styles.zipContainer}>
-                                <Text style={styles.heading}>Zip Code</Text>
+                            <Text style={styles.heading}>Email Address</Text>
+                            <TextInput 
+                                placeholder='Email'  
+                                placeholderTextColor="white" 
+                                keyboardType={"email-address"} 
+                                style={styles.input} 
+                            />
+                            <Text style={styles.heading}>Password</Text>
+                            <TextInput 
+                                placeholder='Password' 
+                                placeholderTextColor="white" 
+                                secureTextEntry={true} 
+                                style={styles.input} 
+                            />
+                            <View>
+                                <Text style={styles.heading}>Address</Text>
                                 <TextInput
-                                    style={styles.shortInput}
-                                    placeholder='Zip Code'
+                                    style={styles.input}
+                                    placeholder='Address'
                                     placeholderTextColor="white"
-                                    keyboardType='numeric'
                                 />
                             </View>
+                            <View style={styles.row}>
+                                <View style={styles.CityContainer}>
+                                    <Text style={styles.heading}>City</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder='City'
+                                        placeholderTextColor="white"
+                                    />
+                                </View>
+                                <View style={styles.StateContainer}>
+                                    <Text style={styles.heading}>State</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder='State'
+                                        placeholderTextColor="white"
+                                    />            
+                                </View>
+                            </View>
+                            <View style={styles.row}>
+                                <View style={styles.phoneContainer}>
+                                    <Text style={styles.heading}>Phone Number</Text>
+                                    <TextInput
+                                        style={styles.shortInput}
+                                        placeholder='Phone Number'
+                                        placeholderTextColor="white"
+                                        keyboardType='phone-pad'
+                                    />
+                                </View>
+                                <View style={styles.zipContainer}>
+                                    <Text style={styles.heading}>Zip Code</Text>
+                                    <TextInput
+                                        style={styles.shortInput}
+                                        placeholder='Zip Code'
+                                        placeholderTextColor="white"
+                                        keyboardType='numeric'
+                                    />
+                                </View>
+                            </View>
+                            <TouchableOpacity
+                                style={styles.submitButton}
+                                onPress={() => props.navigation.navigate('Login')}>
+                                <Text style={styles.submitText}>Register</Text>
+                            </TouchableOpacity>
                         </View>
-                        <TouchableOpacity
-                            style={styles.submitButton}
-                            onPress={() => props.navigation.navigate('Login')}>
-                            <Text style={styles.submitText}>Register</Text>
-                        </TouchableOpacity>
                     </View>
-                </View>
-                <TouchableOpacity onPress={() => props.navigation.navigate('Login')}>
-                    <Text style={styles.register}>Already have an account? Login</Text>
-                </TouchableOpacity>
-            </ImageBackground>
-        </View>
+                    <TouchableOpacity onPress={() => props.navigation.navigate('Login')}>
+                        <Text style={styles.register}>Already have an account? Login</Text>
+                    </TouchableOpacity>
+                </ImageBackground>
+            </View>
         </TouchableWithoutFeedback>
     )
 }
@@ -120,9 +138,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         height: 40,
     },
-    box1: {
-        display: 'flex',
-    },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -131,6 +146,12 @@ const styles = StyleSheet.create({
         width: '48%',
     },
     zipContainer: {
+        width: '48%',
+    },
+    CityContainer: {
+        width: '48%',
+    },
+    StateContainer: {
         width: '48%',
     },
     shortInput: {
@@ -151,7 +172,8 @@ const styles = StyleSheet.create({
         color: '#007bff',
         fontSize: 15,
         textAlign: 'center',
-        marginTop: 30,
+        marginTop: 10,
+        marginBottom: 15,
         textDecorationLine: 'underline',
     },
     submitButton: {

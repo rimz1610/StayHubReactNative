@@ -1,0 +1,320 @@
+import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
+import React, { useState } from 'react';
+
+// Dummy data for the table
+const initialData = Array.from({ length: 25 }, (_, index) => ({
+  id: index.toString(),
+  name: `Room ${index + 1}`,
+  type: 'Deluxe',
+  shortDescription: `Description ${index + 1}`,
+  status: 'Available',
+}));
+
+const Room = () => {
+  const [data, setData] = useState(initialData);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [currentItem, setCurrentItem] = useState(null);
+
+  const itemsPerPage = 10;
+  const pages = Math.ceil(data.length / itemsPerPage);
+
+  const handleEdit = (item) => {
+    setCurrentItem(item);
+    setEditMode(true);
+    setModalVisible(true);
+  };
+
+  const handleDelete = (item) => {
+    Alert.alert('Are you sure?', 'Do you want to delete this item?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes, delete it',
+        onPress: () => setData(data.filter((d) => d.id !== item.id)),
+      },
+    ]);
+  };
+
+  const handleSave = () => {
+    if (editMode) {
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.id === currentItem.id ? { ...currentItem } : item
+        )
+      );
+    } else {
+      setData((prevData) => [...prevData, { ...currentItem, id: Date.now().toString() }]);
+    }
+    setModalVisible(false);
+    setCurrentItem(null);
+  };
+
+  const handlePageChange = (direction) => {
+    if (direction === 'next' && currentPage < pages - 1) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === 'previous' && currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.tableRow}>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.name}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.type}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.shortDescription}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.status}</Text>
+      <View style={styles.tableActions}>
+        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
+          <Text style={styles.editButtonText}>Edit</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteButton}>
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.roomheading}>Room</Text>
+      <TouchableOpacity style={styles.addButton} onPress={() => {
+        setEditMode(false);
+        setCurrentItem({ name: '', type: '', shortDescription: '', status: '' });
+        setModalVisible(true);
+      }}>
+        <Text style={styles.addButtonText}>+ ADD NEW</Text>
+      </TouchableOpacity>
+
+      {/* Table */}
+      <View style={styles.tableContainer}>
+        <View style={styles.tableHeader}>
+          <Text style={styles.tableHeaderText}>Name</Text>
+          <Text style={styles.tableHeaderText}>Type</Text>
+          <Text style={styles.tableHeaderText}>Short Description</Text>
+          <Text style={styles.tableHeaderText}>Status</Text>
+          <Text style={styles.tableHeaderText}>Action</Text>
+        </View>
+        <FlatList
+          data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+        />
+      </View>
+
+      {/* Pagination */}
+      <View style={styles.paginationContainer}>
+        <TouchableOpacity 
+          onPress={() => handlePageChange('previous')} 
+          style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
+          disabled={currentPage === 0}
+        >
+          <Text style={styles.paginationButtonText}>Previous</Text>
+        </TouchableOpacity>
+        <Text style={styles.pageIndicator}>
+          Page {currentPage + 1} of {pages}
+        </Text>
+        <TouchableOpacity 
+          onPress={() => handlePageChange('next')} 
+          style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
+          disabled={currentPage === pages - 1}
+        >
+          <Text style={styles.paginationButtonText}>Next</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Modal for adding/editing */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>{editMode ? 'Edit Room' : 'Add New Room'}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Room Name"
+              placeholderTextColor="#888"
+              value={currentItem?.name}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, name: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Room Type"
+              placeholderTextColor="#888"
+              value={currentItem?.type}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, type: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Short Description"
+              placeholderTextColor="#888"
+              value={currentItem?.shortDescription}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, shortDescription: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Status"
+              placeholderTextColor="#888"
+              value={currentItem?.status}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, status: text })}
+            />
+            <View style={styles.modalButtons}>
+              <Button title="Cancel" onPress={() => setModalVisible(false)} color="#FF6347" />
+              <Button title="Save" onPress={handleSave} color="#180161" />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+export default Room;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  roomheading: {
+    color: '#180161',
+    fontWeight: 'bold',
+    fontSize: 24,
+    textAlign: 'center',
+    marginVertical: 20,
+  },
+  addButton: {
+    marginTop: 30,
+    alignSelf: 'flex-end',
+    backgroundColor: '#180161',
+    padding: 10,
+    borderRadius: 4,
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  tableContainer: {
+    width: '100%',
+    height: '50%',
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 70,
+    marginTop: 30,
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    borderBottomWidth: 1,
+    borderBottomColor: 'black',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    justifyContent: 'space-between',
+  },
+  tableHeaderText: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    flex: 1,
+    textAlign: 'center',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: 'black',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    justifyContent: 'space-between',
+  },
+  tableCell: {
+    fontSize: 12,
+    flex: 1,
+    textAlign: 'center',
+    paddingVertical: 2,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  tableActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  editButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+  },
+  editButtonText: {
+    color: 'white',
+    fontSize: 12,
+  },
+  deleteButton: {
+    backgroundColor: '#FF6347',
+    borderRadius: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontSize: 12,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  paginationButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 4,
+    backgroundColor: '#180161',
+  },
+  paginationButtonText: {
+    fontSize: 14,
+    color: 'white',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+  },
+  pageIndicator: {
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    borderRadius: 4,
+    padding: 20,
+    width: '80%',
+    maxHeight: '60%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    padding: 10,
+    marginVertical: 5,
+    fontSize: 14,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+});
