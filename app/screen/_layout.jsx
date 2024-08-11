@@ -3,12 +3,12 @@ import * as React from 'react';
 import { registerRootComponent } from 'expo';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Signup from './Signup';
-import Login from './Login';
-import Dashboard from './Dashboard';
+import Signup from './Pages/Guest/Signup';
+import Login from './Pages/Auth/Login';
+import Dashboard from './Pages/Admin/Booking/Dashboard';
 import Postpages from './Postpages';
-import BookingDetails from './Pages/BookingDetails';
-import Room from './Pages/Room';
+import BookingDetails from './Pages/Admin/Booking/BookingDetails';
+import Room from './Pages/Admin/Room/Room';
 
 
 const Stack = createNativeStackNavigator();

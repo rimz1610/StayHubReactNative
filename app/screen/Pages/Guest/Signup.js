@@ -1,24 +1,107 @@
 import { StyleSheet, Text, View, TextInput, ImageBackground, TouchableWithoutFeedback, Keyboard } from 'react-native'
-import React from 'react'
+import React from 'react';
 import { TouchableOpacity } from 'react-native-gesture-handler'
-
+import { Formik, useFormik } from 'formik';
+import * as Yup from "yup";
+import axios from "axios";
 const Signup = (props) => {
+
+    const [submitting, setSubmitting] = React.useState(false);
+    const SignUpSchema = Yup.object().shape({
+        email: Yup.string()
+            .email("Invalid email address")
+            .required("Required")
+        ,
+        password: Yup.string()
+            .required("Required"),
+        firstName:Yup.string()
+        .required("Required"),
+        lastName:Yup.string()
+        .required("Required"),
+       city:Yup.string()
+        .required("Required"),
+       state:Yup.string()
+        .required("Required"),
+        address:Yup.string()
+        .required("Required"),
+        phoneNumber:Yup.string()
+        .required("Required"),
+        zipcode:Yup.string()
+        .required("Required"),
+    });
+
+    const formik = useFormik({
+        initialValues: {
+            email: "",
+            password: "",
+            firstName:"",
+            lastName:"",
+           city:"",
+           state:"",
+            address:"",
+            phoneNumber:"",
+            zipCode:""
+
+        },
+        validationSchema: SignUpSchema,
+        onSubmit: values => {
+            setSubmitting(true);
+           // console.warn(values)
+            axios.post("http://majidalipl-001-site5.gtempurl.com/Guest/Register", values)
+                .then(function (response) {
+                    if(response.data.success){
+                    
+                        setSubmitting(false);
+                        Alert.alert(
+                            'Success',
+                            'Account created successfully. Please login',
+                            [{ 
+                                text: 'OK', 
+                                onPress: () => {
+                        
+                               navigation.navigate('Login');
+                                    
+                                }
+                            }]
+                        );
+                    }
+                    else{
+                        setSubmitting(false);
+                        Alert.alert(
+                            'Register Failed',
+                            response.data.message,
+                            [{ text: 'OK' }]
+                        );
+                    }
+                })
+                .catch(function (error) {
+                    console.warn(error);
+                    setSubmitting(false);
+                });
+
+        },
+    });
+
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.container}>
-                <ImageBackground source={require('./../../assets/images/front.jpg')} style={styles.bg}>
+                 <ImageBackground source={require('./../../assets/images/front.jpg')} style={styles.bg}> 
                     <View style={styles.maincontainer}>
                         <Text style={styles.logintext}>Register as guest</Text>
                         <View style={styles.formContainer}>
                             <View>
                                 <Text style={styles.heading}>First Name</Text>
                                 <TextInput
+                                onChangeText={formik.handleChange('firstName')}
+                                value={formik.values.firstName}
                                     style={styles.input}
                                     placeholder='First Name'
                                     placeholderTextColor="white"
                                 />
                                 <Text style={styles.heading}>Last Name</Text>
                                 <TextInput
+                                 onChangeText={formik.handleChange('lastName')}
+                                 value={formik.values.lastName}
                                     style={styles.input}
                                     placeholder='Last Name'
                                     placeholderTextColor="white"
@@ -27,6 +110,8 @@ const Signup = (props) => {
                             <Text style={styles.heading}>Email Address</Text>
                             <TextInput 
                                 placeholder='Email'  
+                                onChangeText={formik.handleChange('email')}
+                               value={formik.values.email}
                                 placeholderTextColor="white" 
                                 keyboardType={"email-address"} 
                                 style={styles.input} 
@@ -37,6 +122,8 @@ const Signup = (props) => {
                                 placeholderTextColor="white" 
                                 secureTextEntry={true} 
                                 style={styles.input} 
+                                onChangeText={formik.handleChange('password')}
+                                value={formik.values.password}
                             />
                             <View>
                                 <Text style={styles.heading}>Address</Text>
@@ -44,6 +131,8 @@ const Signup = (props) => {
                                     style={styles.input}
                                     placeholder='Address'
                                     placeholderTextColor="white"
+                                    onChangeText={formik.handleChange('address')}
+                                    value={formik.values.address}
                                 />
                             </View>
                             <View style={styles.row}>
@@ -53,6 +142,8 @@ const Signup = (props) => {
                                         style={styles.input}
                                         placeholder='City'
                                         placeholderTextColor="white"
+                                        onChangeText={formik.handleChange('city')}
+                                        value={formik.values.city}
                                     />
                                 </View>
                                 <View style={styles.StateContainer}>
@@ -61,6 +152,8 @@ const Signup = (props) => {
                                         style={styles.input}
                                         placeholder='State'
                                         placeholderTextColor="white"
+                                        onChangeText={formik.handleChange('state')}
+                                        value={formik.values.state}
                                     />            
                                 </View>
                             </View>
@@ -72,6 +165,8 @@ const Signup = (props) => {
                                         placeholder='Phone Number'
                                         placeholderTextColor="white"
                                         keyboardType='phone-pad'
+                                        onChangeText={formik.handleChange('phoneNumber')}
+                                        value={formik.values.phoneNumber}
                                     />
                                 </View>
                                 <View style={styles.zipContainer}>
@@ -81,12 +176,17 @@ const Signup = (props) => {
                                         placeholder='Zip Code'
                                         placeholderTextColor="white"
                                         keyboardType='numeric'
+                                        onChangeText={formik.handleChange('zipcode')}
+                                        value={formik.values.zipcode}
                                     />
                                 </View>
                             </View>
                             <TouchableOpacity
                                 style={styles.submitButton}
-                                onPress={() => props.navigation.navigate('Login')}>
+                                disabled={submitting}
+                                onPress={() =>
+                                    formik.handleSubmit()
+                                }>
                                 <Text style={styles.submitText}>Register</Text>
                             </TouchableOpacity>
                         </View>
@@ -94,7 +194,7 @@ const Signup = (props) => {
                     <TouchableOpacity onPress={() => props.navigation.navigate('Login')}>
                         <Text style={styles.register}>Already have an account? Login</Text>
                     </TouchableOpacity>
-                </ImageBackground>
+                 </ImageBackground> 
             </View>
         </TouchableWithoutFeedback>
     )
