@@ -1,37 +1,13 @@
-// Dashboard.js
-
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import RNPickerSelect from 'react-native-picker-select'; 
+import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 
 
-const Drawer = createDrawerNavigator()
-const DrawerNavigation = () =>{
-    return(
-        <Drawer.Navigator screenOptions={{
-            drawerStyle:{
-                backgroundColor: 'white',
-                width:230
-            }
-        }}>
-            <Drawer.Screen 
-                name='Home'
-                options={{
-                    drawerLabel: 'Home',
-                    title: 'Home',
-                    headerShadowVisible: false,
-                    drawerIcon: ()=>{
-                        <Ionicons name='home-outline' size={24} color={'black'} />
-                    }
-                }}
-                component={Dashboard}
-            />
-        </Drawer.Navigator>
-    )
-}
-const Dashboard = ({ navigation }) => {
+const Drawer = createDrawerNavigator();
+const DashboardContent = ({ navigation }) => {
   const [selectedGuest, setSelectedGuest] = useState('');
   const [selectedPaymentType, setSelectedPaymentType] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,6 +70,9 @@ const Dashboard = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+        <Ionicons name="menu" size={24} color="black" />
+      </TouchableOpacity>
       <Text style={styles.bookingtxt}>Booking</Text>
       <TouchableOpacity style={styles.nextbtn} onPress={() => navigation.navigate('Postpages')}>
         <Text style={styles.skipText}>Next page</Text>
@@ -182,6 +161,24 @@ const pickerSelectStyles = StyleSheet.create({
     backgroundColor: 'white',
   },
 });
+
+const Dashboard = () => {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <DrawerContent {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {
+          width: '60%',
+        },
+      }}
+    >
+      <Drawer.Screen name="BookingDetailsContent" component={DashboardContent} />
+    </Drawer.Navigator>
+  );
+};
+
+export default Dashboard;
 
 const styles = StyleSheet.create({
   container: {
@@ -285,6 +282,12 @@ skipText: {
     color: 'blue',
     fontSize: 12,
 },
+menuButton: {
+  position: 'absolute',
+  top: 40,
+  left: 20,
+  zIndex: 1,
+},
 });
 
-export default Dashboard;
+

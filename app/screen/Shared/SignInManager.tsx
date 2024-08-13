@@ -23,6 +23,7 @@ export class SignInManager {
 
     }
     async SetToken(loginModel: any) {
+        console.log('inside set token')
         //in active expire time
         const expireTime=Date.now()+300000;
         await AsyncStorage.setItem("expireTime",expireTime.toString());

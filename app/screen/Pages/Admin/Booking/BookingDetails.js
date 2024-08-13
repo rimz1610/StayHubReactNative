@@ -1,9 +1,15 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import DrawerContent from '../../../../components/DrawerContent';
 import React from 'react';
-
-const BookingDetails = ( { navigation }) => {
+const Drawer = createDrawerNavigator();
+const BookingDetailsContent = ( { navigation }) => {
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+        <Ionicons name="menu" size={24} color="black" />
+      </TouchableOpacity>
       <Text style={styles.bookingtxt}>Booking Details</Text>
 
       <TouchableOpacity onPress={ ()=> navigation.navigate('Postpages')}   style={styles.backbtn}>
@@ -76,6 +82,22 @@ const BookingDetails = ( { navigation }) => {
         </View>
       </View>
     </View>
+  );
+};
+
+const BookingDetails = () => {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <DrawerContent {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {
+          width: '60%',
+        },
+      }}
+    >
+      <Drawer.Screen name="BookingDetailsContent" component={BookingDetailsContent} />
+    </Drawer.Navigator>
   );
 };
 
@@ -214,5 +236,11 @@ const styles = StyleSheet.create({
   },
   smallTableAmount: {
     fontSize: 16,
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
   },
 });

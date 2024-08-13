@@ -9,12 +9,16 @@ import Dashboard from './Pages/Admin/Booking/Dashboard';
 import Postpages from './Postpages';
 import BookingDetails from './Pages/Admin/Booking/BookingDetails';
 import Room from './Pages/Admin/Room/Room';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'react-native';
 
 
 const Stack = createNativeStackNavigator();
 
 function App() {
     return (
+        <SafeAreaProvider>
+            <StatusBar translucent backgroundColor="transparent" />
         <GestureHandlerRootView style={{ flex: 1 }}>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Login" component={Login} />
@@ -25,6 +29,7 @@ function App() {
                 <Stack.Screen name="Room" component={Room} />
             </Stack.Navigator>
         </GestureHandlerRootView>
+        </SafeAreaProvider>
     );
 }
 registerRootComponent(Dashboard);
