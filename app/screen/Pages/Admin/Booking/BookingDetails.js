@@ -1,10 +1,12 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import React, { useState } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
-import React from 'react';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { Ionicons } from '@expo/vector-icons';
+
 const Drawer = createDrawerNavigator();
 const BookingDetailsContent = ( { navigation }) => {
+  //get booking id
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
@@ -12,7 +14,7 @@ const BookingDetailsContent = ( { navigation }) => {
       </TouchableOpacity>
       <Text style={styles.bookingtxt}>Booking Details</Text>
 
-      <TouchableOpacity onPress={ ()=> navigation.navigate('Postpages')}   style={styles.backbtn}>
+      <TouchableOpacity onPress={ ()=> navigation.navigate('Dashboard')}   style={styles.backbtn}>
         <Text style={styles.backbtnText}>Back</Text>
       </TouchableOpacity>
 

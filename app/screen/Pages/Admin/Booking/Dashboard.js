@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, FlatList,Pressable , TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import RNPickerSelect from 'react-native-picker-select'; 
 import DrawerContent from '../../../../components/DrawerContent';
@@ -56,6 +56,8 @@ const DashboardContent = ({ navigation }) => {
     }
   };
 
+
+ 
   const renderTableItem = ({ item }) => (
     <View style={styles.tableRow}>
       <Text style={styles.tableCell}>{item.bookingNo}</Text>
@@ -64,7 +66,13 @@ const DashboardContent = ({ navigation }) => {
       <Text style={styles.tableCell}>{item.totalAmount}</Text>
       <Text style={styles.tableCell}>{item.paidAmount}</Text>
       <Text style={styles.tableCell}>{item.status}</Text>
-      <Text style={styles.tableCell}>Action</Text> 
+      <View style={styles.tableActions}>
+        <TouchableOpacity  onPress={() => navigation.navigate('BookingDetails')}
+        style={styles.detailButton}>
+          <Text style={styles.detailButtonText}>Detail</Text>
+        </TouchableOpacity>
+      </View>
+     
     </View>
   );
 
@@ -74,9 +82,9 @@ const DashboardContent = ({ navigation }) => {
         <Ionicons name="menu" size={24} color="black" />
       </TouchableOpacity>
       <Text style={styles.bookingtxt}>Booking</Text>
-      <TouchableOpacity style={styles.nextbtn} onPress={() => navigation.navigate('Postpages')}>
+      {/* <TouchableOpacity style={styles.nextbtn} onPress={() => navigation.navigate('Postpages')}>
         <Text style={styles.skipText}>Next page</Text>
-    </TouchableOpacity>
+    </TouchableOpacity> */}
       <View style={styles.options}>
         <View style={styles.dropdownContainer}>
           <Text style={styles.dropdownLabel}>Select Guest</Text>
@@ -173,7 +181,7 @@ const Dashboard = () => {
         },
       }}
     >
-      <Drawer.Screen name="BookingDetailsContent" component={DashboardContent} />
+      <Drawer.Screen name="BookingList" component={DashboardContent} />
     </Drawer.Navigator>
   );
 };
@@ -281,6 +289,27 @@ const styles = StyleSheet.create({
 skipText: {
     color: 'blue',
     fontSize: 12,
+},
+menuButton: {
+  position: 'absolute',
+  top: 40,
+  left: 20,
+  zIndex: 1,
+},
+tableActions: {
+  flexDirection: 'row',
+  justifyContent: 'space-around',
+  alignItems: 'center',
+},
+detailButton: {
+  backgroundColor: '#007BFF',
+  borderRadius: 4,
+  paddingVertical: 5,
+  paddingHorizontal: 8,
+},
+detailButtonText: {
+  color: 'white',
+  fontSize: 12,
 },
 menuButton: {
   position: 'absolute',

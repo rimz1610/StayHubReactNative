@@ -40,8 +40,8 @@ const Login = ({ navigation }) => {
 
     const formik = useFormik({
         initialValues: {
-            email: "",
-            password: ""
+            email: "admin@gmail.com",
+            password: "Admin123"
         },
         validationSchema: SigninSchema,
         onSubmit: values => {
@@ -86,7 +86,7 @@ const Login = ({ navigation }) => {
             <ImageBackground source={require('../../../../assets/images/back.jpg')} style={styles.bg}>
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                        <TouchableOpacity style={styles.skipbtn} onPress={() => navigation.navigate('Dashboard')}>
+                        <TouchableOpacity style={styles.skipbtn} onPress={() => navigation.navigate('Home')}>
                             <Text style={styles.skipText}>Skip</Text>
                         </TouchableOpacity>
                         <View style={styles.maincontainer}>
@@ -118,7 +118,11 @@ const Login = ({ navigation }) => {
                                     disabled={submitting}
                                     onPress={formik.handleSubmit}
                                 >
-                                    <Text style={styles.submitText}>Login</Text>
+                                    <Text style={styles.submitText}>
+                                        {
+                                            submitting? "Logging":"Login"
+                                        }
+                                      </Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

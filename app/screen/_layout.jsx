@@ -6,12 +6,24 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Signup from './Pages/Guest/Signup';
 import Login from './Pages/Auth/Login';
 import Dashboard from './Pages/Admin/Booking/Dashboard';
-import Postpages from './Postpages';
+import Home from './Pages/Guest/Home';
 import BookingDetails from './Pages/Admin/Booking/BookingDetails';
-import Room from './Pages/Admin/Room/Room';
+import RoomList from './Pages/Admin/Room/RoomList';
+import AddEditRoom from './Pages/Admin/Room/AddEditRoom';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
-
+import RoomPriceAvailabilityDetails from './Pages/Admin/RoomPrice/RoomPriceDetails';
+import AddEditEvent from './Pages/Admin/Event/AddEditEvent';
+import EventList from './Pages/Admin/Event/EventList';
+import GymList from './Pages/Admin/Gym/GymList';
+import AddEditGym from './Pages/Admin/Gym/AddEditGym';
+import GuestList from './Pages/Admin/Guest/GuestList';
+import GuestDetails from './Pages/Admin/Guest/GuestDetail';
+import RoomsPriceSetting from './Pages/Admin/RoomPrice/RoomsPriceSetting';
+import SpaList from './Pages/Admin/Spa/SpaList';
+import AddEditSpa from './Pages/Admin/Spa/AddEditSpa';
+import StaffList from './Pages/Admin/Staff/StaffList';
+import StaffActivityList from './Pages/Admin/Staff/StaffActivities';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,9 +36,23 @@ function App() {
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="Signup" component={Signup} />
                 <Stack.Screen name="Dashboard" component={Dashboard} />
-                <Stack.Screen name="Postpages" component={Postpages} />
                 <Stack.Screen name="BookingDetails" component={BookingDetails} />
-                <Stack.Screen name="Room" component={Room} />
+                <Stack.Screen name="RoomList" component={RoomList} />
+                <Stack.Screen name="AddEditRoom" component={AddEditRoom} />
+                <Stack.Screen name="RoomsPriceDetails" component={RoomPriceAvailabilityDetails} />
+                <Stack.Screen name="RoomsPriceSetting" component={RoomsPriceSetting} />
+                <Stack.Screen name="EventList" component={EventList} />
+                <Stack.Screen name="AddEditEvent" component={AddEditEvent} />
+                <Stack.Screen name="GymList" component={GymList} />
+                <Stack.Screen name="AddEditGym" component={AddEditGym} />
+                <Stack.Screen name="SpaList" component={SpaList} />
+                <Stack.Screen name="AddEditSpa" component={AddEditSpa} />
+                <Stack.Screen name="GuestList" component={GuestList} />
+                <Stack.Screen name="GuestDetails" component={GuestDetails} />
+                <Stack.Screen name="StaffList" component={StaffList} />
+                <Stack.Screen name="StaffActivityList" component={StaffActivityList} />
+                <Stack.Screen name="Home" component={Home} />
+                
             </Stack.Navigator>
         </GestureHandlerRootView>
         </SafeAreaProvider>

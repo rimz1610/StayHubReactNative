@@ -5,8 +5,8 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 const Postpages = ( { navigation }) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={ ()=> navigation.navigate('BookingDetails')} style={styles.pagesbtn1}><Text>Booking details</Text></TouchableOpacity>
-      <TouchableOpacity onPress={ ()=> navigation.navigate('Room')} style={styles.pagesbtn2}><Text>Room</Text></TouchableOpacity>
+      <TouchableOpacity onPress={ ()=> navigation.navigate('Dashboard')} style={styles.pagesbtn1}><Text>Manage Booking</Text></TouchableOpacity>
+      <TouchableOpacity onPress={ ()=> navigation.navigate('Room')} style={styles.pagesbtn2}><Text>Manage Rooms</Text></TouchableOpacity>
       <TouchableOpacity style={styles.pagesbtn3}><Text>Add /Edit Room</Text></TouchableOpacity>
       <TouchableOpacity style={styles.pagesbtn4}><Text>price and availability details</Text></TouchableOpacity>
       <TouchableOpacity style={styles.pagesbtn5}><Text>Set Room pricing Details</Text></TouchableOpacity>

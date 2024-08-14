@@ -1,6 +1,8 @@
 import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
 import React, { useState } from 'react';
-
+import DrawerContent from '../../../../components/DrawerContent';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { Ionicons } from '@expo/vector-icons';
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
@@ -10,21 +12,16 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
   status: 'Available',
 }));
 
-const Room = () => {
+const Drawer = createDrawerNavigator();
+const RoomListContent = ({ navigation }) => {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(0);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
 
   const itemsPerPage = 10;
   const pages = Math.ceil(data.length / itemsPerPage);
 
-  const handleEdit = (item) => {
-    setCurrentItem(item);
-    setEditMode(true);
-    setModalVisible(true);
-  };
+
 
   const handleDelete = (item) => {
     Alert.alert('Are you sure?', 'Do you want to delete this item?', [
@@ -65,7 +62,7 @@ const Room = () => {
       <Text style={styles.tableCell} numberOfLines={1}>{item.shortDescription}</Text>
       <Text style={styles.tableCell} numberOfLines={1}>{item.status}</Text>
       <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
+        <TouchableOpacity onPress={() =>navigation.navigate('AddEditRoom')} style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteButton}>
@@ -77,11 +74,13 @@ const Room = () => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+        <Ionicons name="menu" size={24} color="black" />
+      </TouchableOpacity>
+
       <Text style={styles.roomheading}>Room</Text>
       <TouchableOpacity style={styles.addButton} onPress={() => {
-        setEditMode(false);
-        setCurrentItem({ name: '', type: '', shortDescription: '', status: '' });
-        setModalVisible(true);
+       navigation.navigate('AddEditRoom')
       }}>
         <Text style={styles.addButtonText}>+ ADD NEW</Text>
       </TouchableOpacity>
@@ -104,8 +103,8 @@ const Room = () => {
 
       {/* Pagination */}
       <View style={styles.paginationContainer}>
-        <TouchableOpacity 
-          onPress={() => handlePageChange('previous')} 
+        <TouchableOpacity
+          onPress={() => handlePageChange('previous')}
           style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
           disabled={currentPage === 0}
         >
@@ -114,8 +113,8 @@ const Room = () => {
         <Text style={styles.pageIndicator}>
           Page {currentPage + 1} of {pages}
         </Text>
-        <TouchableOpacity 
-          onPress={() => handlePageChange('next')} 
+        <TouchableOpacity
+          onPress={() => handlePageChange('next')}
           style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
           disabled={currentPage === pages - 1}
         >
@@ -124,55 +123,27 @@ const Room = () => {
       </View>
 
       {/* Modal for adding/editing */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>{editMode ? 'Edit Room' : 'Add New Room'}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Room Name"
-              placeholderTextColor="#888"
-              value={currentItem?.name}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, name: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Room Type"
-              placeholderTextColor="#888"
-              value={currentItem?.type}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, type: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Short Description"
-              placeholderTextColor="#888"
-              value={currentItem?.shortDescription}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, shortDescription: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Status"
-              placeholderTextColor="#888"
-              value={currentItem?.status}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, status: text })}
-            />
-            <View style={styles.modalButtons}>
-              <Button title="Cancel" onPress={() => setModalVisible(false)} color="#FF6347" />
-              <Button title="Save" onPress={handleSave} color="#180161" />
-            </View>
-          </View>
-        </View>
-      </Modal>
+     
     </View>
   );
 };
+const RoomList  = () => {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <DrawerContent {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {
+          width: '60%',
+        },
+      }}
+    >
+      <Drawer.Screen name="RoomListContent" component={RoomListContent} />
+    </Drawer.Navigator>
+  );
+};
 
-export default Room;
+export default RoomList;
 
 const styles = StyleSheet.create({
   container: {
@@ -316,5 +287,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 15,
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
   },
 });
