@@ -227,17 +227,19 @@ const styles = StyleSheet.create({
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: '#ddd',
-    padding: 10,
+    paddingTop: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
   headerCell: {
-    flex: 1,
     fontWeight: 'bold',
     fontSize: 10,
+    flex: 1,
     textAlign: 'center',
-    borderRightWidth: 1,
-    borderRightColor: '#ccc',
+    color: '#333',
+    numberOfLines: 1, // Ensure text is limited to a single line
+    overflow: 'hidden', // Hide any overflow text
+    textOverflow: 'ellipsis', // Add ellipsis if text overflows
   },
   tableRow: {
     flexDirection: 'row',
