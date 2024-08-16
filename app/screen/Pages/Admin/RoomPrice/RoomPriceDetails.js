@@ -71,7 +71,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       <Text style={styles.tableCell}>{item.bookingAvailable}</Text>
       <View style={styles.tableActions}>
         <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
-          <Text style={styles.editButtonText}>Update</Text>
+        <Ionicons name="pencil" size={14} color="white" />
         </TouchableOpacity>
       </View>
     </View>
@@ -215,15 +215,15 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
 
         {/* Table */}
         <View style={styles.tableContainer}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.tableHeaderText}>Date</Text>
-            <Text style={styles.tableHeaderText}>Day</Text>
-            <Text style={styles.tableHeaderText}>Room Name</Text>
-            <Text style={styles.tableHeaderText}>Price</Text>
-            <Text style={styles.tableHeaderText}>Add Price per Person</Text>
-            <Text style={styles.tableHeaderText}>Booking Available</Text>
-            <Text style={styles.tableHeaderText}>Action</Text>
-          </View>
+        <View style={styles.tableHeader}>
+        <Text style={styles.tableHeaderText} numberOfLines={1}>Date</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail">Day</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={2} ellipsizeMode="tail">Room Name</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail">Price</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={2} ellipsizeMode="tail">Add Price per Person</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={2} >Booking Available</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail"><Ionicons name="construct" size={12} color="black" /></Text>
+        </View>
           <FlatList
             data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
             renderItem={renderItem}
@@ -419,15 +419,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    // paddingVertical: 12,
-    // paddingHorizontal: 10,
-    padding:10,
+    padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#ddd',
   },
   tableHeaderText: {
     fontWeight: 'bold',
-    fontSize: 10,
+    fontSize: 10, // Reduced font size
     flex: 1,
     textAlign: 'center',
     color: '#333',
@@ -453,7 +451,7 @@ const styles = StyleSheet.create({
   editButton: {
     backgroundColor: '#007BFF',
     borderRadius: 6,
-    paddingVertical: 8,
+    paddingVertical: 5,
     paddingHorizontal: 6,
   },
   editButtonText: {
