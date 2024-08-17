@@ -8,9 +8,9 @@ import RNPickerSelect from 'react-native-picker-select';
 const Drawer = createDrawerNavigator();
 const AddEditRoom = ({ navigation }) => {
   const [name, setName] = useState('');
-  const [roomType, setRoomType] = useState('');
   const [maxAdditionalPerson, setMaxAdditionalPerson] = useState('');
   const [status, setStatus] = useState('Active');
+  const [roomType,  setRoomType] = useState('Delux');
   const [shortDescription, setShortDescription] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState([{ url: '', sortOrder: 1 }, { url: '', sortOrder: 2 }]);
@@ -50,12 +50,14 @@ const AddEditRoom = ({ navigation }) => {
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Room Type</Text>
-            <TextInput
+            <RNPickerSelect
+              onValueChange={(value) => setRoomType(value)}
               value={roomType}
-              onChangeText={setRoomType}
-              style={styles.input}
-              placeholder="Room Type"
-              placeholderTextColor="#555"
+              items={[
+                { label: 'Delux', value: 'Delux' },
+                { label: 'Regular', value: 'Regular' },
+              ]}
+              style={pickerSelectStyles}
             />
           </View>
         </View>
@@ -255,12 +257,12 @@ const styles = StyleSheet.create({
     width:'70%',
     borderRadius: 4,
     alignSelf: 'center',
+    marginBottom:30,
     marginTop: 20,
   },
   saveButtonText: {
     color: 'white',
     justifyContent:'center',
-    // alignItems:'center',
     alignSelf:'center',
     fontSize: 18,
   },

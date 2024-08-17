@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useState } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -9,15 +9,16 @@ import MultiSelect from 'react-native-multiple-select';
 
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
-  date: `2024-08-${index + 1}`, // Dummy date
+  date: `2024-08-${index + 1}`,
   day: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index % 7],
-  roomName: `Room ${index % 3 + 1}`, // Dummy room names
+  roomName: `Room ${index % 3 + 1}`,
   price: `$${(index + 1) * 10}`,
   addPricePerPerson: `$${(index + 1) * 2}`,
   bookingAvailable: index % 2 === 0 ? 'Yes' : 'No',
 }));
 
 const Drawer = createDrawerNavigator();
+
 const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
   const [data, setData] = useState(initialData);
   const [currentPage, setCurrentPage] = useState(0);
@@ -29,6 +30,9 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
   const [status, setStatus] = useState('Active');
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [selectedDays, setSelectedDays] = useState([]);
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
+
 
   const itemsPerPage = 10;
   const pages = Math.ceil(data.length / itemsPerPage);
@@ -71,7 +75,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       <Text style={styles.tableCell}>{item.bookingAvailable}</Text>
       <View style={styles.tableActions}>
         <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
-        <Ionicons name="pencil" size={14} color="white" />
+          <Ionicons name="pencil" size={14} color="white" />
         </TouchableOpacity>
       </View>
     </View>
@@ -93,129 +97,160 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
     { id: 'sun', name: 'Sunday' },
   ];
 
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
-          <Ionicons name="menu" size={24} color="black" />
-        </TouchableOpacity>
+  const renderHeader = () => (
+    <>
+      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+        <Ionicons name="menu" size={24} color="black" />
+      </TouchableOpacity>
 
-        <Text style={styles.roomheading}>Room Price & Availability Details</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => {
-            navigation.navigate('RoomsPriceSetting');
+      <Text style={styles.roomheading}>Room Price & Availability Details</Text>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          navigation.navigate('RoomsPriceSetting');
+        }}
+      >
+        <Text style={styles.addButtonText}>Update Bulk Prices</Text>
+      </TouchableOpacity>
+
+      <View style={styles.row}>
+      <View style={styles.inputContainer}>
+  <Text style={styles.label}>From Date</Text>
+  {Platform.OS === 'android' && (
+    <>
+      <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.datePicker}>
+        <Text>{fromDate.toLocaleDateString()}</Text>
+      </TouchableOpacity>
+      {showFromDatePicker && (
+        <DateTimePicker
+          value={fromDate}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowFromDatePicker(false);
+            if (selectedDate) setFromDate(selectedDate);
           }}
-        >
-          <Text style={styles.addButtonText}>Update Bulk Prices</Text>
-        </TouchableOpacity>
-
-        {/* Date Pickers and Status Dropdown */}
-        <View style={styles.row}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>From Date</Text>
-            <DateTimePicker
-              value={fromDate}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => setFromDate(selectedDate || fromDate)}
-              style={styles.datePicker}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>To Date</Text>
-            <DateTimePicker
-              value={toDate}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => setToDate(selectedDate || toDate)}
-              style={styles.datePicker}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Status</Text>
-            <RNPickerSelect
-              onValueChange={(value) => setStatus(value)}
-              value={status}
-              items={[
-                { label: 'Active', value: 'Active' },
-                { label: 'Pending', value: 'Pending' },
-              ]}
-              style={pickerSelectStyles}
-            />
-          </View>
+        />
+      )}
+    </>
+  )}
+  {Platform.OS === 'ios' && (
+    <DateTimePicker
+      value={fromDate}
+      mode="date"
+      display="default"
+      onChange={(event, selectedDate) => setFromDate(selectedDate || fromDate)}
+      style={styles.datePicker}
+    />
+  )}
+</View>
+        <View style={styles.inputContainer}>
+        <Text style={styles.label}>To Date</Text>
+  {Platform.OS === 'android' && (
+    <>
+      <TouchableOpacity onPress={() => setShowToDatePicker(true)} style={styles.datePicker}>
+        <Text>{toDate.toLocaleDateString()}</Text>
+      </TouchableOpacity>
+      {showToDatePicker && (
+        <DateTimePicker
+          value={toDate}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowToDatePicker(false);
+            if (selectedDate) setToDate(selectedDate);
+          }}
+        />
+      )}
+    </>
+  )}
+  {Platform.OS === 'ios' && (
+    <DateTimePicker
+      value={toDate}
+      mode="date"
+      display="default"
+      onChange={(event, selectedDate) => setToDate(selectedDate || toDate)}
+      style={styles.datePicker}
+    />
+  )}
         </View>
-
-        {/* Room Multi-Select */}
-        <View style={styles.row}>
-          <View style={styles.multiSelectContainer}>
-            <Text style={styles.label}>Rooms</Text>
-            <MultiSelect
-              items={rooms}
-              uniqueKey="id"
-              onSelectedItemsChange={setSelectedRooms}
-              selectedItems={selectedRooms}
-              selectText="Pick Rooms"
-              searchInputPlaceholderText="Search Rooms..."
-              tagRemoveIconColor="#CCC"
-              tagBorderColor="#CCC"
-              tagTextColor="#000"
-              selectedItemTextColor="#CCC"
-              selectedItemIconColor="#CCC"
-              itemTextColor="#000"
-              displayKey="name"
-              searchInputStyle={styles.searchInputStyle}
-              styleInputGroup={styles.multiSelect}
-              styleDropdownMenuSubsection={styles.multiSelect}
-              styleTextDropdown={styles.selectTextStyle}
-              styleTextDropdownSelected={styles.selectTextStyle}
-              styleSelectorContainer={styles.multiSelect}
-              styleChipContainer={styles.chipContainer}
-              styleChipText={styles.chipText}
-              submitButtonColor="#180161"
-              submitButtonText="Select"
-            />
-          </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Status</Text>
+          <RNPickerSelect
+            onValueChange={(value) => setStatus(value)}
+            value={status}
+            items={[
+              { label: 'Active', value: 'Active' },
+              { label: 'Pending', value: 'Pending' },
+            ]}
+            style={pickerSelectStyles}
+          />
         </View>
+      </View>
 
-        {/* Day of Week Multi-Select */}
-        <View style={styles.row}>
-          <View style={styles.multiSelectContainer}>
-            <Text style={styles.label}>Day of Week</Text>
-            <MultiSelect
-              items={daysOfWeek}
-              uniqueKey="id"
-              onSelectedItemsChange={setSelectedDays}
-              selectedItems={selectedDays}
-              selectText="Pick Days"
-              searchInputPlaceholderText="Search Days..."
-              tagRemoveIconColor="#CCC"
-              tagBorderColor="#CCC"
-              tagTextColor="#000"
-              selectedItemTextColor="#CCC"
-              selectedItemIconColor="#CCC"
-              itemTextColor="#000"
-              displayKey="name"
-              searchInputStyle={{ color: '#CCC' }}
-              styleInputGroup={styles.multiSelect}
-              styleDropdownMenuSubsection={styles.multiSelect}
-              styleTextDropdown={styles.selectTextStyle}
-              styleTextDropdownSelected={styles.selectTextStyle}
-              styleSelectorContainer={styles.multiSelect}
-              styleChipContainer={styles.chipContainer}
-              styleChipText={styles.chipText}
-              submitButtonColor="#180161"
-              submitButtonText="Select"
-            />
-          </View>
+      <View style={styles.row}>
+        <View style={styles.multiSelectContainer}>
+          <Text style={styles.label}>Rooms</Text>
+          <MultiSelect
+            items={rooms}
+            uniqueKey="id"
+            onSelectedItemsChange={setSelectedRooms}
+            selectedItems={selectedRooms}
+            selectText="Pick Rooms"
+            searchInputPlaceholderText="Search Rooms..."
+            tagRemoveIconColor="#CCC"
+            tagBorderColor="#CCC"
+            tagTextColor="#000"
+            selectedItemTextColor="#CCC"
+            selectedItemIconColor="#CCC"
+            itemTextColor="#000"
+            displayKey="name"
+            searchInputStyle={styles.searchInputStyle}
+            styleInputGroup={styles.multiSelect}
+            styleDropdownMenuSubsection={styles.multiSelect}
+            styleTextDropdown={styles.selectTextStyle}
+            styleTextDropdownSelected={styles.selectTextStyle}
+            styleSelectorContainer={styles.multiSelect}
+            styleChipContainer={styles.chipContainer}
+            styleChipText={styles.chipText}
+            submitButtonColor="#180161"
+            submitButtonText="Select"
+          />
         </View>
+      </View>
 
-        {/* Table */}
-        <View style={styles.tableContainer}>
-        <View style={styles.tableHeader}>
+      <View style={styles.row}>
+        <View style={styles.multiSelectContainer}>
+          <Text style={styles.label}>Day of Week</Text>
+          <MultiSelect
+            items={daysOfWeek}
+            uniqueKey="id"
+            onSelectedItemsChange={setSelectedDays}
+            selectedItems={selectedDays}
+            selectText="Pick Days"
+            searchInputPlaceholderText="Search Days..."
+            tagRemoveIconColor="#CCC"
+            tagBorderColor="#CCC"
+            tagTextColor="#000"
+            selectedItemTextColor="#CCC"
+            selectedItemIconColor="#CCC"
+            itemTextColor="#000"
+            displayKey="name"
+            searchInputStyle={{ color: '#CCC' }}
+            styleInputGroup={styles.multiSelect}
+            styleDropdownMenuSubsection={styles.multiSelect}
+            styleTextDropdown={styles.selectTextStyle}
+            styleTextDropdownSelected={styles.selectTextStyle}
+            styleSelectorContainer={styles.multiSelect}
+            styleChipContainer={styles.chipContainer}
+            styleChipText={styles.chipText}
+            submitButtonColor="#180161"
+            submitButtonText="Select"
+          />
+        </View>
+      </View>
+
+      <View style={styles.tableHeader}>
         <Text style={styles.tableHeaderText} numberOfLines={1}>Date</Text>
         <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail">Day</Text>
         <Text style={styles.tableHeaderText} numberOfLines={2} ellipsizeMode="tail">Room Name</Text>
@@ -223,83 +258,94 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
         <Text style={styles.tableHeaderText} numberOfLines={2} ellipsizeMode="tail">Add Price per Person</Text>
         <Text style={styles.tableHeaderText} numberOfLines={2} >Booking Available</Text>
         <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail"><Ionicons name="construct" size={12} color="black" /></Text>
-        </View>
-          <FlatList
-            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
+      </View>
+    </>
+  );
 
-        {/* Pagination */}
-        <View style={styles.paginationContainer}>
-          <TouchableOpacity
-            onPress={() => handlePageChange('previous')}
-            style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
-            disabled={currentPage === 0}
-          >
-            <Text style={styles.paginationButtonText}>Previous</Text>
-          </TouchableOpacity>
-          <Text style={styles.pageIndicator}>
-            Page {currentPage + 1} of {pages}
-          </Text>
-          <TouchableOpacity
-            onPress={() => handlePageChange('next')}
-            style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
-            disabled={currentPage === pages - 1}
-          >
-            <Text style={styles.paginationButtonText}>Next</Text>
-          </TouchableOpacity>
-        </View>
+  const renderFooter = () => (
+    <View style={styles.paginationContainer}>
+      <TouchableOpacity
+        onPress={() => handlePageChange('previous')}
+        style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
+        disabled={currentPage === 0}
+      >
+        <Text style={styles.paginationButtonText}>Previous</Text>
+      </TouchableOpacity>
+      <Text style={styles.pageIndicator}>
+        Page {currentPage + 1} of {pages}
+      </Text>
+      <TouchableOpacity
+        onPress={() => handlePageChange('next')}
+        style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
+        disabled={currentPage === pages - 1}
+      >
+        <Text style={styles.paginationButtonText}>Next</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-        {/* Modal for adding/editing */}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Update Room Price</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Room Name"
-                placeholderTextColor="#888"
-                value={currentItem?.roomName}
-                onChangeText={(text) => setCurrentItem({ ...currentItem, roomName: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Price"
-                placeholderTextColor="#888"
-                value={currentItem?.price}
-                onChangeText={(text) => setCurrentItem({ ...currentItem, price: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Additional Price Per Person"
-                placeholderTextColor="#888"
-                value={currentItem?.addPricePerPerson}
-                onChangeText={(text) => setCurrentItem({ ...currentItem, addPricePerPerson: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Booking Available"
-                placeholderTextColor="#888"
-                value={currentItem?.bookingAvailable}
-                onChangeText={(text) => setCurrentItem({ ...currentItem, bookingAvailable: text })}
-              />
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <FlatList
+        data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        contentContainerStyle={styles.scrollViewContent}
+      />
 
-              <View style={styles.modalButtons}>
-                <Button title="Cancel" onPress={() => setModalVisible(false)} color="#FF6347" />
-                <Button title="Save" onPress={handleSave} color="#180161" />
-              </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Update Room Price</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Room Name"
+              placeholderTextColor="#888"
+              value={currentItem?.roomName}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, roomName: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Price"
+              placeholderTextColor="#888"
+              value={currentItem?.price}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, price: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Additional Price Per Person"
+              placeholderTextColor="#888"
+              value={currentItem?.addPricePerPerson}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, addPricePerPerson: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Booking Available"
+              placeholderTextColor="#888"
+              value={currentItem?.bookingAvailable}
+              onChangeText={(text) => setCurrentItem({ ...currentItem, bookingAvailable: text })}
+            />
+
+            <View style={styles.modalButtons}>
+              <Button title="Cancel" onPress={() => setModalVisible(false)} color="#FF6347" />
+              <Button title="Save" onPress={handleSave} color="#180161" />
             </View>
           </View>
-        </Modal>
-      </ScrollView>
+        </View>
+      </Modal>
+
     </KeyboardAvoidingView>
+    
   );
 };
 
@@ -329,6 +375,12 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     padding: 20,
   },
+  menuButton: {
+    position: 'absolute',
+    top: 30,
+    left: 10,
+    zIndex: 1,
+},
   roomheading: {
     color: '#180161',
     width:'80%',
@@ -345,6 +397,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     marginBottom: 20,
+    marginTop:10,
   },
   addButtonText: {
     color: 'white',
@@ -515,13 +568,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 24,
-  },
-  menuButton: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    zIndex: 1,
-    padding: 10,
   },
 });
 

@@ -48,7 +48,7 @@ const DrawerContent = (props) => {
         <Text style={styles.textheading}>admin@gmail.com</Text>
         {renderDrawerItem('Manage Bookings', 'Dashboard')}
         {renderDrawerItem('Manage Rooms', 'RoomList')}
-        {renderDrawerItem('Manage Rooms Price', 'RoomsPriceDetails')}
+        {renderDrawerItem('Manage Rooms Price', 'RoomsPriceDetails',)}
         {renderDrawerItem('Manage Events', 'EventList')}
         {renderDrawerItem('Manage Staffs', 'StaffList')}
         {renderDrawerItem('Manage Guests', 'GuestList')}

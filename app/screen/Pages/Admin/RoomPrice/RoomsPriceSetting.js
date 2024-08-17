@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useState } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,9 @@ const RoomPriceSettingContent = ({ navigation }) => {
   const [status, setStatus] = useState('Active');
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [selectedDays, setSelectedDays] = useState([]);
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
+
 
   const itemsPerPage = 10;
   const pages = Math.ceil(data.length / itemsPerPage);
@@ -89,181 +92,226 @@ const RoomPriceSettingContent = ({ navigation }) => {
     { id: 'sun', name: 'Sunday' },
   ];
 
+  const renderHeader = () => (
+    <>
+      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+        <Ionicons name="menu" size={24} color="black" />
+      </TouchableOpacity>
+      <Text style={styles.roomheading}>Room Price & Availability Details</Text>
+      
+      <TouchableOpacity onPress={() => navigation.navigate('RoomsPriceDetails')} style={styles.backbtn}>
+  <Text style={styles.backbtnText}>Back</Text>
+</TouchableOpacity>
+
+
+      <View style={styles.row}>
+        <View style={styles.inputContainer}>
+        <Text style={styles.labeldate}>From Date</Text>
+  {Platform.OS === 'android' && (
+    <>
+      <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.datePicker}>
+        <Text>{fromDate.toLocaleDateString()}</Text>
+      </TouchableOpacity>
+      {showFromDatePicker && (
+        <DateTimePicker
+          value={fromDate}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowFromDatePicker(false);
+            if (selectedDate) setFromDate(selectedDate);
+          }}
+        />
+      )}
+    </>
+  )}
+  {Platform.OS === 'ios' && (
+    <DateTimePicker
+      value={fromDate}
+      mode="date"
+      display="default"
+      onChange={(event, selectedDate) => setFromDate(selectedDate || fromDate)}
+      style={styles.datePicker}
+    />
+  )}
+        </View>
+        <View style={styles.inputContainer}>
+        <Text style={styles.labeldate}>To Date</Text>
+  {Platform.OS === 'android' && (
+    <>
+      <TouchableOpacity onPress={() => setShowToDatePicker(true)} style={styles.datePicker}>
+        <Text>{toDate.toLocaleDateString()}</Text>
+      </TouchableOpacity>
+      {showToDatePicker && (
+        <DateTimePicker
+          value={toDate}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowToDatePicker(false);
+            if (selectedDate) setToDate(selectedDate);
+          }}
+        />
+      )}
+    </>
+  )}
+  {Platform.OS === 'ios' && (
+    <DateTimePicker
+      value={toDate}
+      mode="date"
+      display="default"
+      onChange={(event, selectedDate) => setToDate(selectedDate || toDate)}
+      style={styles.datePicker}
+    />
+  )}
+        </View>
+      </View>
+
+      <View style={styles.row}>
+        <View style={styles.multiSelectContainer}>
+          <Text style={styles.label}>Rooms</Text>
+          <MultiSelect
+            items={rooms}
+            uniqueKey="id"
+            onSelectedItemsChange={setSelectedRooms}
+            selectedItems={selectedRooms}
+            selectText="Pick Rooms"
+            searchInputPlaceholderText="Search Rooms..."
+            tagRemoveIconColor="#CCC"
+            tagBorderColor="#CCC"
+            tagTextColor="#000"
+            selectedItemTextColor="#CCC"
+            selectedItemIconColor="#CCC"
+            itemTextColor="#000"
+            displayKey="name"
+            searchInputStyle={styles.searchInputStyle}
+            styleInputGroup={styles.multiSelect}
+            styleDropdownMenuSubsection={styles.multiSelect}
+            styleTextDropdown={styles.selectTextStyle}
+            styleTextDropdownSelected={styles.selectTextStyle}
+            styleSelectorContainer={styles.multiSelect}
+            styleChipContainer={styles.chipContainer}
+            styleChipText={styles.chipText}
+            submitButtonColor="#180161"
+            submitButtonText="Select"
+          />
+        </View>
+      </View>
+
+      <View style={styles.row}>
+        <View style={styles.multiSelectContainer}>
+          <Text style={styles.label}>Day of Week</Text>
+          <MultiSelect
+            items={daysOfWeek}
+            uniqueKey="id"
+            onSelectedItemsChange={setSelectedDays}
+            selectedItems={selectedDays}
+            selectText="Pick Days"
+            searchInputPlaceholderText="Search Days..."
+            tagRemoveIconColor="#CCC"
+            tagBorderColor="#CCC"
+            tagTextColor="#000"
+            selectedItemTextColor="#CCC"
+            selectedItemIconColor="#CCC"
+            itemTextColor="#000"
+            displayKey="name"
+            searchInputStyle={{ color: '#CCC' }}
+            styleInputGroup={styles.multiSelect}
+            styleDropdownMenuSubsection={styles.multiSelect}
+            styleTextDropdown={styles.selectTextStyle}
+            styleTextDropdownSelected={styles.selectTextStyle}
+            styleSelectorContainer={styles.multiSelect}
+            styleChipContainer={styles.chipContainer}
+            styleChipText={styles.chipText}
+            submitButtonColor="#180161"
+            submitButtonText="Select"
+          />
+        </View>
+      </View>
+
+      <View style={styles.priceContainer}>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Price</Text>
+          <TextInput
+            placeholder="Price"
+            placeholderTextColor={'#888'}
+            value={currentItem?.price || ''}
+            onChangeText={(text) => setCurrentItem({ ...currentItem, price: text })}
+            style={styles.priceInput}
+            keyboardType="numeric"
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Price per Person</Text>
+          <TextInput
+            placeholder="Price per Person"
+            placeholderTextColor={'#888'}
+            value={currentItem?.addPricePerPerson || ''}
+            onChangeText={(text) => setCurrentItem({ ...currentItem, addPricePerPerson: text })}
+            style={styles.priceInput}
+            keyboardType="numeric"
+          />
+        </View>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={() => {/* Add update logic */}}>
+          <Text style={styles.buttonText}>Update</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => {/* Add view logic */}}>
+          <Text style={styles.buttonText}>View</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.tableContainer}>
+        <View style={styles.tableHeader}>
+          <Text style={styles.tableHeaderText} numberOfLines={1}>Date</Text>
+          <Text style={styles.tableHeaderText} numberOfLines={1}>Day</Text>
+          <Text style={styles.tableHeaderText} numberOfLines={2}>Room Name</Text>
+          <Text style={styles.tableHeaderText}>Price</Text>
+          <Text style={styles.tableHeaderText} numberOfLines={2}>Price per Person</Text>
+          <Text style={styles.tableHeaderText} numberOfLines={2}>Booking Available</Text>
+        </View>
+      </View>
+    </>
+  );
+
+  const renderFooter = () => (
+    <View style={styles.paginationContainer}>
+      <TouchableOpacity
+        onPress={() => handlePageChange('previous')}
+        style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
+        disabled={currentPage === 0}
+      >
+        <Text style={styles.paginationButtonText}>Previous</Text>
+      </TouchableOpacity>
+      <Text style={styles.pageIndicator}>
+        Page {currentPage + 1} of {pages}
+      </Text>
+      <TouchableOpacity
+        onPress={() => handlePageChange('next')}
+        style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
+        disabled={currentPage === pages - 1}
+      >
+        <Text style={styles.paginationButtonText}>Next</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
-          <Ionicons name="menu" size={24} color="black" />
-        </TouchableOpacity>
+      <FlatList
+        data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        contentContainerStyle={styles.scrollViewContent}
+      />
 
-        <Text style={styles.roomheading}>Room Price & Availability Details</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => {
-            navigation.navigate('RoomPriceDetails'); // Adjust to your screen name
-          }}
-        >
-          <Text style={styles.addButtonText}>Back</Text>
-        </TouchableOpacity>
-
-        {/* Date Pickers and Status Dropdown */}
-        <View style={styles.row}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>From Date</Text>
-            <DateTimePicker
-              value={fromDate}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => setFromDate(selectedDate || fromDate)}
-              style={styles.datePicker}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>To Date</Text>
-            <DateTimePicker
-              value={toDate}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => setToDate(selectedDate || toDate)}
-              style={styles.datePicker}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Status</Text>
-            <RNPickerSelect
-              onValueChange={(value) => setStatus(value)}
-              value={status}
-              items={[
-                { label: 'Active', value: 'Active' },
-                { label: 'Pending', value: 'Pending' },
-              ]}
-              style={pickerSelectStyles}
-            />
-          </View>
-        </View>
-
-        {/* Room Multi-Select */}
-        <View style={styles.row}>
-          <View style={styles.multiSelectContainer}>
-            <Text style={styles.label}>Rooms</Text>
-            <MultiSelect
-              items={rooms}
-              uniqueKey="id"
-              onSelectedItemsChange={setSelectedRooms}
-              selectedItems={selectedRooms}
-              selectText="Pick Rooms"
-              searchInputPlaceholderText="Search Rooms..."
-              tagRemoveIconColor="#CCC"
-              tagBorderColor="#CCC"
-              tagTextColor="#000"
-              selectedItemTextColor="#CCC"
-              selectedItemIconColor="#CCC"
-              itemTextColor="#000"
-              displayKey="name"
-              searchInputStyle={styles.searchInputStyle}
-              styleInputGroup={styles.multiSelect}
-              styleDropdownMenuSubsection={styles.multiSelect}
-              styleTextDropdown={styles.selectTextStyle}
-              styleTextDropdownSelected={styles.selectTextStyle}
-              styleSelectorContainer={styles.multiSelect}
-              styleChipContainer={styles.chipContainer}
-              styleChipText={styles.chipText}
-              submitButtonColor="#180161"
-              submitButtonText="Select"
-            />
-          </View>
-        </View>
-
-        {/* Day of Week Multi-Select */}
-        <View style={styles.row}>
-          <View style={styles.multiSelectContainer}>
-            <Text style={styles.label}>Day of Week</Text>
-            <MultiSelect
-              items={daysOfWeek}
-              uniqueKey="id"
-              onSelectedItemsChange={setSelectedDays}
-              selectedItems={selectedDays}
-              selectText="Pick Days"
-              searchInputPlaceholderText="Search Days..."
-              tagRemoveIconColor="#CCC"
-              tagBorderColor="#CCC"
-              tagTextColor="#000"
-              selectedItemTextColor="#CCC"
-              selectedItemIconColor="#CCC"
-              itemTextColor="#000"
-              displayKey="name"
-              searchInputStyle={{ color: '#CCC' }}
-              styleInputGroup={styles.multiSelect}
-              styleDropdownMenuSubsection={styles.multiSelect}
-              styleTextDropdown={styles.selectTextStyle}
-              styleTextDropdownSelected={styles.selectTextStyle}
-              styleSelectorContainer={styles.multiSelect}
-              styleChipContainer={styles.chipContainer}
-              styleChipText={styles.chipText}
-              submitButtonColor="#180161"
-              submitButtonText="Select"
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Price</Text>
-            <TextInput
-              placeholder="Price"
-              value={currentItem?.price || ''}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, price: text })}
-              style={styles.input}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Price per Person</Text>
-            <TextInput
-              placeholder="Price per Person"
-              value={currentItem?.addPricePerPerson || ''}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, addPricePerPerson: text })}
-              style={styles.input}
-            />
-          </View>
-        </View>
-
-        {/* Table Display */}
-        <View style={styles.tableContainer}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.tableHeaderText}>Date</Text>
-            <Text style={styles.tableHeaderText}>Day</Text>
-            <Text style={styles.tableHeaderText}>Room Name</Text>
-            <Text style={styles.tableHeaderText}>Price</Text>
-            <Text style={styles.tableHeaderText}>Price per Person</Text>
-            <Text style={styles.tableHeaderText}>Booking Available</Text>
-          </View>
-          <FlatList
-            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-
-        {/* Pagination */}
-        <View style={styles.pagination}>
-          <Button
-            title="Previous"
-            onPress={() => handlePageChange('previous')}
-            disabled={currentPage === 0}
-          />
-          <Text>{`Page ${currentPage + 1} of ${pages}`}</Text>
-          <Button
-            title="Next"
-            onPress={() => handlePageChange('next')}
-            disabled={currentPage === pages - 1}
-          />
-        </View>
-      </ScrollView>
-
-      {/* Modal for Adding/Editing Item */}
       <Modal
         transparent={true}
         visible={modalVisible}
@@ -316,6 +364,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
     </KeyboardAvoidingView>
   );
 };
+
 const RoomPriceSetting = () => {
   return (
     <Drawer.Navigator
@@ -333,38 +382,148 @@ const RoomPriceSetting = () => {
 };
 export default RoomPriceSetting;
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollViewContent: { padding: 10 },
-  menuButton: { margin: 10 },
-  roomheading: { fontSize: 18, fontWeight: 'bold', textAlign: 'center' },
-  addButton: { backgroundColor: '#180161', padding: 10, borderRadius: 5, marginVertical: 10, width:'20%', alignSelf:'flex-end' },
-  addButtonText: { color: 'white', textAlign: 'center', fontSize: 16 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 10 },
-  inputContainer: { flex: 1, marginHorizontal: 5 },
-  label: { fontSize: 14, fontWeight: 'bold' },
-  datePicker: { width: '100%' },
-  multiSelectContainer: { flex: 1, marginHorizontal: 5 },
-  multiSelect: { borderColor: '#ccc', borderWidth: 1, borderRadius: 5 },
-  searchInputStyle: { color: '#000' },
-  selectTextStyle: { color: '#000' },
-  chipContainer: { backgroundColor: '#180161' },
-  chipText: { color: '#FFF' },
-  tableContainer: { borderWidth: 1, borderColor: '#ddd', marginVertical: 10 },
+  container: { 
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  scrollViewContent: { 
+    padding: 20,
+  },
+  menuButton: { 
+    marginBottom: 20,
+  },
+  roomheading: { 
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#180161',
+  },
+  backbtn: {
+    marginTop: 10,
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#180161',
+    borderRadius: 4,
+    alignSelf:'flex-end'
+  },
+  backbtnText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  row: { 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+    inputContainer: { 
+      flex: 1,
+      marginHorizontal: 5,
+    },
+    labeldate: { 
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginBottom: 5,
+      color: '#333',
+      marginLeft:30
+    },
+    datePickerTouchable: {
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      backgroundColor: 'white',
+    },
+    dateText: {
+      fontSize: 16,
+      color: '#333',
+    },
+    datePicker: { 
+      width: '100%',
+      justifyContent: 'space-between',
+      backgroundColor: 'transparent',
+    },
+  multiSelectContainer: {
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  multiSelect: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderColor: '#ccc',
+    borderWidth: 1,
+  },
+  selectTextStyle: {
+    fontSize: 16,
+    color: '#888', 
+    textAlign: 'left',
+    paddingLeft:10,
+  },
+  searchInputStyle: {
+    color: '#333',
+    fontSize: 16,
+  },
+  chipContainer: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    marginRight: 5,
+    marginBottom: 5,
+  },
+  chipText: {
+    color: '#333',
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  priceInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    backgroundColor: 'white',
+    fontSize: 16,
+  
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#180161',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  tableContainer: { 
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginVertical: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f0f0f0',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    // backgroundColor: '#180161',
+    color:'black',
+    padding: 12,
   },
   tableHeaderText: {
     fontWeight: 'bold',
-    fontSize: 10, // Reduced font size
+    fontSize: 12,
     flex: 1,
     textAlign: 'center',
-    color: '#333',
+    // color: 'white',
   },
   tableRow: {
     flexDirection: 'row',
@@ -372,23 +531,77 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
     paddingVertical: 12,
     paddingHorizontal: 10,
+    backgroundColor: 'white',
   },
   tableCell: {
-    fontSize: 10,
+    fontSize: 12,
     flex: 1,
     textAlign: 'center',
     color: '#444',
   },
-  pagination: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 10 },
-  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalContent: { width: '80%', backgroundColor: 'white', padding: 20, borderRadius: 10 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-  input: { borderBottomWidth: 1, borderBottomColor: '#ccc', marginVertical: 5, padding: 5 },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  paginationButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 4,
+    backgroundColor: '#180161',
+  },
+  paginationButtonText: {
+    fontSize: 14,
+    color: 'white',
+  },
+  modalOverlay: { 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: { 
+    width: '80%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  modalTitle: { 
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#180161',
+  },
+  input: { 
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    marginVertical: 10,
+    padding: 8,
+    fontSize: 16,
+  },
 });
 
 const pickerSelectStyles = StyleSheet.create({
-  inputIOS: { paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: '#ccc', borderRadius: 4, color: 'black' },
-  inputAndroid: { paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, color: 'black' },
+  inputIOS: { 
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    color: 'black',
+    backgroundColor: 'white',
+  },
+  inputAndroid: { 
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    color: 'black',
+    backgroundColor: 'white',
+  },
 });
 
 
