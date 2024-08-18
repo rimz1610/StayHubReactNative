@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Signup from './Pages/Guest/Signup';
 import Login from './Pages/Auth/Login';
 import Dashboard from './Pages/Admin/Booking/Dashboard';
-import Home from './Pages/Guest/Home';
+import BookingRoom from './Pages/Guest/Room/RoomBooking/';
 import BookingDetails from './Pages/Admin/Booking/BookingDetails';
 import RoomList from './Pages/Admin/Room/RoomList';
 import AddEditRoom from './Pages/Admin/Room/AddEditRoom';
@@ -24,6 +24,7 @@ import SpaList from './Pages/Admin/Spa/SpaList';
 import AddEditSpa from './Pages/Admin/Spa/AddEditSpa';
 import StaffList from './Pages/Admin/Staff/StaffList';
 import StaffActivityList from './Pages/Admin/Staff/StaffActivities';
+import RoomBooking from './Pages/Guest/Room/RoomBooking';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,7 +52,7 @@ function App() {
                 <Stack.Screen name="GuestDetails" component={GuestDetails} />
                 <Stack.Screen name="StaffList" component={StaffList} />
                 <Stack.Screen name="StaffActivityList" component={StaffActivityList} />
-                <Stack.Screen name="Home" component={Home} />
+                <Stack.Screen name="RoomBooking" component={RoomBooking} />
                 
             </Stack.Navigator>
         </GestureHandlerRootView>

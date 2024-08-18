@@ -4,24 +4,141 @@ import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import RNPickerSelect from 'react-native-picker-select';
-
+import { useFormik } from 'formik';
+import * as Yup from "yup";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Drawer = createDrawerNavigator();
-const AddEditRoom = ({ navigation }) => {
-  const [name, setName] = useState('');
-  const [maxAdditionalPerson, setMaxAdditionalPerson] = useState('');
-  const [status, setStatus] = useState('Active');
-  const [roomType,  setRoomType] = useState('Delux');
-  const [shortDescription, setShortDescription] = useState('');
-  const [description, setDescription] = useState('');
-  const [images, setImages] = useState([{ url: '', sortOrder: 1 }, { url: '', sortOrder: 2 }]);
+const addEditSchema = Yup.object().shape({
+  name: Yup.string().required("Required"),
+  type: Yup.string().required("Required"),
+  shortDescription: Yup.string().required("Required"),
+  maxAdditionalPerson: Yup.number().min(0).required("Required"),
+  description: Yup.string().required("Required"),
+  status: Yup.string().required("Required"),
+  imagesUrl: Yup.array().of(
+    Yup.object().shape({
+      roomId: Yup.number().notRequired(),
+      id: Yup.number().required('Required'),
+      imageUrl: Yup.string().required('Required'),
+      sortOrder: Yup.number().min(1).required("Required")
+      // .test('unique-sortOrder', 'Sort order must be unique', function (value) {
+      //   const { path, parent, options } = this;
+      //   const images = options.context.values.imagesUrl;
+      //   const duplicate = images.filter((img) => img.sortOrder === value).length > 1;
+      //   return !duplicate;
+      // }),
+    })
+  )
+});
+const AddEditRoom = ({ route, navigation }) => {
+
+
+  console.warn(route);
+  const [submitting, setSubmitting] = React.useState(false);
+
+ const {id}=route.params.id;
+  const formik = useFormik({
+    initialValues: {
+      id: 0,
+      type: "Single",
+      name: "",
+      shortDescription: "",
+      maxAdditionalPerson: 0,
+      description: "",
+      status: "",
+      price: 0,
+      imagesUrl: [
+        {
+          id: 0,
+          roomId: 0,
+          imageUrl: "",
+          sortOrder: 1
+        }
+      ],
+
+    },
+    validationSchema: addEditSchema,
+    // validateOnChange: false,
+    // validateOnBlur: false,
+    // context: { values: formik.values }, // Pass formik values as context
+    onSubmit: values => {
+      setSubmitting(true);
+      axios.post("http://majidalipl-001-site5.gtempurl.com/Room/SaveRoom", values, {
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the JWT token in the Authorization header
+        }
+      })
+        .then(function (response) {
+          if (response.data.success) {
+            setSubmitting(false);
+            Alert.alert(
+              'Success',
+              'Room saved successfully.',
+              [{
+                text: 'OK',
+                onPress: () => {
+                  navigation.navigate('RoomList');
+                }
+              }]
+            );
+          } else {
+            setSubmitting(false);
+            Alert.alert(
+              'Oops',
+              response.data.message,
+              [{ text: 'OK' }]
+            );
+          }
+        })
+        .catch(function (error) {
+          console.warn(error);
+          setSubmitting(false);
+        });
+    },
+  });
+
+  React.useEffect(() => {
+    console.warn(roue.params);
+
+    const fetchData = async () => {
+      const token = await AsyncStorage.getItem('token');
+        if (id > 0) {
+      GetAxios().get('/http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=' + id, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      }).then(res => {
+        if (!res.data.success) {
+          Alert.alert(
+            'Opps',
+            res.data.message,
+            [{ text: 'OK', onPress: () => navigation.navigate('RoomList') }]
+          );
+        } else {
+          formik.setValues(res.data.data);
+        }
+      });
+      }
+    };
+
+    fetchData();
+
+  }, []);
+
 
   const addImageField = () => {
-    setImages([...images, { url: '', sortOrder: images.length + 1 }]);
+
+    // setImages([...images, { url: '', sortOrder: images.length + 1 }]);
+    const newImage = { id: 0, roomId: 0, imageUrl: "", sortOrder: 1 };
+    formik.setFieldValue("imagesUrl", [...formik.values.imagesUrl, newImage]);
   };
 
   const removeImageField = (index) => {
-    const updatedImages = images.filter((_, i) => i !== index);
-    setImages(updatedImages.map((img, i) => ({ ...img, sortOrder: i + 1 }))); // Update sort order
+    const newImages = formik.values.imagesUrl.filter((_, i) => i !== index);
+    formik.setFieldValue("imagesUrl", newImages);
+    // const updatedImages = images.filter((_, i) => i !== index);
+    // setImages(updatedImages.map((img, i) => ({ ...img, sortOrder: i + 1 }))); // Update sort order
   };
 
   return (
@@ -41,24 +158,38 @@ const AddEditRoom = ({ navigation }) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Name</Text>
             <TextInput
-              value={name}
-              onChangeText={setName}
+              onChangeText={(value) => formik.setFieldValue('name', value)}
+
+              value={formik.values.name}
               style={styles.input}
               placeholder="Name"
               placeholderTextColor="#555"
             />
+            {formik.touched.name && formik.errors.name ? (
+              <Text style={styles.errorText}>{formik.errors.name}</Text>
+            ) : null}
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Room Type</Text>
             <RNPickerSelect
-              onValueChange={(value) => setRoomType(value)}
-              value={roomType}
+              onValueChange={(value) => formik.setFieldValue('type', value)}
+
+              value={formik.values.type}
               items={[
-                { label: 'Delux', value: 'Delux' },
-                { label: 'Regular', value: 'Regular' },
+                { label: 'Single', value: 'Single' },
+                { label: 'Double', value: 'Double' },
+                { label: 'Triple', value: 'Triple' },
+                { label: 'Twin', value: 'Twin' },
+                { label: 'King', value: 'King' },
+                { label: 'Queen', value: 'Queen' },
+                { label: 'Suite', value: 'Suite' },
+                { label: 'Studio', value: 'Studio' },
               ]}
               style={pickerSelectStyles}
             />
+            {formik.touched.type && formik.errors.type ? (
+              <Text style={styles.errorText}>{formik.errors.type}</Text>
+            ) : null}
           </View>
         </View>
 
@@ -66,8 +197,8 @@ const AddEditRoom = ({ navigation }) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Max Additional Person</Text>
             <TextInput
-              value={maxAdditionalPerson}
-              onChangeText={setMaxAdditionalPerson}
+              onChangeText={formik.handleChange('maxAdditionalPerson')}
+              value={formik.values.maxAdditionalPerson}
               style={styles.input}
               placeholder="Max Additional Person"
               placeholderTextColor="#555"
@@ -77,74 +208,89 @@ const AddEditRoom = ({ navigation }) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Status</Text>
             <RNPickerSelect
-              onValueChange={(value) => setStatus(value)}
-              value={status}
+              onValueChange={formik.handleChange('status')}
+              value={formik.values.status}
               items={[
-                { label: 'Active', value: 'Active' },
-                { label: 'Pending', value: 'Pending' },
+                { label: 'Active', value: 'A' },
+                { label: 'Inactive', value: 'I' },
               ]}
               style={pickerSelectStyles}
             />
+            {formik.touched.status && formik.errors.status ? (
+              <Text style={styles.errorText}>{formik.errors.status}</Text>
+            ) : null}
           </View>
         </View>
 
         <View style={styles.singleRow}>
           <Text style={styles.label}>Short Description</Text>
           <TextInput
-            value={shortDescription}
-            onChangeText={setShortDescription}
+            onValueChange={formik.handleChange('shortDescription')}
+            value={formik.values.shortDescription}
             style={styles.input}
             placeholder="Short Description"
             placeholderTextColor="#555"
           />
+          {formik.touched.shortDescription && formik.errors.shortDescription ? (
+            <Text style={styles.errorText}>{formik.errors.shortDescription}</Text>
+          ) : null}
         </View>
 
         <View style={styles.singleRow}>
           <Text style={styles.label}>Description</Text>
           <TextInput
-            value={description}
-            onChangeText={setDescription}
+            value={formik.handleChange('description')}
+            onChangeText={formik.values.description}
             style={[styles.input, styles.textArea]}
             placeholder="Description"
             placeholderTextColor="#555"
             multiline
           />
+          {formik.touched.description && formik.errors.description ? (
+            <Text style={styles.errorText}>{formik.errors.description}</Text>
+          ) : null}
         </View>
 
         <TouchableOpacity style={styles.addButton} onPress={addImageField}>
           <Text style={styles.addButtonText}>+ ADD IMAGES</Text>
         </TouchableOpacity>
 
-        {images.map((image, index) => (
+        {formik.values.imagesUrl.map((image, index) => (
           <View key={index} style={styles.row}>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Image URL</Text>
               <TextInput
-                value={image.url}
+                value={image.imageUrl}
                 onChangeText={(url) => {
-                  const newImages = [...images];
-                  newImages[index].url = url;
-                  setImages(newImages);
+                  const newImages = [...formik.values.imagesUrl];
+                  newImages[index].imageUrl = url;
+                  formik.setFieldValue("imagesUrl", newImages);
                 }}
                 style={styles.input}
                 placeholder="Image URL"
                 placeholderTextColor="#555"
               />
+              {formik.errors.imagesUrl && formik.errors.imagesUrl[index]?.imageUrl && (
+                <Text style={styles.errorText}>{formik.errors.imagesUrl[index].imageUrl}</Text>
+              )}
             </View>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Sort Order</Text>
               <TextInput
                 value={image.sortOrder.toString()}
                 onChangeText={(sortOrder) => {
-                  const newImages = [...images];
+                  const newImages = [...formik.values.imagesUrl];
                   newImages[index].sortOrder = parseInt(sortOrder);
-                  setImages(newImages);
+                  formik.setFieldValue("imagesUrl", newImages);
                 }}
                 style={styles.input}
                 placeholder="Sort Order"
                 placeholderTextColor="#555"
                 keyboardType="numeric"
               />
+              {formik.errors.imagesUrl && formik.errors.imagesUrl[index]?.sortOrder && (
+                <Text style={styles.errorText}>{formik.errors.imagesUrl[index].sortOrder}</Text>
+              )}
             </View>
             <TouchableOpacity onPress={() => removeImageField(index)} style={styles.deleteButton}>
               <Ionicons name="trash" size={24} color="red" />
@@ -152,7 +298,10 @@ const AddEditRoom = ({ navigation }) => {
           </View>
         ))}
 
-        <TouchableOpacity style={styles.saveButton}>
+
+
+        <TouchableOpacity style={styles.saveButton} disabled={submitting}
+          onPress={formik.handleSubmit}>
           <Text style={styles.saveButtonText}>SAVE</Text>
         </TouchableOpacity>
       </View>
@@ -160,19 +309,19 @@ const AddEditRoom = ({ navigation }) => {
   );
 };
 const AddEditRoomContent = () => {
-    return (
-        <Drawer.Navigator
-            drawerContent={(props) => <DrawerContent {...props} />}
-            screenOptions={{
-                headerShown: false,
-                drawerStyle: {
-                    width: '60%',
-                },
-            }}
-        >
-            <Drawer.Screen name="AddEditRoom" component={AddEditRoom} />
-        </Drawer.Navigator>
-    );
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <DrawerContent {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {
+          width: '60%',
+        },
+      }}
+    >
+      <Drawer.Screen name="AddEditRoomCon" component={AddEditRoom} initialParams={{ id: 0 }} />
+    </Drawer.Navigator>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -240,7 +389,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
     marginBottom: 15,
-    alignSelf:'flex-end',
+    alignSelf: 'flex-end',
   },
   addButtonText: {
     color: 'white',
@@ -254,17 +403,22 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#180161',
     padding: 15,
-    width:'70%',
+    width: '70%',
     borderRadius: 4,
     alignSelf: 'center',
-    marginBottom:30,
+    marginBottom: 30,
     marginTop: 20,
   },
   saveButtonText: {
     color: 'white',
-    justifyContent:'center',
-    alignSelf:'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
     fontSize: 18,
+  },
+  errorText: {
+    fontSize: 12,
+    color: 'red',
+
   },
 });
 
@@ -291,6 +445,7 @@ const pickerSelectStyles = StyleSheet.create({
     paddingRight: 30, // to ensure the text is never behind the icon
     backgroundColor: '#fff',
   },
+
 });
 
 export default AddEditRoomContent;

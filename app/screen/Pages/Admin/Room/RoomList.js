@@ -1,9 +1,12 @@
 import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-// Dummy data for the table
+import { useFormik } from 'formik';
+import * as Yup from "yup";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
   name: `Room ${index + 1}`,
@@ -14,120 +17,196 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 
 const Drawer = createDrawerNavigator();
 const RoomListContent = ({ navigation }) => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [currentItem, setCurrentItem] = useState(null);
-
+  const [pages, setPages] = useState(0);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
-  const pages = Math.ceil(data.length / itemsPerPage);
 
 
 
-  const handleDelete = (item) => {
+  useEffect(() => {
+    const fetchData = async () => {
+
+      try {
+        const token = await AsyncStorage.getItem('token');
+        setLoading(true);
+        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Room/GetRooms", {
+          headers: {
+            'Authorization': `Bearer ${token}`, // Include the JWT token in the Authorization header
+          }
+        });
+
+        if (response.data.success) {
+          setData(response.data.list);
+          setPages(Math.ceil(response.data.list.length / itemsPerPage));
+        } else {
+          // Handle failure case here if needed
+        }
+      } catch (error) {
+        console.warn(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Cleanup function or nothing should be returned here
+    return () => {
+      // Cleanup logic, if necessary
+    };
+  }, []); // dependencies array
+
+  // Function to refetch the updated room list
+  const fetchData = async () => {
+    const token = await AsyncStorage.getItem('token');
+    setLoading(true);
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Room/GetRooms", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+  
+      if (response.data.success) {
+        setData(response.data.list);
+        setPages(Math.ceil(response.data.list.length / itemsPerPage));
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      console.warn(error);
+      Alert.alert('Error', 'Failed to fetch rooms.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleDelete = (roomId) => {
     Alert.alert('Are you sure?', 'Do you want to delete this item?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Yes, delete it',
-        onPress: () => setData(data.filter((d) => d.id !== item.id)),
-      },
+        onPress: async () => {
+          try {
+            setLoading(true);
+  
+            // Get the JWT token from AsyncStorage
+            const token = await AsyncStorage.getItem('token');
+  
+            // Send the delete request
+            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Room/DeleteRoom?id=${roomId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            });
+  
+            if (response.data.success) {
+              // Refetch the updated list after deletion
+              fetchData();
+            } else {
+              Alert.alert('Error', response.data.message);
+            }
+          } catch (error) {
+            console.warn(error);
+            Alert.alert('Error', 'Failed to delete the room.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
     ]);
   };
+  
 
-  const handleSave = () => {
-    if (editMode) {
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === currentItem.id ? { ...currentItem } : item
-        )
-      );
-    } else {
-      setData((prevData) => [...prevData, { ...currentItem, id: Date.now().toString() }]);
-    }
-    setModalVisible(false);
-    setCurrentItem(null);
-  };
 
-  const handlePageChange = (direction) => {
-    if (direction === 'next' && currentPage < pages - 1) {
-      setCurrentPage(currentPage + 1);
-    } else if (direction === 'previous' && currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.tableRow}>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.name}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.type}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.shortDescription}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.status}</Text>
-      <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() =>navigation.navigate('AddEditRoom')} style={styles.editButton}>
-          <Text style={styles.editButtonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteButton}>
-          <Text style={styles.deleteButtonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
 
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
-        <Ionicons name="menu" size={24} color="black" />
-      </TouchableOpacity>
 
-      <Text style={styles.roomheading}>Room</Text>
-      <TouchableOpacity style={styles.addButton} onPress={() => {
-       navigation.navigate('AddEditRoom')
-      }}>
-        <Text style={styles.addButtonText}>+ ADD NEW</Text>
-      </TouchableOpacity>
 
-      {/* Table */}
-      <View style={styles.tableContainer}>
-        <View style={styles.tableHeader}>
-          <Text style={styles.tableHeaderText}>Name</Text>
-          <Text style={styles.tableHeaderText}>Type</Text>
-          <Text style={styles.tableHeaderText}>Short Description</Text>
-          <Text style={styles.tableHeaderText}>Status</Text>
-          <Text style={styles.tableHeaderText}>Action</Text>
-        </View>
-        <FlatList
-          data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-        />
-      </View>
 
-      {/* Pagination */}
-      <View style={styles.paginationContainer}>
-        <TouchableOpacity
-          onPress={() => handlePageChange('previous')}
-          style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
-          disabled={currentPage === 0}
-        >
-          <Text style={styles.paginationButtonText}>Previous</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageIndicator}>
-          Page {currentPage + 1} of {pages}
-        </Text>
-        <TouchableOpacity
-          onPress={() => handlePageChange('next')}
-          style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
-          disabled={currentPage === pages - 1}
-        >
-          <Text style={styles.paginationButtonText}>Next</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal for adding/editing */}
-     
-    </View>
-  );
+const handlePageChange = (direction) => {
+  if (direction === 'next' && currentPage < pages - 1) {
+    setCurrentPage(currentPage + 1);
+  } else if (direction === 'previous' && currentPage > 0) {
+    setCurrentPage(currentPage - 1);
+  }
 };
-const RoomList  = () => {
+
+const renderItem = ({ item }) => (
+  <View style={styles.tableRow}>
+    <Text style={styles.tableCell} numberOfLines={1}>{item.name}</Text>
+    <Text style={styles.tableCell} numberOfLines={1}>{item.type}</Text>
+    <Text style={styles.tableCell} numberOfLines={1}>{item.shortDescription}</Text>
+    <Text style={styles.tableCell} numberOfLines={1}>{item.status}</Text>
+    <View style={styles.tableActions}>
+      <TouchableOpacity onPress={() => navigation.navigate('AddEditRoom', { id: item.id })} style={styles.editButton}>
+        <Text style={styles.editButtonText}>Edit</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+return (
+  <View style={styles.container}>
+    <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+      <Ionicons name="menu" size={24} color="black" />
+    </TouchableOpacity>
+
+    <Text style={styles.roomheading}>Room</Text>
+    <TouchableOpacity style={styles.addButton} onPress={() => {
+      navigation.navigate('AddEditRoom', { id: 0})
+    }}>
+      <Text style={styles.addButtonText}>+ ADD NEW</Text>
+    </TouchableOpacity>
+
+    {/* Table */}
+    <View style={styles.tableContainer}>
+      <View style={styles.tableHeader}>
+        <Text style={styles.tableHeaderText}>Name</Text>
+        <Text style={styles.tableHeaderText}>Type</Text>
+        <Text style={styles.tableHeaderText}>Short Description</Text>
+        <Text style={styles.tableHeaderText}>Status</Text>
+        <Text style={styles.tableHeaderText}>Action</Text>
+      </View>
+      <FlatList
+        data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+      />
+    </View>
+
+    {/* Pagination */}
+    <View style={styles.paginationContainer}>
+      <TouchableOpacity
+        onPress={() => handlePageChange('previous')}
+        style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
+        disabled={currentPage === 0}
+      >
+        <Text style={styles.paginationButtonText}>Previous</Text>
+      </TouchableOpacity>
+      <Text style={styles.pageIndicator}>
+        Page {currentPage + 1} of {pages}
+      </Text>
+      <TouchableOpacity
+        onPress={() => handlePageChange('next')}
+        style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
+        disabled={currentPage === pages - 1}
+      >
+        <Text style={styles.paginationButtonText}>Next</Text>
+      </TouchableOpacity>
+    </View>
+
+    {/* Modal for adding/editing */}
+
+  </View>
+);
+};
+const RoomList = () => {
   return (
     <Drawer.Navigator
       drawerContent={(props) => <DrawerContent {...props} />}

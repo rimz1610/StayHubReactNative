@@ -1,17 +1,17 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  ImageBackground, 
-  TouchableWithoutFeedback, 
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-  ScrollView,
-  Alert
+import {
+    StyleSheet,
+    Text,
+    View,
+    TextInput,
+    ImageBackground,
+    TouchableWithoutFeedback,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableOpacity,
+    ScrollView,
+    Alert
 } from 'react-native';
 import { useFormik } from 'formik';
 import * as Yup from "yup";
@@ -19,7 +19,7 @@ import axios from "axios";
 
 const Signup = ({ navigation }) => {
     const [submitting, setSubmitting] = React.useState(false);
-    
+
     const SignUpSchema = Yup.object().shape({
         email: Yup.string().email("Invalid email address").required("Required"),
         password: Yup.string().required("Required"),
@@ -49,13 +49,13 @@ const Signup = ({ navigation }) => {
             setSubmitting(true);
             axios.post("http://majidalipl-001-site5.gtempurl.com/Guest/Register", values)
                 .then(function (response) {
-                    if(response.data.success){
+                    if (response.data.success) {
                         setSubmitting(false);
                         Alert.alert(
                             'Success',
                             'Account created successfully. Please login',
-                            [{ 
-                                text: 'OK', 
+                            [{
+                                text: 'OK',
                                 onPress: () => {
                                     navigation.navigate('Login');
                                 }
@@ -78,7 +78,7 @@ const Signup = ({ navigation }) => {
     });
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
         >
@@ -96,6 +96,9 @@ const Signup = ({ navigation }) => {
                                     placeholder='First Name'
                                     placeholderTextColor="white"
                                 />
+                                {formik.touched.firstName && formik.errors.firstName ? (
+                                    <Text style={styles.errorText}>{formik.errors.firstName}</Text>
+                                ) : null}
                                 <Text style={styles.heading}>Last Name</Text>
                                 <TextInput
                                     onChangeText={formik.handleChange('lastName')}
@@ -104,24 +107,33 @@ const Signup = ({ navigation }) => {
                                     placeholder='Last Name'
                                     placeholderTextColor="white"
                                 />
+                                {formik.touched.lastName && formik.errors.lastName ? (
+                                    <Text style={styles.errorText}>{formik.errors.lastName}</Text>
+                                ) : null}
                                 <Text style={styles.heading}>Email Address</Text>
-                                <TextInput 
-                                    placeholder='Email'  
+                                <TextInput
+                                    placeholder='Email'
                                     onChangeText={formik.handleChange('email')}
                                     value={formik.values.email}
-                                    placeholderTextColor="white" 
-                                    keyboardType="email-address" 
-                                    style={styles.input} 
+                                    placeholderTextColor="white"
+                                    keyboardType="email-address"
+                                    style={styles.input}
                                 />
+                                {formik.touched.email && formik.errors.email ? (
+                                    <Text style={styles.errorText}>{formik.errors.email}</Text>
+                                ) : null}
                                 <Text style={styles.heading}>Password</Text>
-                                <TextInput 
-                                    placeholder='Password' 
-                                    placeholderTextColor="white" 
-                                    secureTextEntry={true} 
-                                    style={styles.input} 
+                                <TextInput
+                                    placeholder='Password'
+                                    placeholderTextColor="white"
+                                    secureTextEntry={true}
+                                    style={styles.input}
                                     onChangeText={formik.handleChange('password')}
                                     value={formik.values.password}
                                 />
+                                {formik.touched.password && formik.errors.password ? (
+                                    <Text style={styles.errorText}>{formik.errors.password}</Text>
+                                ) : null}
                                 <Text style={styles.heading}>Address</Text>
                                 <TextInput
                                     style={styles.input}
@@ -130,6 +142,9 @@ const Signup = ({ navigation }) => {
                                     onChangeText={formik.handleChange('address')}
                                     value={formik.values.address}
                                 />
+                                {formik.touched.address && formik.errors.address ? (
+                                    <Text style={styles.errorText}>{formik.errors.address}</Text>
+                                ) : null}
                                 <View style={styles.row}>
                                     <View style={styles.CityContainer}>
                                         <Text style={styles.heading}>City</Text>
@@ -140,6 +155,9 @@ const Signup = ({ navigation }) => {
                                             onChangeText={formik.handleChange('city')}
                                             value={formik.values.city}
                                         />
+                                        {formik.touched.city && formik.errors.city ? (
+                                            <Text style={styles.errorText}>{formik.errors.city}</Text>
+                                        ) : null}
                                     </View>
                                     <View style={styles.StateContainer}>
                                         <Text style={styles.heading}>State</Text>
@@ -149,7 +167,10 @@ const Signup = ({ navigation }) => {
                                             placeholderTextColor="white"
                                             onChangeText={formik.handleChange('state')}
                                             value={formik.values.state}
-                                        />            
+                                        />
+                                         {formik.touched.state && formik.errors.state ? (
+                                            <Text style={styles.errorText}>{formik.errors.state}</Text>
+                                        ) : null}
                                     </View>
                                 </View>
                                 <View style={styles.row}>
@@ -163,6 +184,9 @@ const Signup = ({ navigation }) => {
                                             onChangeText={formik.handleChange('phoneNumber')}
                                             value={formik.values.phoneNumber}
                                         />
+                                         {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
+                                            <Text style={styles.errorText}>{formik.errors.phoneNumber}</Text>
+                                        ) : null}
                                     </View>
                                     <View style={styles.zipContainer}>
                                         <Text style={styles.heading}>Zip Code</Text>
@@ -171,9 +195,12 @@ const Signup = ({ navigation }) => {
                                             placeholder='Zip Code'
                                             placeholderTextColor="white"
                                             keyboardType='numeric'
-                                            onChangeText={formik.handleChange('zipcode')}
-                                            value={formik.values.zipcode}
+                                            onChangeText={formik.handleChange('zipCode')}
+                                            value={formik.values.zipCode}
                                         />
+                                         {formik.touched.zipCode && formik.errors.zipCode ? (
+                                            <Text style={styles.errorText}>{formik.errors.zipCode}</Text>
+                                        ) : null}
                                     </View>
                                 </View>
                                 <TouchableOpacity
@@ -251,7 +278,7 @@ const styles = StyleSheet.create({
         width: '48%',
     },
     shortInput: {
-        color:'white',
+        color: 'white',
         borderColor: 'grey',
         borderRadius: 8,
         borderWidth: 1,
@@ -285,6 +312,11 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    errorText: {
+        fontSize: 12,
+        color: 'red',
+       
     },
 });
 

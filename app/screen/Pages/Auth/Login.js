@@ -1,17 +1,21 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  Alert, 
-  View, 
-  ImageBackground, 
-  TextInput, 
-  TouchableOpacity, 
-  TouchableWithoutFeedback, 
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
+import {
+    StyleSheet,
+    Text,
+    Alert,
+    View,
+    ImageBackground,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView
+} from 'react-native';
+import {
+
+    ActivityIndicator
 } from 'react-native';
 import { useFormik } from 'formik';
 import * as Yup from "yup";
@@ -48,14 +52,14 @@ const Login = ({ navigation }) => {
             setSubmitting(true);
             axios.post("http://majidalipl-001-site5.gtempurl.com/Account/Login", values)
                 .then(function (response) {
-                    if(response.data.success){
+                    if (response.data.success) {
                         SetToken(response.data.data);
                         setSubmitting(false);
                         var role = response.data.data.role;
                         if (role === "ADMIN") {
                             navigation.navigate('Dashboard');
                         } else if (role === "GUEST") {
-                            //navigate to Room Booking screen 
+                            navigation.navigate('RoomBooking');
                         }
                     } else {
                         setSubmitting(false);
@@ -79,50 +83,57 @@ const Login = ({ navigation }) => {
     });
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
         >
             <ImageBackground source={require('../../../../assets/images/back.jpg')} style={styles.bg}>
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                        <TouchableOpacity style={styles.skipbtn} onPress={() => navigation.navigate('Home')}>
+                        <TouchableOpacity style={styles.skipbtn} onPress={() => navigation.navigate('RoomBooking')}>
                             <Text style={styles.skipText}>Skip</Text>
                         </TouchableOpacity>
                         <View style={styles.maincontainer}>
                             <Text style={styles.logintext}>Login</Text>
                             <View style={styles.formContainer}>
                                 <Text style={styles.heading}>Email Address</Text>
-                                <TextInput 
-                                    name="email" 
-                                    placeholder='Email' 
-                                    placeholderTextColor="white" 
+                                <TextInput
+                                    name="email"
+                                    placeholder='Email'
+                                    placeholderTextColor="white"
                                     onChangeText={formik.handleChange('email')}
                                     value={formik.values.email}
-                                    keyboardType="email-address" 
-                                    style={styles.input} 
+                                    keyboardType="email-address"
+                                    style={styles.input}
                                 />
+                                {formik.touched.email && formik.errors.email ? (
+                                    <Text style={styles.errorText}>{formik.errors.email}</Text>
+                                ) : null}
                                 <Text style={styles.heading}>Password</Text>
-                                <TextInput 
-                                    placeholder='Password' 
+                                <TextInput
+                                    placeholder='Password'
                                     name='password'
                                     onChangeText={formik.handleChange('password')}
-                                    value={formik.values.password} 
-                                    placeholderTextColor="white" 
-                                    secureTextEntry={true} 
-                                    style={styles.input} 
+                                    value={formik.values.password}
+                                    placeholderTextColor="white"
+                                    secureTextEntry={true}
+                                    style={styles.input}
                                 />
+                                {formik.touched.password && formik.errors.password ? (
+                                    <Text style={styles.errorText}>{formik.errors.password}</Text>
+                                ) : null}
                                 <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                                <TouchableOpacity 
-                                    style={styles.submitButton} 
+                                <TouchableOpacity
+                                    style={styles.submitButton}
                                     disabled={submitting}
                                     onPress={formik.handleSubmit}
                                 >
-                                    <Text style={styles.submitText}>
-                                        {
-                                            submitting? "Logging":"Login"
-                                        }
-                                      </Text>
+                                    {submitting ?
+                                        <ActivityIndicator size="small" /> :
+                                        <Text style={styles.submitText}>
+                                            Login
+                                        </Text>
+                                    }
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -144,7 +155,7 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
-        
+
     },
     scrollViewContent: {
         flexGrow: 1,
@@ -223,6 +234,11 @@ const styles = StyleSheet.create({
     skipText: {
         color: 'white',
         fontSize: 14,
+    },
+    errorText: {
+        fontSize: 12,
+        color: 'red',
+        
     },
 });
 
