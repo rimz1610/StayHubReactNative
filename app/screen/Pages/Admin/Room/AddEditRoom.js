@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, FlatList } from 'react-native';
-import DrawerContent from '../../../../components/DrawerContent';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Ionicons } from '@expo/vector-icons';
-import RNPickerSelect from 'react-native-picker-select';
-import { useFormik } from 'formik';
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  ScrollView, 
+  Alert 
+} from 'react-native';
+import { Formik } from 'formik';
 import * as Yup from "yup";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import RNPickerSelect from 'react-native-picker-select';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import DrawerContent from '../../../../components/DrawerContent'; // Adjust the path as needed
+
 const Drawer = createDrawerNavigator();
+
 const addEditSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
   type: Yup.string().required("Required"),
@@ -22,290 +32,273 @@ const addEditSchema = Yup.object().shape({
       id: Yup.number().required('Required'),
       imageUrl: Yup.string().required('Required'),
       sortOrder: Yup.number().min(1).required("Required")
-      // .test('unique-sortOrder', 'Sort order must be unique', function (value) {
-      //   const { path, parent, options } = this;
-      //   const images = options.context.values.imagesUrl;
-      //   const duplicate = images.filter((img) => img.sortOrder === value).length > 1;
-      //   return !duplicate;
-      // }),
     })
   )
 });
+
 const AddEditRoom = ({ route, navigation }) => {
+  const [submitting, setSubmitting] = useState(false);
+  const id = route.params?.id || 0;
 
+  const initialValues = {
+    id: 0,
+    type: "Single",
+    name: "",
+    shortDescription: "",
+    maxAdditionalPerson: 0,
+    description: "",
+    status: "",
+    price: 0,
+    imagesUrl: [
+      {
+        id: 0,
+        roomId: 0,
+        imageUrl: "",
+        sortOrder: 1
+      }
+    ],
+  };
 
-  console.warn(route);
-  const [submitting, setSubmitting] = React.useState(false);
-
- const {id}=route.params.id;
-  const formik = useFormik({
-    initialValues: {
-      id: 0,
-      type: "Single",
-      name: "",
-      shortDescription: "",
-      maxAdditionalPerson: 0,
-      description: "",
-      status: "",
-      price: 0,
-      imagesUrl: [
-        {
-          id: 0,
-          roomId: 0,
-          imageUrl: "",
-          sortOrder: 1
-        }
-      ],
-
-    },
-    validationSchema: addEditSchema,
-    // validateOnChange: false,
-    // validateOnBlur: false,
-    // context: { values: formik.values }, // Pass formik values as context
-    onSubmit: values => {
-      setSubmitting(true);
-      axios.post("http://majidalipl-001-site5.gtempurl.com/Room/SaveRoom", values, {
-        headers: {
-          'Authorization': `Bearer ${token}`, // Include the JWT token in the Authorization header
-        }
-      })
-        .then(function (response) {
-          if (response.data.success) {
-            setSubmitting(false);
-            Alert.alert(
-              'Success',
-              'Room saved successfully.',
-              [{
-                text: 'OK',
-                onPress: () => {
-                  navigation.navigate('RoomList');
-                }
-              }]
-            );
-          } else {
-            setSubmitting(false);
-            Alert.alert(
-              'Oops',
-              response.data.message,
-              [{ text: 'OK' }]
-            );
+  const fetchRoomData = useCallback(async (formikSetValues) => {
+    if (id > 0) {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
           }
-        })
-        .catch(function (error) {
-          console.warn(error);
-          setSubmitting(false);
         });
-    },
-  });
+        if (response.data.success) {
+          formikSetValues(response.data.data);
+        } else {
+          Alert.alert('Error', response.data.message);
+        }
+      } catch (error) {
+        console.warn(error);
+        Alert.alert('Error', 'Failed to fetch room data');
+      }
+    }
+  }, [id]);
 
-  React.useEffect(() => {
-    console.warn(roue.params);
-
-    const fetchData = async () => {
+  const handleSubmit = useCallback(async (values, { setSubmitting }) => {
+    try {
+      setSubmitting(true);
       const token = await AsyncStorage.getItem('token');
-        if (id > 0) {
-      GetAxios().get('/http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=' + id, {
+      const response = await axios.post("http://majidalipl-001-site5.gtempurl.com/Room/SaveRoom", values, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
-      }).then(res => {
-        if (!res.data.success) {
-          Alert.alert(
-            'Opps',
-            res.data.message,
-            [{ text: 'OK', onPress: () => navigation.navigate('RoomList') }]
-          );
-        } else {
-          formik.setValues(res.data.data);
-        }
       });
+
+      if (response.data.success) {
+        Alert.alert(
+          'Success',
+          'Room saved successfully.',
+          [{
+            text: 'OK',
+            onPress: () => navigation.navigate('RoomList')
+          }]
+        );
+      } else {
+        Alert.alert('Error', response.data.message);
       }
-    };
-
-    fetchData();
-
-  }, []);
-
-
-  const addImageField = () => {
-
-    // setImages([...images, { url: '', sortOrder: images.length + 1 }]);
-    const newImage = { id: 0, roomId: 0, imageUrl: "", sortOrder: 1 };
-    formik.setFieldValue("imagesUrl", [...formik.values.imagesUrl, newImage]);
-  };
-
-  const removeImageField = (index) => {
-    const newImages = formik.values.imagesUrl.filter((_, i) => i !== index);
-    formik.setFieldValue("imagesUrl", newImages);
-    // const updatedImages = images.filter((_, i) => i !== index);
-    // setImages(updatedImages.map((img, i) => ({ ...img, sortOrder: i + 1 }))); // Update sort order
-  };
+    } catch (error) {
+      console.warn(error);
+      Alert.alert('Error', 'An error occurred while saving the room.');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [navigation]);
 
   return (
-    <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
-        <Ionicons name="menu" size={24} color="black" />
-      </TouchableOpacity>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={addEditSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue, isSubmitting, setValues }) => {
+        useEffect(() => {
+          fetchRoomData(setValues);
+        }, [fetchRoomData, setValues]);
 
-      <Text style={styles.roomheading}>Add / Edit Room</Text>
+        const addImageField = () => {
+          const newImage = { id: 0, roomId: 0, imageUrl: "", sortOrder: values.imagesUrl.length + 1 };
+          setFieldValue("imagesUrl", [...values.imagesUrl, newImage]);
+        };
 
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
+        const removeImageField = (index) => {
+          const newImages = values.imagesUrl.filter((_, i) => i !== index);
+          setFieldValue("imagesUrl", newImages);
+        };
 
-      <View style={styles.formContainer}>
-        <View style={styles.row}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Name</Text>
-            <TextInput
-              onChangeText={(value) => formik.setFieldValue('name', value)}
+        return (
+          <ScrollView style={styles.container}>
+            <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+              <Ionicons name="menu" size={24} color="black" />
+            </TouchableOpacity>
 
-              value={formik.values.name}
-              style={styles.input}
-              placeholder="Name"
-              placeholderTextColor="#555"
-            />
-            {formik.touched.name && formik.errors.name ? (
-              <Text style={styles.errorText}>{formik.errors.name}</Text>
-            ) : null}
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Room Type</Text>
-            <RNPickerSelect
-              onValueChange={(value) => formik.setFieldValue('type', value)}
+            <Text style={styles.roomheading}>Add / Edit Room</Text>
 
-              value={formik.values.type}
-              items={[
-                { label: 'Single', value: 'Single' },
-                { label: 'Double', value: 'Double' },
-                { label: 'Triple', value: 'Triple' },
-                { label: 'Twin', value: 'Twin' },
-                { label: 'King', value: 'King' },
-                { label: 'Queen', value: 'Queen' },
-                { label: 'Suite', value: 'Suite' },
-                { label: 'Studio', value: 'Studio' },
-              ]}
-              style={pickerSelectStyles}
-            />
-            {formik.touched.type && formik.errors.type ? (
-              <Text style={styles.errorText}>{formik.errors.type}</Text>
-            ) : null}
-          </View>
-        </View>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+              <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
+
+            <View style={styles.formContainer}>
+              <View style={styles.row}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Name</Text>
+                  <TextInput
+                    onChangeText={handleChange('name')}
+                    onBlur={handleBlur('name')}
+                    value={values.name}
+                    style={styles.input}
+                    placeholder="Name"
+                    placeholderTextColor="#555"
+                  />
+                  {touched.name && errors.name && (
+                    <Text style={styles.errorText}>{errors.name}</Text>
+                  )}
+                </View>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Room Type</Text>
+                  <RNPickerSelect
+                    onValueChange={(value) => setFieldValue('type', value)}
+                    value={values.type}
+                    items={[
+                      { label: 'Single', value: 'Single' },
+                      { label: 'Double', value: 'Double' },
+                      { label: 'Triple', value: 'Triple' },
+                      { label: 'Twin', value: 'Twin' },
+                      { label: 'King', value: 'King' },
+                      { label: 'Queen', value: 'Queen' },
+                      { label: 'Suite', value: 'Suite' },
+                      { label: 'Studio', value: 'Studio' },
+                    ]}
+                    style={pickerSelectStyles}
+                  />
+                  {touched.type && errors.type && (
+                    <Text style={styles.errorText}>{errors.type}</Text>
+                  )}
+                </View>
+              </View>
 
         <View style={styles.row}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Max Additional Person</Text>
             <TextInput
-              onChangeText={formik.handleChange('maxAdditionalPerson')}
-              value={formik.values.maxAdditionalPerson}
-              style={styles.input}
-              placeholder="Max Additional Person"
-              placeholderTextColor="#555"
-              keyboardType="numeric"
-            />
+                onChangeText={handleChange('maxAdditionalPerson')}
+                value={values.maxAdditionalPerson.toString()}
+                style={styles.input}
+                placeholder="Max Additional Person"
+                placeholderTextColor="#555"
+                keyboardType="numeric"
+              />
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Status</Text>
             <RNPickerSelect
-              onValueChange={formik.handleChange('status')}
-              value={formik.values.status}
+              onValueChange={(value) => setFieldValue('status', value)}
+              value={values.status}
               items={[
                 { label: 'Active', value: 'A' },
                 { label: 'Inactive', value: 'I' },
               ]}
               style={pickerSelectStyles}
             />
-            {formik.touched.status && formik.errors.status ? (
-              <Text style={styles.errorText}>{formik.errors.status}</Text>
-            ) : null}
+            {touched.status && errors.status && (
+                  <Text style={styles.errorText}>{errors.status}</Text>
+                )}
           </View>
         </View>
 
         <View style={styles.singleRow}>
           <Text style={styles.label}>Short Description</Text>
           <TextInput
-            onValueChange={formik.handleChange('shortDescription')}
-            value={formik.values.shortDescription}
-            style={styles.input}
-            placeholder="Short Description"
-            placeholderTextColor="#555"
-          />
-          {formik.touched.shortDescription && formik.errors.shortDescription ? (
-            <Text style={styles.errorText}>{formik.errors.shortDescription}</Text>
-          ) : null}
+              onChangeText={handleChange('shortDescription')}
+              value={values.shortDescription}
+              style={styles.input}
+              placeholder="Short Description"
+              placeholderTextColor="#555"
+            />
+         {touched.shortDescription && errors.shortDescription && (
+                <Text style={styles.errorText}>{errors.shortDescription}</Text>
+              )}
         </View>
 
         <View style={styles.singleRow}>
           <Text style={styles.label}>Description</Text>
           <TextInput
-            value={formik.handleChange('description')}
-            onChangeText={formik.values.description}
+            onChangeText={handleChange('description')}
+            value={values.description}
             style={[styles.input, styles.textArea]}
             placeholder="Description"
             placeholderTextColor="#555"
             multiline
           />
-          {formik.touched.description && formik.errors.description ? (
-            <Text style={styles.errorText}>{formik.errors.description}</Text>
-          ) : null}
+        {touched.description && errors.description && (
+                <Text style={styles.errorText}>{errors.description}</Text>
+              )}
         </View>
 
         <TouchableOpacity style={styles.addButton} onPress={addImageField}>
-          <Text style={styles.addButtonText}>+ ADD IMAGES</Text>
-        </TouchableOpacity>
+                <Text style={styles.addButtonText}>+ ADD IMAGES</Text>
+              </TouchableOpacity>
 
-        {formik.values.imagesUrl.map((image, index) => (
-          <View key={index} style={styles.row}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Image URL</Text>
-              <TextInput
-                value={image.imageUrl}
-                onChangeText={(url) => {
-                  const newImages = [...formik.values.imagesUrl];
-                  newImages[index].imageUrl = url;
-                  formik.setFieldValue("imagesUrl", newImages);
-                }}
-                style={styles.input}
-                placeholder="Image URL"
-                placeholderTextColor="#555"
-              />
-              {formik.errors.imagesUrl && formik.errors.imagesUrl[index]?.imageUrl && (
-                <Text style={styles.errorText}>{formik.errors.imagesUrl[index].imageUrl}</Text>
-              )}
+              {values.imagesUrl.map((image, index) => (
+                <View key={index} style={styles.row}>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Image URL</Text>
+                    <TextInput
+                      value={image.imageUrl}
+                      onChangeText={(url) => {
+                        const newImages = [...values.imagesUrl];
+                        newImages[index].imageUrl = url;
+                        setFieldValue("imagesUrl", newImages);
+                      }}
+                      style={styles.input}
+                      placeholder="Image URL"
+                      placeholderTextColor="#555"
+                    />
+                    {errors.imagesUrl && errors.imagesUrl[index]?.imageUrl && (
+                      <Text style={styles.errorText}>{errors.imagesUrl[index].imageUrl}</Text>
+                    )}
+                  </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Sort Order</Text>
+                    <TextInput
+                      value={image.sortOrder.toString()}
+                      onChangeText={(sortOrder) => {
+                        const newImages = [...values.imagesUrl];
+                        newImages[index].sortOrder = parseInt(sortOrder);
+                        setFieldValue("imagesUrl", newImages);
+                      }}
+                      style={styles.input}
+                      placeholder="Sort Order"
+                      placeholderTextColor="#555"
+                      keyboardType="numeric"
+                    />
+                    {errors.imagesUrl && errors.imagesUrl[index]?.sortOrder && (
+                      <Text style={styles.errorText}>{errors.imagesUrl[index].sortOrder}</Text>
+                    )}
+                  </View>
+                  <TouchableOpacity onPress={() => removeImageField(index)} style={styles.deleteButton}>
+                    <Ionicons name="trash" size={24} color="red" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              <TouchableOpacity 
+                style={styles.saveButton} 
+                disabled={isSubmitting}
+                onPress={handleSubmit}
+              >
+                <Text style={styles.saveButtonText}>SAVE</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Sort Order</Text>
-              <TextInput
-                value={image.sortOrder.toString()}
-                onChangeText={(sortOrder) => {
-                  const newImages = [...formik.values.imagesUrl];
-                  newImages[index].sortOrder = parseInt(sortOrder);
-                  formik.setFieldValue("imagesUrl", newImages);
-                }}
-                style={styles.input}
-                placeholder="Sort Order"
-                placeholderTextColor="#555"
-                keyboardType="numeric"
-              />
-              {formik.errors.imagesUrl && formik.errors.imagesUrl[index]?.sortOrder && (
-                <Text style={styles.errorText}>{formik.errors.imagesUrl[index].sortOrder}</Text>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => removeImageField(index)} style={styles.deleteButton}>
-              <Ionicons name="trash" size={24} color="red" />
-            </TouchableOpacity>
-          </View>
-        ))}
-
-
-
-        <TouchableOpacity style={styles.saveButton} disabled={submitting}
-          onPress={formik.handleSubmit}>
-          <Text style={styles.saveButtonText}>SAVE</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          </ScrollView>
+        );
+      }}
+    </Formik>
   );
 };
 const AddEditRoomContent = () => {

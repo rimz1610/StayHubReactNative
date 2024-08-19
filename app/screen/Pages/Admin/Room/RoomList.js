@@ -121,11 +121,6 @@ const RoomListContent = ({ navigation }) => {
   
 
 
-
-
-
-
-
 const handlePageChange = (direction) => {
   if (direction === 'next' && currentPage < pages - 1) {
     setCurrentPage(currentPage + 1);
@@ -150,6 +145,11 @@ const renderItem = ({ item }) => (
     </View>
   </View>
 );
+    const renderEmptyTable = () => (
+      <View style={styles.emptyTableContainer}>
+        <Text style={styles.emptyTableText}>No rows are added</Text>
+      </View>
+    );
 
 return (
   <View style={styles.container}>
@@ -173,11 +173,15 @@ return (
         <Text style={styles.tableHeaderText}>Status</Text>
         <Text style={styles.tableHeaderText}>Action</Text>
       </View>
-      <FlatList
-        data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-      />
+      {data.length > 0 ? (
+          <FlatList
+            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+          />
+        ) : (
+          renderEmptyTable()
+        )}
     </View>
 
     {/* Pagination */}
@@ -246,6 +250,16 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: 'white',
     fontSize: 16,
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
   },
   tableContainer: {
     width: '100%',
