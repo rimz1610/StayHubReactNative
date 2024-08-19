@@ -39,7 +39,6 @@ const addEditSchema = Yup.object().shape({
 const AddEditRoom = ({ route, navigation }) => {
   const [submitting, setSubmitting] = useState(false);
   const id = route.params?.id || 0;
-
   const initialValues = {
     id: 0,
     type: "Single",
