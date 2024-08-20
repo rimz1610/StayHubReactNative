@@ -1,21 +1,23 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+// RoomBooking.js
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import TabNavigator from '../../../TabNavigator';
 
-const RoomBooking = ( { navigation }) => {
+const RoomBooking = () => {
   return (
     <View style={styles.container}>
-      <Text>Rooms</Text>
+      <Text>Room Booking Screen</Text>
     </View>
-  )
-}
+  );
+};
 
 export default RoomBooking;
 
 const styles = StyleSheet.create({
-  container:{
-    flex:1,
-    alignItems:'center',
-    justifyContent:'center',
-  }
-})
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

@@ -122,7 +122,7 @@ const Login = ({ navigation }) => {
                                 {formik.touched.password && formik.errors.password ? (
                                     <Text style={styles.errorText}>{formik.errors.password}</Text>
                                 ) : null}
-                                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                                <Text style={styles.forgotPasswordText} onPress={()=> navigation.navigate('ForgetPassword')}>Forgot Password?</Text>
                                 <TouchableOpacity
                                     style={styles.submitButton}
                                     disabled={submitting}
