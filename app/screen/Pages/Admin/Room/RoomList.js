@@ -7,6 +7,8 @@ import { useFormik } from 'formik';
 import * as Yup from "yup";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
   name: `Room ${index + 1}`,
@@ -16,51 +18,27 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 }));
 
 const Drawer = createDrawerNavigator();
-const RoomListContent = ({ navigation }) => {
+const RoomListContent = ({ route, navigation }) => {
+ 
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [pages, setPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
-
-
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
 
-      try {
-        const token = await AsyncStorage.getItem('token');
-        setLoading(true);
-        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Room/GetRooms", {
-          headers: {
-            'Authorization': `Bearer ${token}`, // Include the JWT token in the Authorization header
-          }
-        });
 
-        if (response.data.success) {
-          setData(response.data.list);
-          setPages(Math.ceil(response.data.list.length / itemsPerPage));
-        } else {
-          // Handle failure case here if needed
-        }
-      } catch (error) {
-        console.warn(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-
-    // Cleanup function or nothing should be returned here
-    return () => {
-      // Cleanup logic, if necessary
-    };
-  }, []); // dependencies array
 
   // Function to refetch the updated room list
   const fetchData = async () => {
     const token = await AsyncStorage.getItem('token');
+  
     setLoading(true);
     try {
       const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Room/GetRooms", {
@@ -133,8 +111,8 @@ const renderItem = ({ item }) => (
   <View style={styles.tableRow}>
     <Text style={styles.tableCell} numberOfLines={1}>{item.name}</Text>
     <Text style={styles.tableCell} numberOfLines={1}>{item.type}</Text>
-    <Text style={styles.tableCell} numberOfLines={1}>{item.shortDescription}</Text>
-    <Text style={styles.tableCell} numberOfLines={1}>{item.status}</Text>
+   
+    <Text style={styles.tableCell} numberOfLines={1}>{item.status=="A"?"Active":"Inactive"}</Text>
     <View style={styles.tableActions}>
       <TouchableOpacity onPress={() => navigation.navigate('AddEditRoom', { id: item.id })} style={styles.editButton}>
         <Text style={styles.editButtonText}>Edit</Text>
@@ -169,7 +147,6 @@ return (
       <View style={styles.tableHeader}>
         <Text style={styles.tableHeaderText}>Name</Text>
         <Text style={styles.tableHeaderText}>Type</Text>
-        <Text style={styles.tableHeaderText}>Short Description</Text>
         <Text style={styles.tableHeaderText}>Status</Text>
         <Text style={styles.tableHeaderText}>Action</Text>
       </View>
@@ -323,6 +300,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
+    marginLeft:1,
   },
   deleteButtonText: {
     color: 'white',

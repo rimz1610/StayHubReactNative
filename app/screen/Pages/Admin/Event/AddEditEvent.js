@@ -1,12 +1,32 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Formik } from 'formik';
+import * as Yup from "yup";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Drawer = createDrawerNavigator();
+const addEditSchema = Yup.object().shape({
+    name: Yup.string().required("Required"),
+    shortDescription: Yup.string().required("Required"),
+    eventDate:Yup.date().required("Required"),
+    bookingStartDate: Yup.date().required("Required"),
+    bookingEndDate: Yup.date().required("Required"),
+    description: Yup.string().required("Required"),
+    eventImage: Yup.string().notRequired(),
+    startTime: Yup.object().required("Required"),
+    endTime:Yup.object().required("Required"),
+    location: Yup.string().required("Required"),
+    adultTicketPrice:Yup.number().min(1,"Greater than zero"),
+    childTicketPrice:Yup.number().min(1,"Greater than zero"),
+    maxTicket:Yup.number().min(1,"Greater than zero"),
+
+  });
 const AddEditEventContent = ({ navigation }) => {
     const [image, setImage] = useState(null);
     const [bookingStartDate, setBookingStartDate] = useState(new Date());

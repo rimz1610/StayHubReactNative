@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  Alert 
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert
 } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from "yup";
@@ -31,13 +31,14 @@ const addEditSchema = Yup.object().shape({
       roomId: Yup.number().notRequired(),
       id: Yup.number().required('Required'),
       imageUrl: Yup.string().required('Required'),
-      sortOrder: Yup.number().min(1).required("Required")
+      sortOrder: Yup.number(0,"Must be positive").required("Required")
     })
   )
 });
 
 const AddEditRoom = ({ route, navigation }) => {
   const [submitting, setSubmitting] = useState(false);
+
   const id = route.params?.id || 0;
   const initialValues = {
     id: 0,
@@ -59,21 +60,24 @@ const AddEditRoom = ({ route, navigation }) => {
   };
 
   const fetchRoomData = useCallback(async (formikSetValues) => {
+  
     if (id > 0) {
       try {
         const token = await AsyncStorage.getItem('token');
+      
         const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           }
         });
         if (response.data.success) {
+        
           formikSetValues(response.data.data);
         } else {
           Alert.alert('Error', response.data.message);
         }
       } catch (error) {
-        console.warn(error);
+       
         Alert.alert('Error', 'Failed to fetch room data');
       }
     }
@@ -102,7 +106,7 @@ const AddEditRoom = ({ route, navigation }) => {
         Alert.alert('Error', response.data.message);
       }
     } catch (error) {
-      console.warn(error);
+    
       Alert.alert('Error', 'An error occurred while saving the room.');
     } finally {
       setSubmitting(false);
@@ -138,7 +142,7 @@ const AddEditRoom = ({ route, navigation }) => {
 
             <Text style={styles.roomheading}>Add / Edit Room</Text>
 
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("RoomList")}>
               <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
 
@@ -181,65 +185,65 @@ const AddEditRoom = ({ route, navigation }) => {
                 </View>
               </View>
 
-        <View style={styles.row}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Max Additional Person</Text>
-            <TextInput
-                onChangeText={handleChange('maxAdditionalPerson')}
-                value={values.maxAdditionalPerson.toString()}
-                style={styles.input}
-                placeholder="Max Additional Person"
-                placeholderTextColor="#555"
-                keyboardType="numeric"
-              />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Status</Text>
-            <RNPickerSelect
-              onValueChange={(value) => setFieldValue('status', value)}
-              value={values.status}
-              items={[
-                { label: 'Active', value: 'A' },
-                { label: 'Inactive', value: 'I' },
-              ]}
-              style={pickerSelectStyles}
-            />
-            {touched.status && errors.status && (
-                  <Text style={styles.errorText}>{errors.status}</Text>
+              <View style={styles.row}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Max Additional Person</Text>
+                  <TextInput
+                    onChangeText={handleChange('maxAdditionalPerson')}
+                    value={values.maxAdditionalPerson.toString()}
+                    style={styles.input}
+                    placeholder="Max Additional Person"
+                    placeholderTextColor="#555"
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Status</Text>
+                  <RNPickerSelect
+                    onValueChange={(value) => setFieldValue('status', value)}
+                    value={values.status}
+                    items={[
+                      { label: 'Active', value: 'A' },
+                      { label: 'Inactive', value: 'I' },
+                    ]}
+                    style={pickerSelectStyles}
+                  />
+                  {touched.status && errors.status && (
+                    <Text style={styles.errorText}>{errors.status}</Text>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.singleRow}>
+                <Text style={styles.label}>Short Description</Text>
+                <TextInput
+                  onChangeText={handleChange('shortDescription')}
+                  value={values.shortDescription}
+                  style={styles.input}
+                  placeholder="Short Description"
+                  placeholderTextColor="#555"
+                />
+                {touched.shortDescription && errors.shortDescription && (
+                  <Text style={styles.errorText}>{errors.shortDescription}</Text>
                 )}
-          </View>
-        </View>
+              </View>
 
-        <View style={styles.singleRow}>
-          <Text style={styles.label}>Short Description</Text>
-          <TextInput
-              onChangeText={handleChange('shortDescription')}
-              value={values.shortDescription}
-              style={styles.input}
-              placeholder="Short Description"
-              placeholderTextColor="#555"
-            />
-         {touched.shortDescription && errors.shortDescription && (
-                <Text style={styles.errorText}>{errors.shortDescription}</Text>
-              )}
-        </View>
+              <View style={styles.singleRow}>
+                <Text style={styles.label}>Description</Text>
+                <TextInput
+                  onChangeText={handleChange('description')}
+                  value={values.description}
+                  style={[styles.input, styles.textArea]}
+                  placeholder="Description"
+                  placeholderTextColor="#555"
+                  multiline
+                />
+                {touched.description && errors.description && (
+                  <Text style={styles.errorText}>{errors.description}</Text>
+                )}
+              </View>
 
-        <View style={styles.singleRow}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            onChangeText={handleChange('description')}
-            value={values.description}
-            style={[styles.input, styles.textArea]}
-            placeholder="Description"
-            placeholderTextColor="#555"
-            multiline
-          />
-        {touched.description && errors.description && (
-                <Text style={styles.errorText}>{errors.description}</Text>
-              )}
-        </View>
-
-        <TouchableOpacity style={styles.addButton} onPress={addImageField}>
+              <TouchableOpacity style={styles.addButton} onPress={addImageField}>
                 <Text style={styles.addButtonText}>+ ADD IMAGES</Text>
               </TouchableOpacity>
 
@@ -268,7 +272,26 @@ const AddEditRoom = ({ route, navigation }) => {
                       value={image.sortOrder.toString()}
                       onChangeText={(sortOrder) => {
                         const newImages = [...values.imagesUrl];
-                        newImages[index].sortOrder = parseInt(sortOrder);
+
+
+                        if (Number.isInteger(parseInt(sortOrder))) {
+                          
+                          const isUnique = !newImages.some((image, idx) => image.sortOrder === parseInt(sortOrder) && idx !== index);
+
+                          if (isUnique) {
+                            newImages[index].sortOrder = parseInt(sortOrder);
+                            setFieldValue("imagesUrl", newImages);
+                          } 
+                          else {
+                            
+                            Alert.alert('Error', 'Sort order must be unique.');
+                          }
+                        }
+                          else {
+                          newImages[index].sortOrder = 0;
+                        }
+
+
                         setFieldValue("imagesUrl", newImages);
                       }}
                       style={styles.input}
@@ -286,8 +309,8 @@ const AddEditRoom = ({ route, navigation }) => {
                 </View>
               ))}
 
-              <TouchableOpacity 
-                style={styles.saveButton} 
+              <TouchableOpacity
+                style={styles.saveButton}
                 disabled={isSubmitting}
                 onPress={handleSubmit}
               >
@@ -300,7 +323,8 @@ const AddEditRoom = ({ route, navigation }) => {
     </Formik>
   );
 };
-const AddEditRoomContent = () => {
+const AddEditRoomContent = ({ route }) => {
+  const { id } = route.params || {}; // Get the passed id parameter
   return (
     <Drawer.Navigator
       drawerContent={(props) => <DrawerContent {...props} />}
@@ -311,7 +335,7 @@ const AddEditRoomContent = () => {
         },
       }}
     >
-      <Drawer.Screen name="AddEditRoomCon" component={AddEditRoom} initialParams={{ id: 0 }} />
+      <Drawer.Screen name="AddEditRoom" component={AddEditRoom} initialParams={{ id: id }} />
     </Drawer.Navigator>
   );
 };

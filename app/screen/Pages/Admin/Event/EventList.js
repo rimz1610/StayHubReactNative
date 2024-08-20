@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import axios from "axios";
+import moment from "moment";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id:index ,
@@ -16,18 +19,79 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 
 const Drawer = createDrawerNavigator();
 const EventListContent = ({ navigation }) => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
- 
+  const [pages, setPages] = useState(0);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
-  const pages = Math.ceil(data.length / itemsPerPage);
-  const handleDelete = (item) => {
+  
+  const fetchData = async () => {
+    console.warn("I am calling with token: "+ token);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      setLoading(true);
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Event/GetEvents", {
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the JWT token in the Authorization header
+        }
+      });
+
+      if (response.data.success) {
+        setData(response.data.list);
+        setPages(Math.ceil(response.data.list.length / itemsPerPage));
+      } else {
+        // Handle failure case here if needed
+      }
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+  
+    fetchData();
+
+    // Cleanup function or nothing should be returned here
+    return () => {
+      // Cleanup logic, if necessary
+    };
+  }, [navigation]); // dependencies array
+
+  const handleDelete = (eventId) => {
     Alert.alert('Are you sure?', 'Do you want to delete this item?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Yes, delete it',
-        onPress: () => setData(data.filter((d) => d.id !== item.id)),
-      },
+        onPress: async () => {
+          try {
+            setLoading(true);
+  
+            // Get the JWT token from AsyncStorage
+            const token = await AsyncStorage.getItem('token');
+  
+            // Send the delete request
+            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Event/DeleteEvent?Id=${eventId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            });
+  
+            if (response.data.success) {
+              // Refetch the updated list after deletion
+              fetchData();
+            } else {
+              Alert.alert('Error', response.data.message);
+            }
+          } catch (error) {
+            console.warn(error);
+            Alert.alert('Error', 'Failed to delete the room.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
     ]);
   };
 
@@ -42,22 +106,26 @@ const EventListContent = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
       <Text style={styles.tableCell} numberOfLines={1}>{item.name}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.eventDate}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.bookingStartDate}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.bookingEndDate}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.startTime}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.endTime}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{moment(item.eventDate).format('MM/DD/YYYY')}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{moment(item.bookingStartDate).format('MM/DD/YYYY')}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{moment(item.bookingEndDate).format('MM/DD/YYYY')}{}</Text>
+    
+    
       <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() => navigation.navigate('AddEditEvent')} style={styles.editButton}>
+        <TouchableOpacity onPress={() => navigation.navigate('AddEditEvent', { id: item.id })} style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteButton}>
+        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
-
+  const renderEmptyTable = () => (
+    <View style={styles.emptyTableContainer}>
+      <Text style={styles.emptyTableText}>No rows are added</Text>
+    </View>
+  );
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
@@ -66,7 +134,7 @@ const EventListContent = ({ navigation }) => {
 
       <Text style={styles.roomheading}>Event</Text>
       <TouchableOpacity style={styles.addButton} onPress={() => {
-       navigation.navigate('AddEditEvent')
+        navigation.navigate('AddEditEvent', { id: 0})
       }}>
         <Text style={styles.addButtonText}>+ Add New</Text>
       </TouchableOpacity>
@@ -78,15 +146,17 @@ const EventListContent = ({ navigation }) => {
           <Text style={styles.tableHeaderText}>Event Date</Text>
           <Text style={styles.tableHeaderText}>Booking Start Date</Text>
           <Text style={styles.tableHeaderText}>Booking End Date</Text>
-          <Text style={styles.tableHeaderText}>Start Time</Text>
-          <Text style={styles.tableHeaderText}>End Time</Text>
           <Text style={styles.tableHeaderText}>Action</Text>
         </View>
-        <FlatList
-          data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-        />
+        {data.length > 0 ? (
+          <FlatList
+            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+          />
+        ) : (
+          renderEmptyTable()
+        )}
       </View>
 
       {/* Pagination */}
