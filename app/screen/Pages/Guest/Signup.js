@@ -206,7 +206,8 @@ const Signup = ({ navigation }) => {
                                 <TouchableOpacity
                                     style={styles.submitButton}
                                     disabled={submitting}
-                                    onPress={formik.handleSubmit}
+                                    // onPress={formik.handleSubmit}
+                                    onPress={() => navigation.navigate('RoomBooking')}
                                 >
                                     <Text style={styles.submitText}>Register</Text>
                                 </TouchableOpacity>

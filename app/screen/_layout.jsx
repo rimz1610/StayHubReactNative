@@ -6,7 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Signup from './Pages/Guest/Signup';
 import Login from './Pages/Auth/Login';
 import Dashboard from './Pages/Admin/Booking/Dashboard';
-import BookingRoom from './Pages/Guest/Room/RoomBooking/';
 import BookingDetails from './Pages/Admin/Booking/BookingDetails';
 import RoomList from './Pages/Admin/Room/RoomList';
 import AddEditRoom from './Pages/Admin/Room/AddEditRoom';
@@ -25,6 +24,9 @@ import AddEditSpa from './Pages/Admin/Spa/AddEditSpa';
 import StaffList from './Pages/Admin/Staff/StaffList';
 import StaffActivityList from './Pages/Admin/Staff/StaffActivities';
 import RoomBooking from './Pages/Guest/Room/RoomBooking';
+import ForgetPassword from './Pages/Auth/ForgetPassword';
+import ChangePassword from './Pages/Guest/Account/ChangePassword';
+import ResetPassword from './Pages/Auth/ResetPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +38,9 @@ function App() {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="Signup" component={Signup} />
+                <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
+                <Stack.Screen name="ChangePassword" component={ChangePassword} />
+                <Stack.Screen name="ResetPassword" component={ResetPassword} />
                 <Stack.Screen name="Dashboard" component={Dashboard} />
                 <Stack.Screen name="BookingDetails" component={BookingDetails} />
                 <Stack.Screen name="RoomList" component={RoomList} />
