@@ -208,7 +208,7 @@ const AddEditEventContent = ({ navigation }) => {
                                                 onChange={(event, selectedDate) => { 
                                                     const currentDate = selectedDate || new Date();
                                                     setShowEndDate(false);
-                                                    setFieldValue("bookingEnsDate", currentDate);}}
+                                                    setFieldValue("bookingEndDate", currentDate);}}
                                                
                                             />
                                         )}
