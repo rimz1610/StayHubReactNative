@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-import axios from "axios";
 import moment from "moment";
+import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id:index ,
@@ -24,7 +25,13 @@ const EventListContent = ({ navigation }) => {
   const [pages, setPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
-  
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
   const fetchData = async () => {
     console.warn("I am calling with token: "+ token);
     try {
@@ -49,15 +56,7 @@ const EventListContent = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-  
-    fetchData();
 
-    // Cleanup function or nothing should be returned here
-    return () => {
-      // Cleanup logic, if necessary
-    };
-  }, [navigation]); // dependencies array
 
   const handleDelete = (eventId) => {
     Alert.alert('Are you sure?', 'Do you want to delete this item?', [

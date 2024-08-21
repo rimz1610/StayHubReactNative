@@ -3,11 +3,9 @@ import React, { useState, useEffect } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-import { useFormik } from 'formik';
-import * as Yup from "yup";
+
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
