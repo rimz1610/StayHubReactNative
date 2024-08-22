@@ -23,11 +23,10 @@ import SpaList from './Pages/Admin/Spa/SpaList';
 import AddEditSpa from './Pages/Admin/Spa/AddEditSpa';
 import StaffList from './Pages/Admin/Staff/StaffList';
 import StaffActivityList from './Pages/Admin/Staff/StaffActivities';
-import RoomBooking from './Pages/Guest/Room/RoomBooking';
 import ForgetPassword from './Pages/Auth/ForgetPassword';
 import ChangePassword from './Pages/Guest/Account/ChangePassword';
 import ResetPassword from './Pages/Auth/ResetPassword';
-
+import GuestBottomNav from '../components/GuestBottomNav';
 const Stack = createNativeStackNavigator();
 
 function App() {
@@ -57,8 +56,7 @@ function App() {
                 <Stack.Screen name="GuestDetails" component={GuestDetails} />
                 <Stack.Screen name="StaffList" component={StaffList} />
                 <Stack.Screen name="StaffActivityList" component={StaffActivityList} />
-                <Stack.Screen name="RoomBooking" component={RoomBooking} />
-                
+                <Stack.Screen name='GuestBottomNav' component={GuestBottomNav}/>
             </Stack.Navigator>
         </GestureHandlerRootView>
         </SafeAreaProvider>

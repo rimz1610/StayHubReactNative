@@ -59,7 +59,7 @@ const Login = ({ navigation }) => {
                         if (role === "ADMIN") {
                             navigation.navigate('Dashboard');
                         } else if (role === "GUEST") {
-                            navigation.navigate('RoomBooking');
+                            navigation.navigate('GuestBottomNav');
                         }
                     } else {
                         setSubmitting(false);

@@ -13,10 +13,10 @@ const GuestBottomNav = () => {
   return (
     <Tab.Navigator initialRouteName="RoomBooking">
       <Tab.Screen name="RoomBooking" component={RoomBooking} />
-      <Tab.Screen name="Gym" component={GymBooking} />
-      <Tab.Screen name="Event" component={EventBooking} />
-      <Tab.Screen name="Spa" component={SpaBooking} />
-      <Tab.Screen name="Profile" component={EditMyProfile} />
+      <Tab.Screen name="GymBooking" component={GymBooking} />
+      <Tab.Screen name="EventBooking" component={EventBooking} />
+      <Tab.Screen name="SpaBooking" component={SpaBooking} />
+      <Tab.Screen name="Account" component={EditMyProfile} />
     </Tab.Navigator>
   );
 };
