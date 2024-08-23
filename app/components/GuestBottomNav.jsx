@@ -8,8 +8,18 @@ import GymBooking from "../screen/Pages/Guest/Gym/GymBooking";
 import EventBooking from "../screen/Pages/Guest/Event/EventBooking";
 import SpaBooking from "../screen/Pages/Guest/Spa/SpaBooking";
 import EditMyProfile from "../screen/Pages/Guest/Account/EditMyProfile";
-
-const GuestBottomNav = () => {
+import BookingItems from '../screen/Pages/Guest/Booking/BookingItems';
+import BookingReceipt from '../screen/Pages/Guest/Booking/BookingReceipt';
+import ConfirmBooking from '../screen/Pages/Guest/Booking/ConfirmBooking';
+import HotelMap from "../screen/Pages/Guest/HotelMap";
+import ChangePassword from "../screen/Pages/Guest/Account/ChangePassword";
+import MyBookingRReceipt from "../screen/Pages/Guest/Account/MyBookingReceipt";
+import MyBookings from "../screen/Pages/Guest/Account/MyBookings";
+import MyRooms from "../screen/Pages/Guest/Account/MyRooms";
+import RoomServiceBooking from "../screen/Pages/Guest/Account/RoomServiceBooking";
+import { createDrawerNavigator } from '@react-navigation/drawer';
+const Drawer = createDrawerNavigator();
+const GuestBottomNav = ({ navigation }) => {
   const Tab = createBottomTabNavigator();
 
   const screenOptions = ({ route }) => ({
@@ -29,6 +39,10 @@ const GuestBottomNav = () => {
       }
 
       return <Ionicons name={iconName} size={size} color={color} />;
+    },
+    tabBarButton: () => {
+      if(route.name === "Account") {
+        return  <TouchableOpacity onPress={() => navigation.openDrawer()}/>}
     },
     tabBarActiveTintColor: "white",
     tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
@@ -50,6 +64,7 @@ const GuestBottomNav = () => {
       <TouchableOpacity
         onPress={() => {
           // Handle cart button press
+          navigation.navigate("Cart");
         }}
         style={{ marginRight: 15 }}
       >
@@ -80,7 +95,78 @@ const GuestBottomNav = () => {
         component={SpaBooking}
         options={{ title: "Spa" }}
       />
-      <Tab.Screen name="Account" component={EditMyProfile} />
+
+      <Tab.Screen name="Account"  component={() => null}/>  
+      <Tab.Screen
+        name="Cart"
+        component={BookingItems}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="Checkout"
+        component={ConfirmBooking}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="BookingConfirmation"
+        component={BookingReceipt}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="MyBookings"
+        component={MyBookings}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="MyBookingReceipt"
+        component={MyBookingRReceipt}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="EditMyProfile"
+        component={EditMyProfile}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="ChangePassword"
+        component={ChangePassword}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="MyRooms"
+        component={MyRooms}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="RoomServiceBooking"
+        component={RoomServiceBooking}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
+      <Tab.Screen
+        name="HotelMap"
+        component={HotelMap}
+        options={{
+          tabBarButton: () => null, 
+        }}
+      />
     </Tab.Navigator>
   );
 };

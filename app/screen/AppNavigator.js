@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { NavigationContainer } from '@react-navigation/native'
 import Dashboard from './Pages/Admin/Booking/Dashboard'
 import GuestBottomNav from '../components/GuestBottomNav'
-
+import GuestDrawer from '../components/GuestDrawerContent'
 const Stack = createNativeStackNavigator()
 
 const AppNavigator = () => {
@@ -14,8 +14,9 @@ const AppNavigator = () => {
             screenOptions={{ headerShown: false}}
             initialRouteName='Main'>
                 <Stack.Screen name='Main' component={Dashboard}/>
-                <Stack.Screen name='GuestBottomNav' component={GuestBottomNav}/>
+               
         </Stack.Navigator>
+        <GuestDrawer />
    </NavigationContainer>
   )
 }

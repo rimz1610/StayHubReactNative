@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import GuestBottomNav from '../components/GuestBottomNav';
 const GuestDrawerContent = (props) => {
   const { state, descriptors, navigation } = props;
   const activeRoute = state.routeNames[state.index];
@@ -24,7 +24,7 @@ const GuestDrawerContent = (props) => {
     return (
       <TouchableOpacity
         style={[
-          label=="Manage Bookings"?styles.drawerFirstItem: styles.drawerItem,
+          label=="My Bookings"?styles.drawerFirstItem: styles.drawerItem,
           isActive && styles.activeDrawerItem,
         ]}
         onPress={() => navigation.navigate(targetRoute)}
@@ -44,16 +44,14 @@ const GuestDrawerContent = (props) => {
   return (
     <DrawerContentScrollView {...props}>
       <View style={styles.drawerContent}>
-        <Text style={styles.textheading}>David Robinson</Text>
-        <Text style={styles.textheading}>admin@gmail.com</Text>
-        {renderDrawerItem('Manage Bookings', 'Dashboard')}
-        {renderDrawerItem('Manage Rooms', 'RoomList')}
-        {renderDrawerItem('Manage Rooms Price', 'RoomsPriceDetails',)}
-        {renderDrawerItem('Manage Events', 'EventList')}
-        {renderDrawerItem('Manage Staffs', 'StaffList')}
-        {renderDrawerItem('Manage Guests', 'GuestList')}
-        {renderDrawerItem('Manage Gyms', 'GymList')}
-        {renderDrawerItem('Manage Spas', 'SpaList')}
+        <Text style={styles.textheading}>Fatima Zuhra</Text>
+        <Text style={styles.textheading}>guest@gmail.com</Text>
+        {renderDrawerItem('My Bookings', 'MyBookings')}
+        {renderDrawerItem('Edit My Profile', 'EditMyProfile')}
+        {renderDrawerItem('My Rooms', 'RMyRooms',)}
+        {renderDrawerItem('Change Pasword', 'ChangePassword')}
+        {renderDrawerItem('Hotel Map', 'HotelMap')}
+    
         <TouchableOpacity
           style={styles.drawerLastItem}
           onPress={async () => await handleLogout()}
@@ -109,4 +107,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GuestDrawerContent;
+
+const GuestDrawer = () => {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <GuestDrawerContent {...props} />}
+      initialRouteName="GuestBottomNav"
+    >
+      <Drawer.Screen name="GuestBottomNav" component={GuestBottomNav} />
+    </Drawer.Navigator>
+  );
+};
+
+export default GuestDrawer;
