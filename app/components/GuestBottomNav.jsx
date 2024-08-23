@@ -97,7 +97,7 @@ const GuestBottomNav = ({ navigation }) => {
         options={{ title: "Spa" }}
       />
 
-       {/* <Tab.Screen name="Account" component={() => null} />  */}
+      <Tab.Screen name="Account" component={() => null} />
       <Tab.Screen
         name="Cart"
         component={BookingItems}
@@ -167,7 +167,7 @@ const GuestBottomNav = ({ navigation }) => {
         options={{
           tabBarButton: () => null,
         }}
-      /> 
+      />
     </Tab.Navigator>
   );
 };

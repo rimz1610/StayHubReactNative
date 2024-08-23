@@ -1,13 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 const MyBookings = () => {
-
-
-    return (
-        <View>
-
-        </View>
-    )
-}
+  return (
+    <View>
+      <Text>HELLO</Text>
+    </View>
+  );
+};
 export default MyBookings;
