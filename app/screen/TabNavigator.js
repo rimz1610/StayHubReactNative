@@ -1,11 +1,11 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-import RoomBooking from './Pages/Guest/Room/RoomBooking';
-import GymBooking from './Pages/Guest/Gym/GymBooking';
-import EventBooking from './Pages/Guest/Event/EventBooking';
-import SpaBooking from './Pages/Guest/Spa/SpaBooking';
-import EditMyProfile from './Pages/Guest/Account/EditMyProfile';
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import RoomBooking from "./Pages/Guest/Room/RoomBooking";
+import GymBooking from "./Pages/Guest/Gym/GymBooking";
+import EventBooking from "./Pages/Guest/Event/EventBooking";
+import SpaBooking from "./Pages/Guest/Spa/SpaBooking";
+import EditMyProfile from "./Pages/Guest/Account/EditMyProfile";
 
 export default function TabNavigator() {
   const Tab = createBottomTabNavigator();
