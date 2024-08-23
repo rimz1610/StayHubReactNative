@@ -18,7 +18,7 @@ import MyBookings from "../screen/Pages/Guest/Account/MyBookings";
 import MyRooms from "../screen/Pages/Guest/Account/MyRooms";
 import RoomServiceBooking from "../screen/Pages/Guest/Account/RoomServiceBooking";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-const Drawer = createDrawerNavigator();
+
 const GuestBottomNav = ({ navigation }) => {
   const Tab = createBottomTabNavigator();
 
@@ -40,11 +40,11 @@ const GuestBottomNav = ({ navigation }) => {
 
       return <Ionicons name={iconName} size={size} color={color} />;
     },
-    tabBarButton: () => {
-      if (route.name === "Account") {
-        return <TouchableOpacity onPress={() => navigation.openDrawer()} />;
-      }
-    },
+    // tabBarButton: () => {
+    //   if (route.name === "Account") {
+    //     return <TouchableOpacity onPress={() => navigation.openDrawer()} />;
+    //   }
+    // },
     tabBarActiveTintColor: "white",
     tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
     tabBarStyle: {
@@ -97,7 +97,7 @@ const GuestBottomNav = ({ navigation }) => {
         options={{ title: "Spa" }}
       />
 
-      {/* <Tab.Screen name="Account" component={() => null} />
+       {/* <Tab.Screen name="Account" component={() => null} />  */}
       <Tab.Screen
         name="Cart"
         component={BookingItems}
@@ -167,7 +167,7 @@ const GuestBottomNav = ({ navigation }) => {
         options={{
           tabBarButton: () => null,
         }}
-      /> */}
+      /> 
     </Tab.Navigator>
   );
 };
