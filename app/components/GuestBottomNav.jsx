@@ -1,6 +1,6 @@
 // GuestBottomNav.js
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Platform } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import RoomBooking from "../screen/Pages/Guest/Room/RoomBooking";
@@ -41,31 +41,58 @@ const GuestBottomNav = ({ navigation }) => {
 
       return <Ionicons name={iconName} size={size} color={color} />;
     },
-    // tabBarButton: () => {
-    //   if (route.name === "Account") {
-    //     return <TouchableOpacity onPress={() => navigation.openDrawer()} />;
-    //   }
-    // },
     tabBarActiveTintColor: "white",
     tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
-    tabBarStyle: {
-      backgroundColor: "#180161",
-      height: 70,
-      paddingBottom: 10,
-      paddingTop: 5,
-    },
-    headerStyle: {
-      backgroundColor: "#180161",
-      height: 70,
-    },
+    tabBarStyle: Platform.select({
+      ios: {
+        backgroundColor: "#180161",
+        height: 80,
+        paddingBottom: 15,
+        paddingTop: 15,
+        borderTopWidth: 0,
+        shadowOpacity: 0,
+      },
+      android: {
+        backgroundColor: "#180161",
+        height: 70,
+        paddingBottom: 10,
+        paddingTop: 5,
+        elevation: 8,
+      },
+    }),
+    tabBarLabelStyle: Platform.select({
+      ios: {
+        fontSize: 12,
+        fontWeight: "600",
+        marginBottom: 5,
+      },
+      android: {
+        fontSize: 12,
+        fontWeight: "600",
+        marginBottom: 0,
+      },
+    }),
+    headerStyle: Platform.select({
+      ios: {
+        backgroundColor: "#180161",
+        height: 70,
+        shadowOpacity: 0,
+      },
+      android: {
+        backgroundColor: "#180161",
+        height: 70,
+        elevation: 4,
+      },
+    }),
     headerTintColor: "white",
     headerTitleStyle: {
       fontWeight: "bold",
+      textAlign: "center",
     },
+    headerTitleAlign: "center",
     headerRight: () => (
       <TouchableOpacity
         onPress={() => {
-          // Handle cart button press
           navigation.navigate("Cart");
         }}
         style={{ marginRight: 15 }}

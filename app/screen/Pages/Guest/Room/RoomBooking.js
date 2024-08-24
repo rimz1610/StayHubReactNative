@@ -8,6 +8,7 @@ import {
   Modal,
   ScrollView,
   Dimensions,
+  Platform,
 } from "react-native";
 import RoomImage from "../../../../../assets/images/room.jpg";
 import RoomImage1 from "../../../../../assets/images/room-one.jpg";
@@ -198,13 +199,20 @@ const RoomBooking = () => {
       <View style={styles.filterSection}>
         <View style={styles.pickerContainer}>
           <View style={styles.pickerWrapper}>
-            <Text style={styles.pickerLabel}>Persons</Text>
+            <Text style={styles.pickerLabel}>Additional Person</Text>
             <RNPickerSelect
               onValueChange={(value) => setAdditionalPerson(value)}
               items={additionalPersonOptions}
-              style={pickerSelectStyles}
+              style={{
+                ...pickerSelectStyles,
+                iconContainer: {
+                  ...pickerSelectStyles.iconContainer,
+                  top: Platform.OS === "android" ? 5 : 10,
+                },
+              }}
               value={additionalPerson}
               placeholder={{}}
+              useNativeAndroidPickerStyle={false}
               Icon={() => (
                 <Ionicons name="chevron-down" size={24} color="#180161" />
               )}
@@ -215,9 +223,16 @@ const RoomBooking = () => {
             <RNPickerSelect
               onValueChange={(value) => setRoomType(value)}
               items={roomTypeOptions}
-              style={pickerSelectStyles}
+              style={{
+                ...pickerSelectStyles,
+                iconContainer: {
+                  ...pickerSelectStyles.iconContainer,
+                  top: Platform.OS === "android" ? 5 : 10,
+                },
+              }}
               value={roomType}
               placeholder={{}}
+              useNativeAndroidPickerStyle={false}
               Icon={() => (
                 <Ionicons name="chevron-down" size={24} color="#180161" />
               )}
