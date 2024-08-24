@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, ScrollView,Button } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -9,7 +9,7 @@ import { Formik } from 'formik';
 import * as Yup from "yup";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as ImagePicker from "expo-image-picker";
 const Drawer = createDrawerNavigator();
 const addEditSchema = Yup.object().shape({
     name: Yup.string().required("Required"),
@@ -27,24 +27,50 @@ const addEditSchema = Yup.object().shape({
     maxTicket: Yup.number().min(0, "Must be positive"),
 
 });
-const AddEditEventContent = ({ navigation }) => {
-    const [image, setImage] = useState(null);
-    // const [bookingStartDate, setBookingStartDate] = useState(new Date());
-    // const [bookingEndDate, setBookingEndDate] = useState(new Date());
-    // const [eventDate, setEventDate] = useState(new Date());
-    // const [startTime, setStartTime] = useState(new Date());
-    // const [endTime, setEndTime] = useState(new Date());
-
+const AddEditEvent = ({ route, navigation }) => {
+    const [photo, setPhoto] = useState(null);
     const [showStartDate, setShowStartDate] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
     const [showEventDate, setShowEventDate] = useState(false);
     const [showStartTime, setShowStartTime] = useState(false);
     const [showEndTime, setShowEndTime] = useState(false);
 
-  
-
-    const [submitting, setSubmitting] = useState(false);
-
+    // const handleChoosePhoto = () => {
+    //     console.warn("clicked")
+    //     launchImageLibrary({ noData: true }, (response) => {
+    //         // console.log(response);
+    //         if (response) {
+    //             setPhoto(response);
+    //         }
+    //     });
+    // };
+    const handleChoosePhoto = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+    
+        console.log(result);
+    
+        if (!result.canceled) {
+          setImage(result.assets[0]);
+        }
+      };
+    const handleChoosePhoto4 = () => {
+        console.warn("clicked")
+        // const options = {
+        //   noData: true,
+        // }
+        // ImagePicker.launchImageLibrary(options, response => {
+        //   if (response.uri) {
+        //     setPhoto(response);
+        //   }
+        // })
+      }
+   
     const id = route.params?.id || 0;
     const initialValues = {
         id: 0,
@@ -91,8 +117,21 @@ const AddEditEventContent = ({ navigation }) => {
         try {
             setSubmitting(true);
             const token = await AsyncStorage.getItem('token');
-            const response = await axios.post("http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent", values, {
+            const formData = new FormData();
+
+            formData.append("eventFile", {
+                name: photo.fileName,
+                type: photo.type,
+                uri:
+                    Platform.OS === "android" ? photo.uri : photo.uri.replace("file://", "")
+            });
+            Object.keys(values).forEach((key) => {
+                formData.append(key, (values)[key]);
+
+            });
+            const response = await axios.post("http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent", formData, {
                 headers: {
+                    'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`,
                 }
             });
@@ -131,7 +170,7 @@ const AddEditEventContent = ({ navigation }) => {
                 useEffect(() => {
                     fetchEventData(setValues);
                 }, [fetchEventData, setValues]);
-              
+
                 return (
                     <View style={styles.container}>
                         <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -163,6 +202,8 @@ const AddEditEventContent = ({ navigation }) => {
                                             <Text style={styles.errorText}>{errors.name}</Text>
                                         )}
                                     </View>
+                                </View>   
+                                <View style={styles.row}>
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.heading}>Short Description</Text>
                                         <TextInput
@@ -188,29 +229,37 @@ const AddEditEventContent = ({ navigation }) => {
                                                 value={values.bookingStartDate}
                                                 mode="date"
                                                 display="default"
-                                                onChange={(event, selectedDate) => { 
+                                                onChange={(event, selectedDate) => {
                                                     const currentDate = selectedDate || new Date();
                                                     setShowStartDate(false);
-                                                    setFieldValue("bookingStartDate", currentDate);}}
+                                                    setFieldValue("bookingStartDate", currentDate);
+                                                }}
                                             />
+                                        )}
+                                        {touched.bookingStartDate && errors.bookingStartDate && (
+                                            <Text style={styles.errorText}>{errors.bookingStartDate}</Text>
                                         )}
                                     </View>
                                     <View style={styles.bookinginputContainer}>
                                         <Text style={styles.heading}>BOOKING END DATE</Text>
                                         <TouchableOpacity onPress={() => setShowEndDate(true)} style={styles.dateButton}>
-                                            <Text>{bookingEndDate.toLocaleDateString()}</Text>
+                                            <Text>{values.bookingEndDate.toLocaleDateString()}</Text>
                                         </TouchableOpacity>
                                         {showEndDate && (
                                             <DateTimePicker
-                                                value={bookingEndDate}
+                                                value={values.bookingEndDate}
                                                 mode="date"
                                                 display="default"
-                                                onChange={(event, selectedDate) => { 
+                                                onChange={(event, selectedDate) => {
                                                     const currentDate = selectedDate || new Date();
                                                     setShowEndDate(false);
-                                                    setFieldValue("bookingEndDate", currentDate);}}
-                                               
+                                                    setFieldValue("bookingEndDate", currentDate);
+                                                }}
+
                                             />
+                                        )}
+                                        {touched.bookingEndDate && errors.bookingEndDate && (
+                                            <Text style={styles.errorText}>{errors.bookingEndDate}</Text>
                                         )}
                                     </View>
                                 </View>
@@ -219,73 +268,123 @@ const AddEditEventContent = ({ navigation }) => {
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.heading}>EVENT DATE</Text>
                                         <TouchableOpacity onPress={() => setShowEventDate(true)} style={styles.dateButton}>
-                                            <Text>{eventDate.toLocaleDateString()}</Text>
+                                            <Text>{values.eventDate.toLocaleDateString()}</Text>
                                         </TouchableOpacity>
                                         {showEventDate && (
                                             <DateTimePicker
-                                                value={eventDate}
+                                                value={values.eventDate}
                                                 mode="date"
                                                 display="default"
-                                                onChange={(event, selectedDate) => onChangeDate(event, selectedDate, setEventDate, setShowEventDate)}
+                                                onChange={(event, selectedDate) => {
+                                                    const currentDate = selectedDate || new Date();
+                                                    setShowEventDate(false);
+                                                    setFieldValue("eventDate", currentDate);
+                                                }}
                                             />
+                                        )}
+                                        {touched.bookingEndDate && errors.bookingEndDate && (
+                                            <Text style={styles.errorText}>{errors.bookingEndDate}</Text>
                                         )}
                                     </View>
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.heading}>START TIME</Text>
                                         <TouchableOpacity onPress={() => setShowStartTime(true)} style={styles.dateButton}>
-                                            <Text>{startTime.toLocaleTimeString()}</Text>
+                                            <Text>{values.startTime.toLocaleTimeString()}</Text>
                                         </TouchableOpacity>
                                         {showStartTime && (
                                             <DateTimePicker
-                                                value={startTime}
+                                                value={values.startTime}
                                                 mode="time"
                                                 display="default"
-                                                onChange={(event, selectedDate) => onChangeDate(event, selectedDate, setStartTime, setShowStartTime)}
+                                                onChange={(event, selectedDate) => {
+                                                    const currentDate = selectedDate || new Date();
+                                                    setShowStartTime(false);
+                                                    setFieldValue("startTime", currentDate);
+                                                }}
+
                                             />
+                                        )}
+                                        {touched.bookingEndDate && errors.bookingEndDate && (
+                                            <Text style={styles.errorText}>{errors.bookingEndDate}</Text>
                                         )}
                                     </View>
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.heading}>END TIME</Text>
                                         <TouchableOpacity onPress={() => setShowEndTime(true)} style={styles.dateButton}>
-                                            <Text>{endTime.toLocaleTimeString()}</Text>
+                                            <Text>{values.endTime.toLocaleTimeString()}</Text>
                                         </TouchableOpacity>
                                         {showEndTime && (
                                             <DateTimePicker
-                                                value={endTime}
+                                                value={values.endTime}
                                                 mode="time"
                                                 display="default"
-                                                onChange={(event, selectedDate) => onChangeDate(event, selectedDate, setEndTime, setShowEndTime)}
+                                                onChange={(event, selectedDate) => {
+                                                    const currentDate = selectedDate || new Date();
+                                                    setShowEndTime(false);
+                                                    setFieldValue("endTime", currentDate);
+                                                }}
+
                                             />
+                                        )}
+                                        {touched.bookingEndDate && errors.bookingEndDate && (
+                                            <Text style={styles.errorText}>{errors.bookingEndDate}</Text>
                                         )}
                                     </View>
                                 </View>
                                 <View style={styles.fullWidthContainer}>
                                     <Text style={styles.heading}>LOCATION</Text>
-                                    <TextInput style={styles.input} placeholder='Location' placeholderTextColor="#999" />
+                                    <TextInput
+                                        onChangeText={handleChange('location')}
+                                        value={values.location}
+                                        style={styles.input}
+                                        placeholder="Location"
+                                        placeholderTextColor="#999"
+                                    />
+                                    {touched.location && errors.location && (
+                                        <Text style={styles.errorText}>{errors.location}</Text>
+                                    )}
+
                                 </View>
 
                                 <View style={styles.fullWidthContainer}>
                                     <Text style={styles.heading}>Description</Text>
                                     <TextInput
+                                        onChangeText={handleChange('description')}
+                                        value={values.description}
                                         style={[styles.input, styles.descriptionInput]}
                                         placeholder='Description'
                                         placeholderTextColor="#999"
                                         multiline
                                     />
+                                    {touched.description && errors.description && (
+                                        <Text style={styles.errorText}>{errors.description}</Text>
+                                    )}
                                 </View>
 
                                 <View style={styles.row}>
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.heading}>ADULT TICKET PRICE</Text>
-                                        <TextInput style={styles.input} placeholder='0' keyboardType='numeric' placeholderTextColor="#999" />
+                                        <TextInput style={styles.input} placeholder='0' onChangeText={handleChange('adultTicketPrice')}
+                                            value={values.adultTicketPrice} keyboardType='numeric' placeholderTextColor="#999" />
+                                        {touched.adultTicketPrice && errors.adultTicketPrice && (
+                                            <Text style={styles.errorText}>{errors.adultTicketPrice}</Text>
+                                        )}
                                     </View>
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.heading}>CHILD TICKET PRICE</Text>
-                                        <TextInput style={styles.input} placeholder='0' keyboardType='numeric' placeholderTextColor="#999" />
+                                        <TextInput style={styles.input} placeholder='0' onChangeText={handleChange('childTicketPrice')}
+                                            value={values.childTicketPrice} keyboardType='numeric' placeholderTextColor="#999" />
+                                        {touched.childTicketPrice && errors.childTicketPrice && (
+                                            <Text style={styles.errorText}>{errors.childTicketPrice}</Text>
+                                        )}
                                     </View>
                                     <View style={styles.maxinputContainer}>
                                         <Text style={styles.heading}>MAX TICKETS</Text>
-                                        <TextInput style={styles.input} placeholder='0' keyboardType='numeric' placeholderTextColor="#999" />
+                                        <TextInput style={styles.input} placeholder='0' onChangeText={handleChange('maxTicket')}
+                                            value={values.maxTicket} keyboardType='numeric' placeholderTextColor="#999" />
+                                        {touched.maxTicket && errors.maxTicket && (
+                                            <Text style={styles.errorText}>{errors.maxTicket}</Text>
+                                        )}
                                     </View>
                                 </View>
 
@@ -293,16 +392,31 @@ const AddEditEventContent = ({ navigation }) => {
                                     <View style={styles.inputContainer}>
                                         <Text style={styles.heading}>Upload Image</Text>
                                         <TouchableOpacity style={styles.uploadButton}>
-                                            <Text style={styles.uploadButtonText}>Choose File</Text>
+                                            <Text style={styles.uploadButtonText} onPress={handleChoosePhoto} >Choose File</Text>
                                         </TouchableOpacity>
                                     </View>
                                     <View style={styles.inputContainer}>
-                                        {/* {image && <Image source={{ uri: '' }} style={styles.imagePreview} />} */}
+
+                                        {photo && (
+                                            <>
+                                                <Image
+                                                    source={{ uri: photo.uri }}
+                                                    style={{ width: 300, height: 300 ,//borderColor//BORDERwIDTH//BORDERRadius
+                                                        }}
+                                                />
+
+                                            </>
+                                        )}
+                                   
                                     </View>
                                 </View>
 
-                                <TouchableOpacity style={styles.saveButton}>
-                                    <Text style={styles.saveButtonText}>Save</Text>
+                                <TouchableOpacity
+                                    style={styles.saveButton}
+                                    disabled={isSubmitting}
+                                    onPress={handleSubmit}
+                                >
+                                    <Text style={styles.saveButtonText}>SAVE</Text>
                                 </TouchableOpacity>
                             </View>
                         </ScrollView>
@@ -312,6 +426,8 @@ const AddEditEventContent = ({ navigation }) => {
 
     );
 };
+
+
 
 const styles = StyleSheet.create({
     container: {
@@ -430,7 +546,9 @@ const styles = StyleSheet.create({
 
 });
 
-const AddEditEvent = () => {
+
+const AddEditEventContent = ({ route }) => {
+    const { id } = route.params || {}; // Get the passed id parameter
     return (
         <Drawer.Navigator
             drawerContent={(props) => <DrawerContent {...props} />}
@@ -441,11 +559,12 @@ const AddEditEvent = () => {
                 },
             }}
         >
-            <Drawer.Screen name="AddEditEventContent" component={AddEditEventContent} />
+            <Drawer.Screen name="AddEditEvent" component={AddEditEvent} initialParams={{ id: id }} />
         </Drawer.Navigator>
     );
 };
 
 
 
-export default AddEditEvent;
+
+export default AddEditEventContent;

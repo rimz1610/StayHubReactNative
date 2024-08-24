@@ -1,5 +1,5 @@
 import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,9 +33,10 @@ const EventListContent = ({ navigation }) => {
     }
   }, [isFocused]);
   const fetchData = async () => {
-    console.warn("I am calling with token: "+ token);
+    
     try {
       const token = await AsyncStorage.getItem('token');
+     // console.warn("I am calling with token: "+ token);
       setLoading(true);
       const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Event/GetEvents", {
         headers: {
@@ -347,5 +348,15 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
     zIndex: 1,
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
   },
 });
