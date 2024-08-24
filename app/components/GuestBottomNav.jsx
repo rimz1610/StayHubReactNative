@@ -18,6 +18,7 @@ import MyBookings from "../screen/Pages/Guest/Account/MyBookings";
 import MyRooms from "../screen/Pages/Guest/Account/MyRooms";
 import RoomServiceBooking from "../screen/Pages/Guest/Account/RoomServiceBooking";
 import { createDrawerNavigator } from "@react-navigation/drawer";
+import Account from "../screen/Pages/Guest/Account/Account";
 
 const GuestBottomNav = ({ navigation }) => {
   const Tab = createBottomTabNavigator();
@@ -96,8 +97,11 @@ const GuestBottomNav = ({ navigation }) => {
         component={SpaBooking}
         options={{ title: "Spa" }}
       />
-
-      <Tab.Screen name="Account" component={() => null} />
+      <Tab.Screen
+        name="Account"
+        component={Account}
+        options={{ title: "Account" }}
+      />
       <Tab.Screen
         name="Cart"
         component={BookingItems}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,48 +7,68 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  Platform,
+  Dimensions,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import RoomImage from "../../../../../assets/images/room.jpg";
 import RoomImage1 from "../../../../../assets/images/room-one.jpg";
 import RoomImage2 from "../../../../../assets/images/room-two.jpg";
 import RoomImage3 from "../../../../../assets/images/room-three.jpg";
-import { Dimensions } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 const { width, height } = Dimensions.get("window");
+import { Calendar } from "react-native-calendars";
+import { differenceInDays, format } from "date-fns";
+import RNPickerSelect from "react-native-picker-select";
 
 const RoomBooking = () => {
-  const [checkInDate, setCheckInDate] = useState(new Date());
-  const [checkOutDate, setCheckOutDate] = useState(new Date());
-  const [numberOfNights, setNumberOfNights] = useState(0);
-  const [showCheckInPicker, setShowCheckInPicker] = useState(false);
-  const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [nights, setNights] = useState(0);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [additionalPerson, setAdditionalPerson] = useState(1);
-  const [roomType, setRoomType] = useState("Deluxe");
+  const [roomType, setRoomType] = useState("Single");
 
-  useEffect(() => {
-    calculateNumberOfNights();
-  }, [checkInDate, checkOutDate]);
-
-  const calculateNumberOfNights = () => {
-    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
-    const nightsDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    setNumberOfNights(nightsDiff);
+  const handleDateSelect = (date) => {
+    if (!startDate || (startDate && endDate)) {
+      setStartDate(date.dateString);
+      setEndDate(null);
+    } else {
+      setEndDate(date.dateString);
+      const nights = differenceInDays(
+        new Date(date.dateString),
+        new Date(startDate)
+      );
+      setNights(nights);
+    }
   };
 
-  const onCheckInChange = (event, selectedDate) => {
-    const currentDate = selectedDate || checkInDate;
-    setShowCheckInPicker(false);
-    setCheckInDate(currentDate);
-  };
+  const getMarkedDates = () => {
+    if (!startDate) return {};
 
-  const onCheckOutChange = (event, selectedDate) => {
-    const currentDate = selectedDate || checkOutDate;
-    setShowCheckOutPicker(false);
-    setCheckOutDate(currentDate);
+    const markedDates = {
+      [startDate]: { startingDay: true, color: "#180161", textColor: "white" },
+    };
+
+    if (endDate) {
+      markedDates[endDate] = {
+        endingDay: true,
+        color: "#180161",
+        textColor: "white",
+      };
+
+      let currentDate = new Date(startDate);
+      const end = new Date(endDate);
+      while (currentDate < end) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        const dateString = format(currentDate, "yyyy-MM-dd");
+        if (dateString !== endDate) {
+          markedDates[dateString] = { color: "#180161", textColor: "white" };
+        }
+      }
+    }
+
+    return markedDates;
   };
 
   const renderRoomItem = (name, type, price, image) => (
@@ -58,13 +78,24 @@ const RoomBooking = () => {
         <Text style={styles.roomName}>{name}</Text>
         <Text style={styles.roomType}>{type}</Text>
         <Text style={styles.roomPrice}>${price}/night</Text>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            onPress={() => setShowDetails(true)}
+            style={styles.viewDetails}
+          >
+            <Text style={styles.viewDetailsText}>View Details</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              /* Handle booking */
+            }}
+            style={styles.bookingButton}
+          >
+            <Ionicons name="calendar" size={17} color="#fff" />
+            <Text style={styles.bookingButtonText}>Booking</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <TouchableOpacity
-        onPress={() => setShowDetails(true)}
-        style={styles.viewDetails}
-      >
-        <Text style={styles.viewDetailsText}>View Details</Text>
-      </TouchableOpacity>
     </View>
   );
 
@@ -73,85 +104,128 @@ const RoomBooking = () => {
     setShowDetails(false);
   };
 
+  const additionalPersonOptions = Array.from({ length: 10 }, (_, i) => ({
+    label: (i + 1).toString(),
+    value: i + 1,
+  }));
+
+  const roomTypeOptions = [
+    "Single",
+    "Double",
+    "Triple",
+    "Twin",
+    "King",
+    "Queen",
+    "Suite",
+    "Studio",
+  ].map((type) => ({ label: type, value: type }));
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.dateSection}>
-        <Text style={styles.sectionLabel}>Check In & Check Out Date</Text>
-        <View style={styles.dateButtonsContainer}>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowCheckInPicker(true)}
-          >
-            <Text style={styles.dateButtonText}>
-              Check-In Date: {checkInDate.toDateString()}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowCheckOutPicker(true)}
-          >
-            <Text style={styles.dateButtonText}>
-              Check-Out Date: {checkOutDate.toDateString()}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.nightsText}>No of Nights: {numberOfNights}</Text>
+        <Text style={styles.sectionLabel}>Select Your Stay Dates</Text>
+        <TouchableOpacity
+          style={styles.datePickerButton}
+          onPress={() => setShowCalendar(true)}
+        >
+          <Text style={styles.datePickerButtonText}>
+            {startDate && endDate
+              ? `${format(new Date(startDate), "MMM dd, yyyy")} - ${format(
+                  new Date(endDate),
+                  "MMM dd, yyyy"
+                )}`
+              : "Select dates"}
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {showCheckInPicker && (
-        <DateTimePicker
-          testID="checkInDatePicker"
-          value={checkInDate}
-          mode="date"
-          display="default"
-          onChange={onCheckInChange}
-        />
-      )}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showCalendar}
+        onRequestClose={() => setShowCalendar(false)}
+      >
+        <View style={styles.calendarModalView}>
+          <Calendar
+            onDayPress={handleDateSelect}
+            markedDates={getMarkedDates()}
+            markingType={"period"}
+            theme={{
+              backgroundColor: "#ffffff",
+              calendarBackground: "#ffffff",
+              textSectionTitleColor: "#180161",
+              selectedDayBackgroundColor: "#180161",
+              selectedDayTextColor: "#ffffff",
+              todayTextColor: "#180161",
+              dayTextColor: "#2d4150",
+              textDisabledColor: "#d9e1e8",
+              dotColor: "#180161",
+              selectedDotColor: "#ffffff",
+              arrowColor: "#180161",
+              monthTextColor: "#180161",
+              indicatorColor: "#180161",
+              textDayFontWeight: "300",
+              textMonthFontWeight: "bold",
+              textDayHeaderFontWeight: "300",
+              textDayFontSize: 16,
+              textMonthFontSize: 18,
+              textDayHeaderFontSize: 16,
+            }}
+          />
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowCalendar(false)}
+          >
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
 
-      {showCheckOutPicker && (
-        <DateTimePicker
-          testID="checkOutDatePicker"
-          value={checkOutDate}
-          mode="date"
-          display="default"
-          onChange={onCheckOutChange}
-        />
-      )}
-
-      <View style={styles.separator} />
+      <View style={styles.stayInfo}>
+        <Text style={styles.stayInfoText}>
+          Check-in:{" "}
+          {startDate
+            ? format(new Date(startDate), "MMM dd, yyyy")
+            : "Not selected"}
+        </Text>
+        <Text style={styles.stayInfoText}>
+          Check-out:{" "}
+          {endDate ? format(new Date(endDate), "MMM dd, yyyy") : "Not selected"}
+        </Text>
+        <Text style={styles.stayInfoText}>Number of Nights: {nights}</Text>
+      </View>
 
       <View style={styles.filterSection}>
-        <View style={styles.optionBar}>
-          <Text style={styles.optionLabel}>Additional Person:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={additionalPerson}
-              style={styles.picker}
-              onValueChange={(itemValue) => setAdditionalPerson(itemValue)}
-            >
-              {[...Array(10).keys()].map((i) => (
-                <Picker.Item key={i} label={`${i + 1}`} value={i + 1} />
-              ))}
-            </Picker>
+        <View style={styles.pickerContainer}>
+          <View style={styles.pickerWrapper}>
+            <Text style={styles.pickerLabel}>Persons</Text>
+            <RNPickerSelect
+              onValueChange={(value) => setAdditionalPerson(value)}
+              items={additionalPersonOptions}
+              style={pickerSelectStyles}
+              value={additionalPerson}
+              placeholder={{}}
+              Icon={() => (
+                <Ionicons name="chevron-down" size={24} color="#180161" />
+              )}
+            />
+          </View>
+          <View style={styles.pickerWrapper}>
+            <Text style={styles.pickerLabel}>Room Type</Text>
+            <RNPickerSelect
+              onValueChange={(value) => setRoomType(value)}
+              items={roomTypeOptions}
+              style={pickerSelectStyles}
+              value={roomType}
+              placeholder={{}}
+              Icon={() => (
+                <Ionicons name="chevron-down" size={24} color="#180161" />
+              )}
+            />
           </View>
         </View>
-
-        <View style={styles.optionBar}>
-          <Text style={styles.optionLabel}>Room Type:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={roomType}
-              style={styles.picker}
-              onValueChange={(itemValue) => setRoomType(itemValue)}
-            >
-              {["Deluxe", "Suite", "Standard"].map((type) => (
-                <Picker.Item key={type} label={type} value={type} />
-              ))}
-            </Picker>
-          </View>
-        </View>
-
         <TouchableOpacity style={styles.filterButton}>
+          <Ionicons name="filter" size={24} color="#fff" />
           <Text style={styles.filterButtonText}>Filter</Text>
         </TouchableOpacity>
       </View>
@@ -237,13 +311,12 @@ const RoomBooking = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#f5f5f5",
   },
   dateSection: {
+    backgroundColor: "#ffffff",
+    padding: 20,
     marginBottom: 20,
-    backgroundColor: "white",
-    padding: 15,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: {
@@ -255,119 +328,153 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   sectionLabel: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 15,
-    color: "#333",
-  },
-  dateButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  dateButton: {
-    backgroundColor: "#e0e0e0",
-    padding: 12,
-    borderRadius: 8,
-    width: "48%",
-    alignItems: "center",
-  },
-  dateButtonText: {
-    color: "#333",
-    fontWeight: "600",
-  },
-  nightsText: {
-    marginTop: 15,
-    fontSize: 16,
-    fontWeight: "600",
     color: "#180161",
   },
-  separator: {
-    height: 1,
-    backgroundColor: "black",
-    marginBottom: 15,
-  },
-  filterSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  optionBar: {
-    flexDirection: "row",
+  datePickerButton: {
+    backgroundColor: "#f0f0f0",
+    padding: 15,
+    borderRadius: 8,
     alignItems: "center",
   },
-  optionLabel: {
+  datePickerButtonText: {
     fontSize: 16,
+    color: "#180161",
     fontWeight: "600",
-    color: "#333",
-    marginRight: 10,
   },
-  pickerContainer: {
-    backgroundColor: "#e0e0e0",
-    borderRadius: 8,
-    overflow: "hidden",
-    width: 120,
-  },
-  picker: {
-    height: 40,
-  },
-  filterButton: {
-    backgroundColor: "#180161",
-    borderRadius: 8,
-    padding: 10,
-    justifyContent: "center",
+  calendarModalView: {
+    backgroundColor: "white",
+    margin: 20,
+    borderRadius: 20,
+    padding: 35,
     alignItems: "center",
-    flex: 1,
-    marginLeft: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  filterButtonText: {
+  closeButton: {
+    backgroundColor: "#180161",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    marginTop: 15,
+  },
+  closeButtonText: {
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
   },
+  stayInfo: {
+    backgroundColor: "#ffffff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  stayInfoText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: "#333",
+  },
   availableRoomsHeading: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 15,
+    marginLeft: 20,
+    color: "#180161",
   },
   roomItem: {
     flexDirection: "row",
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 10,
-    borderRadius: 5,
+    marginHorizontal: 20,
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
   },
   roomImage: {
-    width: 80,
-    height: 80,
-    marginRight: 10,
-    borderRadius: 5,
+    width: 100,
+    height: 100,
+    marginRight: 15,
+    borderRadius: 10,
   },
   roomInfo: {
     flex: 1,
     justifyContent: "space-between",
   },
   roomName: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  roomType: {
-    fontSize: 14,
-    color: "#666",
-  },
-  roomPrice: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#180161",
   },
+  roomType: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 5,
+  },
+  roomPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#180161",
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "70%",
+  },
   viewDetails: {
-    justifyContent: "center",
-    marginLeft: 10,
+    padding: 6,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#180161",
   },
   viewDetailsText: {
     color: "#180161",
-    textDecorationLine: "underline",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  bookingButton: {
+    marginLeft: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#180161",
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 5,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  bookingButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 5,
+    fontSize: 12,
   },
   modalView: {
     position: "absolute",
@@ -458,6 +565,79 @@ const styles = StyleSheet.create({
     backgroundColor: "#180161",
     padding: 10,
     borderRadius: 5,
+  },
+  filterSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  pickerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flex: 1,
+    marginRight: 10,
+  },
+  pickerWrapper: {
+    width: "48%",
+  },
+  pickerLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#180161",
+    marginBottom: 5,
+  },
+  filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#180161",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  filterButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 5,
+  },
+});
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    color: "#180161",
+    paddingRight: 30,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    color: "#180161",
+    paddingRight: 30,
+    backgroundColor: "#fff",
+    elevation: 2,
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
   },
 });
 
