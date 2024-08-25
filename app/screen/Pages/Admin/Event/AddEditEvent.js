@@ -4,7 +4,7 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Image,
+  Image, Alert,
   ScrollView,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
@@ -27,8 +27,8 @@ const addEditSchema = Yup.object().shape({
   bookingEndDate: Yup.date().required("Required"),
   description: Yup.string().required("Required"),
   eventImage: Yup.string().notRequired(),
-  startTime: Yup.object().required("Required"),
-  endTime: Yup.object().required("Required"),
+  startTime: Yup.string().required("Required"),
+  endTime: Yup.string().required("Required"),
   location: Yup.string().required("Required"),
   adultTicketPrice: Yup.number().min(0, "Must be positive"),
   childTicketPrice: Yup.number().min(0, "Must be positive"),
@@ -66,6 +66,19 @@ const AddEditEvent = ({ route, navigation }) => {
       setImage(result.assets[0]);
     }
   };
+  const formatTimeSpan = (date) => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+  // Function to convert "HH:mm:ss" string to a Date object
+  const timeStringToDate = (timeString) => {
+    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, seconds, 0);
+    return date;
+  };
   // const handleChoosePhoto = async () => {
   //     // No permissions request is necessary for launching the image library
   //     let result = await ImagePicker.launchImageLibraryAsync({
@@ -102,9 +115,9 @@ const AddEditEvent = ({ route, navigation }) => {
     bookingStartDate: new Date(),
     bookingEndDate: new Date(),
     description: "",
-    eventImage: Yup.string().notRequired(),
-    startTime: new Date(),
-    endTime: new Date(),
+    eventImage: "",
+    startTime: "00:00:00",
+    endTime: "00:00:00",
     location: "",
     adultTicketPrice: 0,
     childTicketPrice: 0,
@@ -144,7 +157,8 @@ const AddEditEvent = ({ route, navigation }) => {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const formData = new FormData();
-
+        console.warn(photo);
+        
         formData.append("eventFile", {
           name: photo.fileName,
           type: photo.type,
@@ -153,16 +167,20 @@ const AddEditEvent = ({ route, navigation }) => {
               ? photo.uri
               : photo.uri.replace("file://", ""),
         });
+        console.warn(values);
         Object.keys(values).forEach((key) => {
           formData.append(key, values[key]);
         });
+        console.warn("FormData Content:");
+      
+
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent",
           formData,
           {
             headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data"
+           //   Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -178,6 +196,7 @@ const AddEditEvent = ({ route, navigation }) => {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
+        console.warn(error);
         Alert.alert("Error", "An error occurred while saving the event.");
       } finally {
         setSubmitting(false);
@@ -339,9 +358,9 @@ const AddEditEvent = ({ route, navigation }) => {
                         }}
                       />
                     )}
-                    {touched.bookingEndDate && errors.bookingEndDate && (
+                    {touched.eventDate && errors.eventDate && (
                       <Text style={styles.errorText}>
-                        {errors.bookingEndDate}
+                        {errors.eventDate}
                       </Text>
                     )}
                   </View>
@@ -351,23 +370,23 @@ const AddEditEvent = ({ route, navigation }) => {
                       onPress={() => setShowStartTime(true)}
                       style={styles.dateButton}
                     >
-                      <Text>{values.startTime.toLocaleTimeString()}</Text>
+                      <Text>{timeStringToDate(values.startTime).toLocaleTimeString()}</Text>
                     </TouchableOpacity>
                     {showStartTime && (
                       <DateTimePicker
-                        value={values.startTime}
+                        value={timeStringToDate(values.startTime)}
                         mode="time"
                         display="default"
                         onChange={(event, selectedDate) => {
                           const currentDate = selectedDate || new Date();
                           setShowStartTime(false);
-                          setFieldValue("startTime", currentDate);
+                          setFieldValue("startTime", formatTimeSpan(currentDate)); // Pass the formatted time string
                         }}
                       />
                     )}
-                    {touched.bookingEndDate && errors.bookingEndDate && (
+                    {touched.startTime && errors.startTime && (
                       <Text style={styles.errorText}>
-                        {errors.bookingEndDate}
+                        {errors.startTime}
                       </Text>
                     )}
                   </View>
@@ -377,23 +396,23 @@ const AddEditEvent = ({ route, navigation }) => {
                       onPress={() => setShowEndTime(true)}
                       style={styles.dateButton}
                     >
-                      <Text>{values.endTime.toLocaleTimeString()}</Text>
+                      <Text>{timeStringToDate(values.endTime).toLocaleTimeString()}</Text>
                     </TouchableOpacity>
                     {showEndTime && (
                       <DateTimePicker
-                        value={values.endTime}
+                        value={timeStringToDate(values.endTime)}
                         mode="time"
                         display="default"
                         onChange={(event, selectedDate) => {
                           const currentDate = selectedDate || new Date();
                           setShowEndTime(false);
-                          setFieldValue("endTime", currentDate);
+                          setFieldValue("endTime", formatTimeSpan(currentDate));
                         }}
                       />
                     )}
-                    {touched.bookingEndDate && errors.bookingEndDate && (
+                    {touched.endTime && errors.endTime && (
                       <Text style={styles.errorText}>
-                        {errors.bookingEndDate}
+                        {errors.endTime}
                       </Text>
                     )}
                   </View>
@@ -627,6 +646,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: "white",
   },
+  errorText: {
+    fontSize: 12,
+    color: 'red',
+
+  },
 });
 
 const AddEditEventContent = ({ route }) => {
@@ -642,7 +666,7 @@ const AddEditEventContent = ({ route }) => {
       }}
     >
       <Drawer.Screen
-        name="AddEditEvent"
+        name="AddEditEventContent"
         component={AddEditEvent}
         initialParams={{ id: id }}
       />
