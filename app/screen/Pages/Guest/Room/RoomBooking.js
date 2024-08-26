@@ -624,6 +624,12 @@ const styles = StyleSheet.create({
 });
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
+    pickerWrapper: {
+      width: "48%",
+      ...Platform.select({
+        ios: {},
+      }),
+    },
     fontSize: 16,
     paddingVertical: 12,
     paddingHorizontal: 10,
