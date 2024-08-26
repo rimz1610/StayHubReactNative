@@ -61,8 +61,9 @@ const AddEditEvent = ({ route, navigation }) => {
       aspect: [4, 3],
       quality: 1,
     });
-
+    console.warn(result.assets[0])
     if (!result.canceled) {
+
       setImage(result.assets[0]);
     }
   };
@@ -158,24 +159,24 @@ const AddEditEvent = ({ route, navigation }) => {
         const token = await AsyncStorage.getItem("token");
         const formData = new FormData();
         console.warn(photo);
-        
-        formData.append("eventFile", {
-          name: photo.fileName,
-          type: photo.type,
-          uri:
-            Platform.OS === "android"
-              ? photo.uri
-              : photo.uri.replace("file://", ""),
-        });
-        console.warn(values);
-        Object.keys(values).forEach((key) => {
-          formData.append(key, values[key]);
-        });
+          //with event header
+        const imageUri = photo.uri.replace('file:/data', 'file:///data');    
+        console.warn(imageUri);
+        if (Platform.OS === 'web') {
+          formData.append('eventFile', imageUri);
+        } else {
+          formData.append('eventFile', {
+            uri: imageUri, 
+            type: photo.mimeType, 
+            name: photo.fileName,
+          });
+        }      
+        formData.append("eventName", "rimsha");   
+        //with event body     
         console.warn("FormData Content:");
-      
-
+        console.warn(photo);
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent",
+          "http://majidalipl-001-site5.gtempurl.com/Event/TestEventHeader",
           formData,
           {
             headers: {
@@ -184,7 +185,7 @@ const AddEditEvent = ({ route, navigation }) => {
             },
           }
         );
-
+       console.warn(response);
         if (response.data.success) {
           Alert.alert("Success", "Event saved successfully.", [
             {
