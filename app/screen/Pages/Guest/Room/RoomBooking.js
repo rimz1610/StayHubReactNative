@@ -203,18 +203,17 @@ const RoomBooking = () => {
             <RNPickerSelect
               onValueChange={(value) => setAdditionalPerson(value)}
               items={additionalPersonOptions}
-              style={{
-                ...pickerSelectStyles,
-                iconContainer: {
-                  ...pickerSelectStyles.iconContainer,
-                  top: Platform.OS === "android" ? 5 : 10,
-                },
-              }}
+              style={pickerSelectStyles}
               value={additionalPerson}
               placeholder={{}}
               useNativeAndroidPickerStyle={false}
               Icon={() => (
-                <Ionicons name="chevron-down" size={24} color="#180161" />
+                <Ionicons
+                  name="chevron-down"
+                  size={24}
+                  color="#180161"
+                  style={styles.iconStyle}
+                />
               )}
             />
           </View>
@@ -223,18 +222,17 @@ const RoomBooking = () => {
             <RNPickerSelect
               onValueChange={(value) => setRoomType(value)}
               items={roomTypeOptions}
-              style={{
-                ...pickerSelectStyles,
-                iconContainer: {
-                  ...pickerSelectStyles.iconContainer,
-                  top: Platform.OS === "android" ? 5 : 10,
-                },
-              }}
+              style={pickerSelectStyles}
               value={roomType}
               placeholder={{}}
               useNativeAndroidPickerStyle={false}
               Icon={() => (
-                <Ionicons name="chevron-down" size={24} color="#180161" />
+                <Ionicons
+                  name="chevron-down"
+                  size={24}
+                  color="#180161"
+                  style={styles.iconStyle}
+                />
               )}
             />
           </View>
@@ -582,17 +580,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   filterSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
     paddingHorizontal: 20,
     marginBottom: 20,
   },
   pickerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    flex: 1,
-    marginRight: 10,
+    marginBottom: 10,
   },
   pickerWrapper: {
     width: "48%",
@@ -603,9 +597,15 @@ const styles = StyleSheet.create({
     color: "#180161",
     marginBottom: 5,
   },
+  position: "absolute",
+  top: "50%",
+  right: 12,
+  transform: [{ translateY: -12 }],
+
   filterButton: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#180161",
     paddingVertical: 10,
     paddingHorizontal: 15,
@@ -622,14 +622,9 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
 });
+
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
-    pickerWrapper: {
-      width: "48%",
-      ...Platform.select({
-        ios: {},
-      }),
-    },
     fontSize: 16,
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -657,8 +652,9 @@ const pickerSelectStyles = StyleSheet.create({
     elevation: 2,
   },
   iconContainer: {
-    top: 10,
+    top: Platform.OS === "ios" ? 5 : 12,
     right: 12,
+    transform: [{ translateY: 3 }],
   },
 });
 

@@ -27,13 +27,13 @@ const EventBooking = () => {
   ];
 
   const handleSelectionChange = (value) => {
-    console.log("Selected value:", value); // Debugging line
     if (value) {
-      const [event, date] = value.split("-");
-      console.log("Event:", event); // Debugging line
-      console.log("Date:", date); // Debugging line
+      const [event, year, month, day] = value.split("-");
       setSelectedEvent(event);
-      setSelectedDate(formatDate(date));
+      setSelectedDate(`${day}/${month}/${year}`);
+    } else {
+      setSelectedEvent(null);
+      setSelectedDate(null);
     }
   };
 
