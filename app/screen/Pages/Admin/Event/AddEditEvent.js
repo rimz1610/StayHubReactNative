@@ -4,7 +4,8 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Image, Alert,
+  Image,
+  Alert,
   ScrollView,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
@@ -61,21 +62,19 @@ const AddEditEvent = ({ route, navigation }) => {
       aspect: [4, 3],
       quality: 1,
     });
-    console.warn(result.assets[0])
     if (!result.canceled) {
-
       setImage(result.assets[0]);
     }
   };
   const formatTimeSpan = (date) => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
     return `${hours}:${minutes}:${seconds}`;
   };
   // Function to convert "HH:mm:ss" string to a Date object
   const timeStringToDate = (timeString) => {
-    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+    const [hours, minutes, seconds] = timeString.split(":").map(Number);
     const date = new Date();
     date.setHours(hours, minutes, seconds, 0);
     return date;
@@ -158,34 +157,42 @@ const AddEditEvent = ({ route, navigation }) => {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const formData = new FormData();
-        console.warn(photo);
-          //with event header
-        const imageUri = photo.uri.replace('file:/data', 'file:///data');    
-        console.warn(imageUri);
-        if (Platform.OS === 'web') {
-          formData.append('eventFile', imageUri);
-        } else {
-          formData.append('eventFile', {
-            uri: imageUri, 
-            type: photo.mimeType, 
-            name: photo.fileName,
+
+        if (photo) {
+          console.warn(photo);
+          const imageUri = photo.uri.startsWith("file://")
+            ? photo.uri
+            : "file://" + photo.uri;
+
+          console.warn(imageUri);
+
+          formData.append("eventFile", {
+            uri: imageUri,
+            type: photo.mimeType || "image/png",
+            name: photo.fileName || "image.png",
           });
-        }      
-        formData.append("eventName", "rimsha");   
-        //with event body     
+        }
+
+        formData.append("eventName", values.eventName || "rimsha");
+
         console.warn("FormData Content:");
-        console.warn(photo);
+        for (let [key, value] of formData._parts) {
+          console.warn(key, value);
+        }
+
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Event/TestEventHeader",
+          "http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent",
           formData,
           {
             headers: {
-              "Content-Type": "multipart/form-data"
-           //   Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
             },
           }
         );
-       console.warn(response);
+
+        console.warn(response.data);
+
         if (response.data.success) {
           Alert.alert("Success", "Event saved successfully.", [
             {
@@ -203,7 +210,7 @@ const AddEditEvent = ({ route, navigation }) => {
         setSubmitting(false);
       }
     },
-    [navigation]
+    [navigation, photo]
   );
 
   return (
@@ -360,9 +367,7 @@ const AddEditEvent = ({ route, navigation }) => {
                       />
                     )}
                     {touched.eventDate && errors.eventDate && (
-                      <Text style={styles.errorText}>
-                        {errors.eventDate}
-                      </Text>
+                      <Text style={styles.errorText}>{errors.eventDate}</Text>
                     )}
                   </View>
                   <View style={styles.inputContainer}>
@@ -371,7 +376,11 @@ const AddEditEvent = ({ route, navigation }) => {
                       onPress={() => setShowStartTime(true)}
                       style={styles.dateButton}
                     >
-                      <Text>{timeStringToDate(values.startTime).toLocaleTimeString()}</Text>
+                      <Text>
+                        {timeStringToDate(
+                          values.startTime
+                        ).toLocaleTimeString()}
+                      </Text>
                     </TouchableOpacity>
                     {showStartTime && (
                       <DateTimePicker
@@ -381,14 +390,15 @@ const AddEditEvent = ({ route, navigation }) => {
                         onChange={(event, selectedDate) => {
                           const currentDate = selectedDate || new Date();
                           setShowStartTime(false);
-                          setFieldValue("startTime", formatTimeSpan(currentDate)); // Pass the formatted time string
+                          setFieldValue(
+                            "startTime",
+                            formatTimeSpan(currentDate)
+                          ); // Pass the formatted time string
                         }}
                       />
                     )}
                     {touched.startTime && errors.startTime && (
-                      <Text style={styles.errorText}>
-                        {errors.startTime}
-                      </Text>
+                      <Text style={styles.errorText}>{errors.startTime}</Text>
                     )}
                   </View>
                   <View style={styles.inputContainer}>
@@ -397,7 +407,9 @@ const AddEditEvent = ({ route, navigation }) => {
                       onPress={() => setShowEndTime(true)}
                       style={styles.dateButton}
                     >
-                      <Text>{timeStringToDate(values.endTime).toLocaleTimeString()}</Text>
+                      <Text>
+                        {timeStringToDate(values.endTime).toLocaleTimeString()}
+                      </Text>
                     </TouchableOpacity>
                     {showEndTime && (
                       <DateTimePicker
@@ -412,9 +424,7 @@ const AddEditEvent = ({ route, navigation }) => {
                       />
                     )}
                     {touched.endTime && errors.endTime && (
-                      <Text style={styles.errorText}>
-                        {errors.endTime}
-                      </Text>
+                      <Text style={styles.errorText}>{errors.endTime}</Text>
                     )}
                   </View>
                 </View>
@@ -499,26 +509,25 @@ const AddEditEvent = ({ route, navigation }) => {
                 <View style={styles.row}>
                   <View style={styles.inputContainer}>
                     <Text style={styles.heading}>Upload Image</Text>
-                    <TouchableOpacity style={styles.uploadButton}>
-                      <Text style={styles.uploadButtonText} onPress={pickImage}>
-                        Choose File
-                      </Text>
+                    <TouchableOpacity
+                      style={styles.uploadButton}
+                      onPress={pickImage}
+                    >
+                      <Text style={styles.uploadButtonText}>Choose File</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.inputContainer}>
-                    {photo && (
-                      <>
-                        <Image
-                          source={{ uri: photo.uri }}
-                          style={{
-                            width: 150,
-                            height: 150,
-                            borderRadius: 10,
-                            borderWidth: 1,
-                            borderColor: "#999",
-                          }}
-                        />
-                      </>
+                    {photo && photo.uri && (
+                      <Image
+                        source={{ uri: photo.uri }}
+                        style={{
+                          width: 150,
+                          height: 150,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: "#999",
+                        }}
+                      />
                     )}
                   </View>
                 </View>
@@ -649,8 +658,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: 'red',
-
+    color: "red",
   },
 });
 

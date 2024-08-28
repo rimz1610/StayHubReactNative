@@ -8,7 +8,7 @@ import {
   FlatList,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-
+import { useNavigation } from "@react-navigation/native";
 const UserInfo = ({ name, email, phone }) => (
   <View style={styles.userInfoContainer}>
     <Text style={styles.userInfoTitle}>User Information</Text>
@@ -52,6 +52,7 @@ const BookingItem = ({ item, onPressReceipt }) => (
 );
 
 const MyBookings = () => {
+  const navigation = useNavigation();
   const userInfo = {
     name: "Fatima Zuhra",
     email: "fatima345@yahoo.com",
@@ -84,10 +85,9 @@ const MyBookings = () => {
   ];
 
   const handleReceiptPress = (booking) => {
-    // Navigate to receipt screen
-    console.log("Navigate to receipt for booking:", booking.MyBookingReceipt);
+    // Navigate to MyBookingReceipt screen with booking data
+    navigation.navigate("BookingReceipt", { booking });
   };
-
   return (
     <ScrollView style={styles.container}>
       <UserInfo {...userInfo} />

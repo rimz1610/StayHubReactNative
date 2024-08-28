@@ -90,6 +90,16 @@ const GuestBottomNav = ({ navigation }) => {
       textAlign: "center",
     },
     headerTitleAlign: "center",
+    headerLeft: () => (
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("HotelMap");
+        }}
+        style={{ marginLeft: 15 }}
+      >
+        <Ionicons name="location-outline" size={24} color="white" />
+      </TouchableOpacity>
+    ),
     headerRight: () => (
       <TouchableOpacity
         onPress={() => {

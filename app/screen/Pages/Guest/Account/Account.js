@@ -17,7 +17,6 @@ const Account = ({ navigation }) => {
     { name: "Edit My Profile", icon: "person", route: "EditMyProfile" },
     { name: "My Rooms", icon: "bed", route: "MyRooms" },
     { name: "Change Password", icon: "lock-closed", route: "ChangePassword" },
-    { name: "Hotel Map", icon: "map", route: "HotelMap" },
   ];
   const handleLogout = async () => {
     try {

@@ -9,8 +9,10 @@ import {
   Modal,
   FlatList,
   Platform,
+  Image,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
+import Carousel from "react-native-reanimated-carousel";
 
 const { width, height } = Dimensions.get("window");
 
@@ -42,6 +44,12 @@ const GymBooking = () => {
     closeDropdown();
   };
 
+  const carouselImages = [
+    require("../../../../../assets/images/gym.jpg"),
+    require("../../../../../assets/images/gym-one.jpg"), // Add more images as needed
+    require("../../../../../assets/images/gym-two.jpg"),
+  ];
+
   const renderDropdown = (type, selectedValue, customStyle = {}) => (
     <TouchableOpacity
       style={[styles.dropdown, customStyle]}
@@ -56,22 +64,42 @@ const GymBooking = () => {
 
   const renderGymBox = (id, title, timing, fee) => {
     return (
-      <View style={styles.box}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.timing}>Timing: {timing}</Text>
-        <Text style={styles.fee}>Fee: ${fee}</Text>
-        <Text style={styles.sessionLabel}>Monthly Session</Text>
-        {renderDropdown(id, selectedMonths[id])}
-        <TouchableOpacity style={styles.button}>
-          <Icon name="calendar" size={16} color="#fff" />
-          <Text style={styles.buttonText}>Booking Now</Text>
-        </TouchableOpacity>
+      <View style={styles.boxcontainer}>
+        <View style={styles.box}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.timing}>Timing: {timing}</Text>
+          <Text style={styles.fee}>Fee: ${fee}</Text>
+          <Text style={styles.sessionLabel}>Monthly Session</Text>
+          {renderDropdown(id, selectedMonths[id])}
+          <TouchableOpacity style={styles.button}>
+            <Icon name="calendar" size={16} color="#fff" />
+            <Text style={styles.buttonText}>Booking Now</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.carouselContainer}>
+        <Carousel
+          loop
+          width={width}
+          height={width * 0.7}
+          autoPlay={true}
+          data={carouselImages}
+          scrollAnimationDuration={1000}
+          renderItem={({ item }) => (
+            <Image source={item} style={styles.carouselImage} />
+          )}
+        />
+      </View>
+      <View style={styles.tagContainerWrapper}>
+        <View style={styles.tagContainer}>
+          <Text style={styles.tagText}>Gym Services</Text>
+        </View>
+      </View>
       <View style={styles.genderSection}>
         <Text style={styles.genderTitle}>Select Gender</Text>
         {renderDropdown("gender", selectedGender, styles.genderDropdown)}
@@ -119,8 +147,38 @@ const GymBooking = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 15,
     backgroundColor: "#f5f5f5",
+  },
+  boxcontainer: {
+    padding: 10,
+  },
+  carouselContainer: {
+    width: width,
+    height: width * 0.7,
+    overflow: "hidden",
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  carouselImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  tagContainerWrapper: {
+    alignItems: "center",
+    marginTop: -20,
+    marginBottom: 20,
+  },
+  tagContainer: {
+    backgroundColor: "#180161",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  tagText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   genderSection: {
     backgroundColor: "white",

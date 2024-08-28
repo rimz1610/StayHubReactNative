@@ -14,6 +14,7 @@ import RoomImage from "../../../../../assets/images/room.jpg";
 import RoomImage1 from "../../../../../assets/images/room-one.jpg";
 import RoomImage2 from "../../../../../assets/images/room-two.jpg";
 import RoomImage3 from "../../../../../assets/images/room-three.jpg";
+import Carousel from "react-native-reanimated-carousel";
 import { Ionicons } from "@expo/vector-icons";
 const { width, height } = Dimensions.get("window");
 import { Calendar } from "react-native-calendars";
@@ -71,6 +72,11 @@ const RoomBooking = () => {
 
     return markedDates;
   };
+  const carouselImages = [
+    require("../../../../../assets/images/room-one.jpg"),
+    require("../../../../../assets/images/room-two.jpg"), // Add more images as needed
+    require("../../../../../assets/images/room-three.jpg"),
+  ];
 
   const renderRoomItem = (name, type, price, image) => (
     <View style={styles.roomItem}>
@@ -123,6 +129,24 @@ const RoomBooking = () => {
 
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.carouselContainer}>
+        <Carousel
+          loop
+          width={width}
+          height={width * 0.7}
+          autoPlay={true}
+          data={carouselImages}
+          scrollAnimationDuration={1000}
+          renderItem={({ item }) => (
+            <Image source={item} style={styles.carouselImage} />
+          )}
+        />
+      </View>
+      <View style={styles.tagContainerWrapper}>
+        <View style={styles.tagContainer}>
+          <Text style={styles.tagText}>Room Services</Text>
+        </View>
+      </View>
       <View style={styles.dateSection}>
         <Text style={styles.sectionLabel}>Select Your Stay Dates</Text>
         <TouchableOpacity
@@ -325,6 +349,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  carouselContainer: {
+    width: width,
+    height: width * 0.7,
+    overflow: "hidden",
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  carouselImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  tagContainerWrapper: {
+    alignItems: "center",
+    marginTop: -20,
+    marginBottom: 20,
+  },
+  tagContainer: {
+    backgroundColor: "#180161",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  tagText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   dateSection: {
     backgroundColor: "#ffffff",

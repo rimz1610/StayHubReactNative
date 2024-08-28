@@ -27,6 +27,8 @@ import ChangePassword from "./Pages/Guest/Account/ChangePassword";
 import ResetPassword from "./Pages/Auth/ResetPassword";
 import GuestBottomNav from "../components/GuestBottomNav";
 import GuestDrawer from "../components/GuestDrawerContent";
+import MyBookings from "./Pages/Guest/Account/MyBookings";
+import BookingReceipt from "./Pages/Guest/Booking/BookingReceipt";
 
 const Stack = createNativeStackNavigator();
 
@@ -67,6 +69,8 @@ function App() {
             component={StaffActivityList}
           />
           <Stack.Screen name="GuestBottomNav" component={GuestBottomNav} />
+          <Stack.Screen name="MyBookings" component={MyBookings} />
+          <Stack.Screen name="BookingReceipt" component={BookingReceipt} />
           {/* <Stack.Screen name="GuestDrawer" component={GuestDrawer} /> */}
         </Stack.Navigator>
       </GestureHandlerRootView>
