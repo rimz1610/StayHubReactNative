@@ -64,7 +64,7 @@ const AddEditEvent = ({ route, navigation }) => {
     });
     if (!result.canceled) {
       setImage(result.assets[0]);
-      await AsyncStorage.setItem("eventFile",result.assets[0]);
+      await AsyncStorage.setItem("eventFile",JSON.stringify(result.assets[0]));
     }
   };
   const formatTimeSpan = (date) => {
@@ -126,7 +126,7 @@ const AddEditEvent = ({ route, navigation }) => {
   };
 
   const fetchEventData = useCallback(
-    async (formikSetValues) => {
+    async (formikSetValues, setFieldValue) => {
       if (id > 0) {
         try {
           const token = await AsyncStorage.getItem("token");
@@ -143,7 +143,13 @@ const AddEditEvent = ({ route, navigation }) => {
             response.data.data.eventDate= new Date(response.data.data.eventDate);
             response.data.data.bookingStartDate=new Date(response.data.data.bookingStartDate);
             response.data.data.bookingEndDate= new Date(response.data.data.bookingEndDate);
-            formikSetValues(response.data.data);
+            response.data.data.childTicketPrice= response.data.data.childTicketPrice.toString();
+            response.data.data.adultTicketPrice=response.data.data.adultTicketPrice.toString();
+            response.data.data.maxTicket= response.data.data.maxTicket.toString();
+           formikSetValues(response.data.data);
+           // setFieldValue("adultTicketPrice","67");
+            console.warn(response.data.data.adultTicketPrice);
+           
           } else {
             Alert.alert("Error", response.data.message);
           }
@@ -188,10 +194,10 @@ const AddEditEvent = ({ route, navigation }) => {
             formData.append(key, (values)[key]);
           }
         });
-        console.warn("FormData Content:");
-        for (let [key, value] of formData._parts) {
-          console.warn(key, value);
-        }
+        // console.warn("FormData Content:");
+        // for (let [key, value] of formData._parts) {
+        //   console.warn(key, value);
+        // }
 
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent",
@@ -244,7 +250,8 @@ const AddEditEvent = ({ route, navigation }) => {
         setValues,
       }) => {
         useEffect(() => {
-          fetchEventData(setValues);
+          fetchEventData(setValues,setFieldValue);
+          
         }, [fetchEventData, setValues]);
 
         return (
@@ -544,7 +551,25 @@ const AddEditEvent = ({ route, navigation }) => {
                     )}
                   </View>
                 </View>
-
+                <View style={styles.row}>
+                  <View style={styles.inputContainer}>
+                    
+                    {values.eventImage && values.eventImage!="" && (
+                      <><Text style={styles.heading}>Previous Image</Text>
+                      <Image
+                        source={{ uri: "http://majidalipl-001-site5.gtempurl.com/eventimages/"+ values.eventImage}}
+                        style={{
+                          width: 150,
+                          height: 150,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: "#999",
+                        }}
+                      /></>
+                    )}
+                  </View>
+                
+                </View>
                 <TouchableOpacity
                   style={styles.saveButton}
                   disabled={isSubmitting}
