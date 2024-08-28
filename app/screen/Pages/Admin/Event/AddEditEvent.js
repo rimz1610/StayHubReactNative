@@ -64,6 +64,7 @@ const AddEditEvent = ({ route, navigation }) => {
     });
     if (!result.canceled) {
       setImage(result.assets[0]);
+      await AsyncStorage.setItem("eventFile",result.assets[0]);
     }
   };
   const formatTimeSpan = (date) => {
@@ -139,12 +140,15 @@ const AddEditEvent = ({ route, navigation }) => {
             }
           );
           if (response.data.success) {
+            response.data.data.eventDate= new Date(response.data.data.eventDate);
+            response.data.data.bookingStartDate=new Date(response.data.data.bookingStartDate);
+            response.data.data.bookingEndDate= new Date(response.data.data.bookingEndDate);
             formikSetValues(response.data.data);
           } else {
             Alert.alert("Error", response.data.message);
           }
         } catch (error) {
-          Alert.alert("Error", "Failed to fetch room data");
+          Alert.alert("Error", "Failed to fetch event  data");
         }
       }
     },
@@ -156,15 +160,17 @@ const AddEditEvent = ({ route, navigation }) => {
       try {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
+        const myPhoto= await AsyncStorage.getItem("eventFile");
         const formData = new FormData();
-
-        if (photo) {
-          console.warn(photo);
+        //console.warn(photo);
+        console.warn(myPhoto);
+        if (photo!=null) {
+        
           const imageUri = photo.uri.startsWith("file://")
             ? photo.uri
             : "file://" + photo.uri;
 
-          console.warn(imageUri);
+          //console.warn(imageUri);
 
           formData.append("eventFile", {
             uri: imageUri,
@@ -173,8 +179,15 @@ const AddEditEvent = ({ route, navigation }) => {
           });
         }
 
-        formData.append("eventName", values.eventName || "rimsha");
-
+       // formData.append("eventName", values.eventName || "rimsha");
+        Object.keys(values).forEach((key) => {
+          if (key.endsWith("Date")) {
+            formData.append(key, (values)[key].toISOString().split('T')[0]);
+            //toISOString().split('T')[0];
+          } else {
+            formData.append(key, (values)[key]);
+          }
+        });
         console.warn("FormData Content:");
         for (let [key, value] of formData._parts) {
           console.warn(key, value);
@@ -191,7 +204,7 @@ const AddEditEvent = ({ route, navigation }) => {
           }
         );
 
-        console.warn(response.data);
+       
 
         if (response.data.success) {
           Alert.alert("Success", "Event saved successfully.", [
