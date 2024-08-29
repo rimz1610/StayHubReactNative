@@ -310,7 +310,7 @@ const AddEditEvent = ({ route, navigation }) => {
                 </View>
                 <View style={styles.row}>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.heading}>BOOKING START DATE</Text>
+                    <Text style={styles.heading}>Booking Start Date</Text>
                     <TouchableOpacity
                       onPress={() => setShowStartDate(true)}
                       style={styles.dateButton}
@@ -338,7 +338,7 @@ const AddEditEvent = ({ route, navigation }) => {
                     )}
                   </View>
                   <View style={styles.bookinginputContainer}>
-                    <Text style={styles.heading}>BOOKING END DATE</Text>
+                    <Text style={styles.heading}>Booking End Date</Text>
                     <TouchableOpacity
                       onPress={() => setShowEndDate(true)}
                       style={styles.dateButton}
@@ -367,7 +367,7 @@ const AddEditEvent = ({ route, navigation }) => {
 
                 <View style={styles.row}>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.heading}>EVENT DATE</Text>
+                    <Text style={styles.heading}>Event Date</Text>
                     <TouchableOpacity
                       onPress={() => setShowEventDate(true)}
                       style={styles.dateButton}
@@ -391,7 +391,7 @@ const AddEditEvent = ({ route, navigation }) => {
                     )}
                   </View>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.heading}>START TIME</Text>
+                    <Text style={styles.heading}>Start Time</Text>
                     <TouchableOpacity
                       onPress={() => setShowStartTime(true)}
                       style={styles.dateButton}
@@ -422,7 +422,7 @@ const AddEditEvent = ({ route, navigation }) => {
                     )}
                   </View>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.heading}>END TIME</Text>
+                    <Text style={styles.heading}>End Time</Text>
                     <TouchableOpacity
                       onPress={() => setShowEndTime(true)}
                       style={styles.dateButton}
@@ -449,7 +449,7 @@ const AddEditEvent = ({ route, navigation }) => {
                   </View>
                 </View>
                 <View style={styles.fullWidthContainer}>
-                  <Text style={styles.heading}>LOCATION</Text>
+                  <Text style={styles.heading}>Location</Text>
                   <TextInput
                     onChangeText={handleChange("location")}
                     value={values.location}
@@ -479,7 +479,7 @@ const AddEditEvent = ({ route, navigation }) => {
 
                 <View style={styles.row}>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.heading}>ADULT TICKET PRICE</Text>
+                    <Text style={styles.heading}>Adult Ticket Price</Text>
                     <TextInput
                       style={styles.input}
                       placeholder="0"
@@ -495,7 +495,7 @@ const AddEditEvent = ({ route, navigation }) => {
                     )}
                   </View>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.heading}>CHILD TICKET PRICE</Text>
+                    <Text style={styles.heading}>Child Ticket Price</Text>
                     <TextInput
                       style={styles.input}
                       placeholder="0"
@@ -511,7 +511,7 @@ const AddEditEvent = ({ route, navigation }) => {
                     )}
                   </View>
                   <View style={styles.maxinputContainer}>
-                    <Text style={styles.heading}>MAX TICKETS</Text>
+                    <Text style={styles.heading}>Max Tickets</Text>
                     <TextInput
                       style={styles.input}
                       placeholder="0"

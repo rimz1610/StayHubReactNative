@@ -1,8 +1,18 @@
-import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
-import React, { useState } from 'react';
-import DrawerContent from '../../../../components/DrawerContent';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Ionicons } from '@expo/vector-icons';
+import RNPickerSelect from 'react-native-picker-select';
+import { StyleSheet, Text, View,  TextInput,  TouchableOpacity, Image, Alert,
+    ScrollView,
+} from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import DrawerContent from "../../../../components/DrawerContent";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { Ionicons } from "@expo/vector-icons";
+import { Platform } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from '@react-navigation/native';
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
@@ -13,14 +23,48 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 }));
 const Drawer = createDrawerNavigator();
 const StaffListContent = ({ navigation }) => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
+  const [currentItem, setCurrentItem] = useState({});
 
   const itemsPerPage = 10;
   const pages = Math.ceil(data.length / itemsPerPage);
+
+  
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
+
+ 
+ // Function to refetch the updated room list
+ const fetchData = async () => {
+  const token = await AsyncStorage.getItem('token');
+
+  setLoading(true);
+  try {
+    const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffs", {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+
+    if (response.data.success) {
+      setData(response.data.list);
+      setPages(Math.ceil(response.data.list.length / itemsPerPage));
+    } else {
+      Alert.alert('Error', response.data.message);
+    }
+  } catch (error) {
+    console.warn(error);
+    Alert.alert('Error', 'Failed to fetch staffs.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (item) => {
     setCurrentItem(item);
@@ -28,15 +72,39 @@ const StaffListContent = ({ navigation }) => {
     setModalVisible(true);
   };
 
-  const handleDelete = (item) => {
+  const handleDelete = (staffId) => {
     Alert.alert('Are you sure?', 'Do you want to delete this item?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Yes, delete it',
-        onPress: () => setData(data.filter((d) => d.id !== item.id)),
-      },
+        onPress: async () => {
+          try {
+            setLoading(true);
+
+            const token = await AsyncStorage.getItem('token');
+            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Staff/DeleteStaff?id=${staffId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            });
+  
+            if (response.data.success) {
+              // Refetch the updated list after deletion
+              fetchData();
+            } else {
+              Alert.alert('Error', response.data.message);
+            }
+          } catch (error) {
+            console.warn(error);
+            Alert.alert('Error', 'Failed to delete the staff account.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
     ]);
   };
+  
 
   const handleSave = () => {
     if (editMode) {

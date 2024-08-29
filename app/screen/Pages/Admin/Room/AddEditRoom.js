@@ -244,13 +244,13 @@ const AddEditRoom = ({ route, navigation }) => {
               </View>
 
               <TouchableOpacity style={styles.addButton} onPress={addImageField}>
-                <Text style={styles.addButtonText}>+ ADD IMAGES</Text>
+                <Text style={styles.addButtonText}>+ Add Images</Text>
               </TouchableOpacity>
 
               {values.imagesUrl.map((image, index) => (
                 <View key={index} style={styles.row}>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Image URL</Text>
+                    <Text style={styles.label}>Image Url</Text>
                     <TextInput
                       value={image.imageUrl}
                       onChangeText={(url) => {

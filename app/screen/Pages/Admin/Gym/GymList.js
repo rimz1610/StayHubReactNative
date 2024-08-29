@@ -1,35 +1,104 @@
 import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
-  id:index ,
+  id: index,
   name: `GymKhana`,
-  fee:"$100",
-  capacity:"150",
-  gender:"Male",
+  fee: "$100",
+  capacity: "150",
+  gender: "Male",
   startTime: '8:00 AM',
   endTime: `10:00 AM`
 }));
 
 const Drawer = createDrawerNavigator();
-const GymListContent = ({ navigation }) => {
-  const [data, setData] = useState(initialData);
+const GymListContent = ({ route, navigation }) => {
+
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
- 
+  const [pages, setPages] = useState(0);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
-  const pages = Math.ceil(data.length / itemsPerPage);
-  const handleDelete = (item) => {
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
+
+
+
+  // Function to refetch the updated room list
+  const fetchData = async () => {
+    const token = await AsyncStorage.getItem('token');
+   
+    setLoading(true);
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=All", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (response.data.success) {
+        setData(response.data.list);
+        setPages(Math.ceil(response.data.list.length / itemsPerPage));
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      console.warn(error);
+      Alert.alert('Error', 'Failed to fetch gyms.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = (gymId) => {
     Alert.alert('Are you sure?', 'Do you want to delete this item?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Yes, delete it',
-        onPress: () => setData(data.filter((d) => d.id !== item.id)),
-      },
+        onPress: async () => {
+          try {
+            setLoading(true);
+
+            // Get the JWT token from AsyncStorage
+            const token = await AsyncStorage.getItem('token');
+
+            // Send the delete request
+            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Gym/DeleteGym?Id=${gymId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            });
+
+            if (response.data.success) {
+              // Refetch the updated list after deletion
+              fetchData();
+            } else {
+              Alert.alert('Error', response.data.message);
+            }
+          } catch (error) {
+            console.warn(error);
+            Alert.alert('Error', 'Failed to delete the event.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
     ]);
   };
+
+
 
   const handlePageChange = (direction) => {
     if (direction === 'next' && currentPage < pages - 1) {
@@ -42,19 +111,22 @@ const GymListContent = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
       <Text style={styles.tableCell} numberOfLines={1}>{item.name}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.fee}</Text>
       <Text style={styles.tableCell} numberOfLines={1}>{item.capacity}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.gender}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.startTime}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.endTime}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.openingTime}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.closingTime}</Text>
       <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() => navigation.navigate('AddEditGym')} style={styles.editButton}>
+        <TouchableOpacity onPress={() => navigation.navigate('AddEditGym', { id: item.id })} style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteButton}>
+        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
+    </View>
+  );
+  const renderEmptyTable = () => (
+    <View style={styles.emptyTableContainer}>
+      <Text style={styles.emptyTableText}>No rows are added</Text>
     </View>
   );
 
@@ -66,27 +138,29 @@ const GymListContent = ({ navigation }) => {
 
       <Text style={styles.roomheading}>Gym</Text>
       <TouchableOpacity style={styles.addButton} onPress={() => {
-       navigation.navigate('AddEditGym')
+        navigation.navigate('AddEditGym', { id: 0 })
       }}>
-        <Text style={styles.addButtonText}>+ Add New</Text>
+        <Text style={styles.addButtonText}>+ ADD NEW</Text>
       </TouchableOpacity>
 
       {/* Table */}
       <View style={styles.tableContainer}>
         <View style={styles.tableHeader}>
           <Text style={styles.tableHeaderText}>Name</Text>
-          <Text style={styles.tableHeaderText}>Fee</Text>
           <Text style={styles.tableHeaderText}>Capacity</Text>
-          <Text style={styles.tableHeaderText}>Gender</Text>
           <Text style={styles.tableHeaderText}>Start Time</Text>
           <Text style={styles.tableHeaderText}>End Time</Text>
           <Text style={styles.tableHeaderText}>Action</Text>
         </View>
-        <FlatList
-          data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-        />
+        {data.length > 0 ? (
+          <FlatList
+            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+          />
+        ) : (
+          renderEmptyTable()
+        )}
       </View>
 
       {/* Pagination */}
@@ -109,6 +183,9 @@ const GymListContent = ({ navigation }) => {
           <Text style={styles.paginationButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal for adding/editing */}
+
     </View>
   );
 };
@@ -152,6 +229,16 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: 'white',
     fontSize: 16,
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
   },
   tableContainer: {
     width: '100%',
@@ -215,6 +302,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
+    marginLeft: 1,
   },
   deleteButtonText: {
     color: 'white',
