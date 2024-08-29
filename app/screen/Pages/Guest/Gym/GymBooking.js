@@ -16,11 +16,13 @@ import Carousel from "react-native-reanimated-carousel";
 
 const { width, height } = Dimensions.get("window");
 
-const GymBooking = () => {
+const GymBooking = ({ navigation }) => {
   const [selectedGender, setSelectedGender] = useState("");
   const [selectedMonths, setSelectedMonths] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
   const [currentDropdown, setCurrentDropdown] = useState(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [currentGymDetails, setCurrentGymDetails] = useState({});
 
   const genderOptions = ["Male", "Female"];
   const monthOptions = ["1 Month", "3 Months", "6 Months"];
@@ -50,6 +52,23 @@ const GymBooking = () => {
     require("../../../../../assets/images/gym-two.jpg"),
   ];
 
+  const gymDetails = {
+    title: "GymKhana",
+    description:
+      "GymKhana offers state-of-the-art equipment, a variety of fitness classes, and professional trainers to help you achieve your fitness goals. Follow our gym rules to ensure a safe and enjoyable environment for everyone.",
+    equipment: "Treadmills, Dumbbells, Squat Racks, Ellipticals, and more.",
+    rules:
+      "Please wipe down equipment after use. No dropping weights. Respect fellow gym members.",
+  };
+  const openDetailModal = (gym) => {
+    setCurrentGymDetails(gym);
+    setDetailModalVisible(true);
+  };
+
+  const closeDetailModal = () => {
+    setDetailModalVisible(false);
+  };
+
   const renderDropdown = (type, selectedValue, customStyle = {}) => (
     <TouchableOpacity
       style={[styles.dropdown, customStyle]}
@@ -69,9 +88,23 @@ const GymBooking = () => {
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.timing}>Timing: {timing}</Text>
           <Text style={styles.fee}>Fee: ${fee}</Text>
+          {/* <TouchableOpacity
+            style={styles.viewDetailsButton}
+            onPress={() => openDetailModal(gymDetails)}
+          > */}
+          <Text
+            style={styles.viewDetailsButtonText}
+            onPress={() => openDetailModal(gymDetails)}
+          >
+            View Details
+          </Text>
+          {/* </TouchableOpacity> */}
           <Text style={styles.sessionLabel}>Monthly Session</Text>
           {renderDropdown(id, selectedMonths[id])}
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("BookingItems")}
+          >
             <Icon name="calendar" size={16} color="#fff" />
             <Text style={styles.buttonText}>Booking Now</Text>
           </TouchableOpacity>
@@ -140,6 +173,31 @@ const GymBooking = () => {
             />
           </View>
         </TouchableOpacity>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={detailModalVisible}
+        onRequestClose={closeDetailModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.detailModalContent}>
+            <Text style={styles.modalTitle}>{currentGymDetails.title}</Text>
+            <Text style={styles.modalDescription}>
+              {currentGymDetails.description}
+            </Text>
+            <Text style={styles.modalSubtitle}>Equipment Available:</Text>
+            <Text style={styles.modalText}>{currentGymDetails.equipment}</Text>
+            <Text style={styles.modalSubtitle}>Gym Rules:</Text>
+            <Text style={styles.modalText}>{currentGymDetails.rules}</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={closeDetailModal}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </ScrollView>
   );
@@ -234,7 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#180161",
-    marginBottom: 10,
+    marginBottom: 5,
   },
   sessionLabel: {
     fontSize: 14,
@@ -294,6 +352,66 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     color: "#333",
+  },
+  viewDetailsButtonText: {
+    fontSize: 14,
+    textDecorationLine: "underline",
+    fontWeight: "bold",
+    color: "#180161",
+    marginBottom: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  detailModalContent: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 20,
+    width: width * 0.9,
+    maxHeight: height * 0.7,
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#180161",
+    marginBottom: 10,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#180161",
+    marginBottom: 5,
+  },
+  modalText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+  },
+  closeButton: {
+    backgroundColor: "#180161",
+    borderRadius: 5,
+    padding: 10,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  closeButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 14,
   },
 });
 
