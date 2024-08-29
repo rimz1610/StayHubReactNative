@@ -5,8 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Share,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 const ReceiptHeader = ({ hotel }) => (
   <View style={styles.header}>
@@ -58,7 +62,7 @@ const TotalSection = ({ subtotal, paid, total }) => (
   </View>
 );
 
-const BookingReceipt = ({ route, navigation }) => {
+const Receipt = ({ route }) => {
   // In a real app, you'd get this data from route.params or an API call
   const receiptData = {
     hotel: {
@@ -92,17 +96,62 @@ const BookingReceipt = ({ route, navigation }) => {
     total: 710,
   };
 
-  // const handleDownload = () => {
+  const generateReceiptContent = () => {
+    return `
+StayHub Hotel & Resort Receipt
+------------------------------
+Date: ${receiptData.invoice.invoiceDate}
+Booking Person: ${receiptData.invoice.bookingPerson}
+Reference No: ${receiptData.invoice.referenceNo}
 
-  //   console.log("Downloading receipt...");
-  // };
+Booking Details:
+${receiptData.bookings
+  .map(
+    (booking) =>
+      `${booking.name} - ${booking.details}: $${booking.totalItem.toFixed(2)}`
+  )
+  .join("\n")}
+
+Subtotal: $${receiptData.subtotal.toFixed(2)}
+Paid Amount: $${receiptData.paid.toFixed(2)}
+Total: $${receiptData.total.toFixed(2)}
+
+Thank you for choosing StayHub Hotel & Resort. We hope you enjoyed your stay!
+    `;
+  };
+
+  const handleDownload = async () => {
+    const content = generateReceiptContent();
+    const fileName = `Receipt_${receiptData.invoice.referenceNo}.txt`;
+
+    if (Platform.OS === "android") {
+      const permissions =
+        await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+      if (permissions.granted) {
+        const uri = await FileSystem.StorageAccessFramework.createFileAsync(
+          permissions.directoryUri,
+          fileName,
+          "text/plain"
+        );
+        await FileSystem.writeAsStringAsync(uri, content, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        console.log("File has been saved to", uri);
+      } else {
+        console.log("Permission not granted");
+      }
+    } else {
+      const fileUri = FileSystem.documentDirectory + fileName;
+      await FileSystem.writeAsStringAsync(fileUri, content, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      await Sharing.shareAsync(fileUri);
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity
-        style={styles.downloadButton}
-        onPress={() => navigation.navigate("Ticket")}
-      >
+      <TouchableOpacity style={styles.downloadButton} onPress={handleDownload}>
         <Icon name="file-download" size={20} color="white" />
         <Text style={styles.downloadButtonText}>Download Receipt</Text>
       </TouchableOpacity>
@@ -258,4 +307,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookingReceipt;
+export default Receipt;
