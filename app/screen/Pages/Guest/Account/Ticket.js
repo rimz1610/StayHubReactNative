@@ -1,5 +1,13 @@
 import React from "react";
-import { StyleSheet, Text, View, ScrollView, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const TicketDetail = ({ label, value }) => (
   <View style={styles.detailRow}>
@@ -35,7 +43,13 @@ const Ticket = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Ticket Booking Details</Text>
       </View>
-
+      <TouchableOpacity
+        style={styles.downloadButton}
+        onPress={() => navigation.navigate("Ticket")}
+      >
+        <Icon name="file-download" size={20} color="white" />
+        <Text style={styles.downloadButtonText}>Download Receipt</Text>
+      </TouchableOpacity>
       {/* Ticket Section */}
       <View style={styles.ticketContainer}>
         {/* Logo Section */}
@@ -78,8 +92,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#e6e6e6",
   },
+  downloadButton: {
+    width: "50%",
+    backgroundColor: "#27496d",
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    marginTop: 10,
+    marginRight: 14,
+  },
+  downloadButtonText: {
+    color: "white",
+    fontSize: 13,
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
   header: {
-    backgroundColor: "#dfe4ea",
+    // backgroundColor: "#dfe4ea",
     paddingVertical: 20,
     alignItems: "center",
   },
@@ -123,7 +156,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   footer: {
-    backgroundColor: "#dfe4ea",
+    // backgroundColor: "#dfe4ea",
     paddingVertical: 20,
     alignItems: "center",
   },

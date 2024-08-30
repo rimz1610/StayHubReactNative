@@ -149,16 +149,15 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   backbtn: {
-    alignSelf: "flex-start",
-    marginTop: 10,
-    marginBottom: 20,
+    alignSelf: "flex-end",
+    backgroundColor: "#180161",
     padding: 10,
-    backgroundColor: "grey",
     borderRadius: 4,
+    marginBottom: 20,
   },
   backbtnText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 13,
   },
   guestDetailsHeading: {
     color: "#180161",

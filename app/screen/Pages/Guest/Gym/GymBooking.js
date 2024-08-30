@@ -85,19 +85,24 @@ const GymBooking = ({ navigation }) => {
     return (
       <View style={styles.boxcontainer}>
         <View style={styles.box}>
-          <Text style={styles.title}>{title}</Text>
+          <Text
+            style={styles.title}
+            onPress={() => openDetailModal(gymDetails)}
+          >
+            {title}
+          </Text>
           <Text style={styles.timing}>Timing: {timing}</Text>
           <Text style={styles.fee}>Fee: ${fee}</Text>
           {/* <TouchableOpacity
             style={styles.viewDetailsButton}
             onPress={() => openDetailModal(gymDetails)}
           > */}
-          <Text
+          {/* <Text
             style={styles.viewDetailsButtonText}
             onPress={() => openDetailModal(gymDetails)}
           >
             View Details
-          </Text>
+          </Text> */}
           {/* </TouchableOpacity> */}
           <Text style={styles.sessionLabel}>Monthly Session</Text>
           {renderDropdown(id, selectedMonths[id])}
@@ -278,6 +283,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   title: {
+    textDecorationLine: "underline",
     fontSize: 18,
     fontWeight: "bold",
     color: "#180161",
@@ -353,13 +359,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
-  viewDetailsButtonText: {
-    fontSize: 14,
-    textDecorationLine: "underline",
-    fontWeight: "bold",
-    color: "#180161",
-    marginBottom: 5,
-  },
+  // viewDetailsButtonText: {
+  //   fontSize: 14,
+  //   textDecorationLine: "underline",
+  //   fontWeight: "bold",
+  //   color: "#180161",
+  //   marginBottom: 5,
+  // },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",

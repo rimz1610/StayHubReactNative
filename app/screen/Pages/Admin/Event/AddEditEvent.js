@@ -64,7 +64,7 @@ const AddEditEvent = ({ route, navigation }) => {
     });
     if (!result.canceled) {
       setImage(result.assets[0]);
-      await AsyncStorage.setItem("eventFile",JSON.stringify(result.assets[0]));
+      await AsyncStorage.setItem("eventFile", JSON.stringify(result.assets[0]));
     }
   };
   const formatTimeSpan = (date) => {
@@ -140,16 +140,24 @@ const AddEditEvent = ({ route, navigation }) => {
             }
           );
           if (response.data.success) {
-            response.data.data.eventDate= new Date(response.data.data.eventDate);
-            response.data.data.bookingStartDate=new Date(response.data.data.bookingStartDate);
-            response.data.data.bookingEndDate= new Date(response.data.data.bookingEndDate);
-            response.data.data.childTicketPrice= response.data.data.childTicketPrice.toString();
-            response.data.data.adultTicketPrice=response.data.data.adultTicketPrice.toString();
-            response.data.data.maxTicket= response.data.data.maxTicket.toString();
-           formikSetValues(response.data.data);
-           // setFieldValue("adultTicketPrice","67");
+            response.data.data.eventDate = new Date(
+              response.data.data.eventDate
+            );
+            response.data.data.bookingStartDate = new Date(
+              response.data.data.bookingStartDate
+            );
+            response.data.data.bookingEndDate = new Date(
+              response.data.data.bookingEndDate
+            );
+            response.data.data.childTicketPrice =
+              response.data.data.childTicketPrice.toString();
+            response.data.data.adultTicketPrice =
+              response.data.data.adultTicketPrice.toString();
+            response.data.data.maxTicket =
+              response.data.data.maxTicket.toString();
+            formikSetValues(response.data.data);
+            // setFieldValue("adultTicketPrice","67");
             console.warn(response.data.data.adultTicketPrice);
-           
           } else {
             Alert.alert("Error", response.data.message);
           }
@@ -166,12 +174,11 @@ const AddEditEvent = ({ route, navigation }) => {
       try {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
-        const myPhoto= await AsyncStorage.getItem("eventFile");
+        const myPhoto = await AsyncStorage.getItem("eventFile");
         const formData = new FormData();
         //console.warn(photo);
         console.warn(myPhoto);
-        if (photo!=null) {
-        
+        if (photo != null) {
           const imageUri = photo.uri.startsWith("file://")
             ? photo.uri
             : "file://" + photo.uri;
@@ -185,13 +192,13 @@ const AddEditEvent = ({ route, navigation }) => {
           });
         }
 
-       // formData.append("eventName", values.eventName || "rimsha");
+        // formData.append("eventName", values.eventName || "rimsha");
         Object.keys(values).forEach((key) => {
           if (key.endsWith("Date")) {
-            formData.append(key, (values)[key].toISOString().split('T')[0]);
+            formData.append(key, values[key].toISOString().split("T")[0]);
             //toISOString().split('T')[0];
           } else {
-            formData.append(key, (values)[key]);
+            formData.append(key, values[key]);
           }
         });
         // console.warn("FormData Content:");
@@ -209,8 +216,6 @@ const AddEditEvent = ({ route, navigation }) => {
             },
           }
         );
-
-       
 
         if (response.data.success) {
           Alert.alert("Success", "Event saved successfully.", [
@@ -250,8 +255,7 @@ const AddEditEvent = ({ route, navigation }) => {
         setValues,
       }) => {
         useEffect(() => {
-          fetchEventData(setValues,setFieldValue);
-          
+          fetchEventData(setValues, setFieldValue);
         }, [fetchEventData, setValues]);
 
         return (
@@ -553,22 +557,26 @@ const AddEditEvent = ({ route, navigation }) => {
                 </View>
                 <View style={styles.row}>
                   <View style={styles.inputContainer}>
-                    
-                    {values.eventImage && values.eventImage!="" && (
-                      <><Text style={styles.heading}>Previous Image</Text>
-                      <Image
-                        source={{ uri: "http://majidalipl-001-site5.gtempurl.com/eventimages/"+ values.eventImage}}
-                        style={{
-                          width: 150,
-                          height: 150,
-                          borderRadius: 10,
-                          borderWidth: 1,
-                          borderColor: "#999",
-                        }}
-                      /></>
+                    {values.eventImage && values.eventImage != "" && (
+                      <>
+                        <Text style={styles.heading}>Previous Image</Text>
+                        <Image
+                          source={{
+                            uri:
+                              "http://majidalipl-001-site5.gtempurl.com/eventimages/" +
+                              values.eventImage,
+                          }}
+                          style={{
+                            width: 150,
+                            height: 150,
+                            borderRadius: 10,
+                            borderWidth: 1,
+                            borderColor: "#999",
+                          }}
+                        />
+                      </>
                     )}
                   </View>
-                
                 </View>
                 <TouchableOpacity
                   style={styles.saveButton}

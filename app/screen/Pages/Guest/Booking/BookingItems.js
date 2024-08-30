@@ -58,7 +58,7 @@ const BookingItems = ({ navigation }) => {
       type: "Room",
       name: "Deluxe Ocean View",
       details: "2 nights, King bed, Balcony",
-      total: 600,
+      total: 700,
     },
     {
       id: "2",
@@ -109,11 +109,7 @@ const BookingItems = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#180161" />
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Booking Items</Text>
-        </View>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.bookingSection}>
             <View style={styles.bookingList}>
