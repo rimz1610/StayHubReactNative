@@ -75,8 +75,12 @@ const Login = ({ navigation }) => {
         });
     },
   });
+  // const ScreenWrapper = ({ children }) => (
+  //   <View style={{ flex: 1, backgroundColor: "black" }}>{children}</View>
+  // );
 
   return (
+    // <ScreenWrapper>
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
@@ -150,6 +154,7 @@ const Login = ({ navigation }) => {
         </TouchableWithoutFeedback>
       </ImageBackground>
     </KeyboardAvoidingView>
+    // </ScreenWrapper>
   );
 };
 

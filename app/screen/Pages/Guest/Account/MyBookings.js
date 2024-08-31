@@ -86,7 +86,7 @@ const MyBookings = () => {
 
   const handleReceiptPress = (booking) => {
     // Navigate to MyBookingReceipt screen with booking data
-    navigation.navigate("MyBookingReceipt", { booking });
+    navigation.navigate("BookingReceipt", { booking });
   };
   return (
     <ScrollView style={styles.container}>

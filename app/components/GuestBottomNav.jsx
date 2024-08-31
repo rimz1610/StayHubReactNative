@@ -19,9 +19,12 @@ import MyRooms from "../screen/Pages/Guest/Account/MyRooms";
 import RoomServiceBooking from "../screen/Pages/Guest/Account/RoomServiceBooking";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import Account from "../screen/Pages/Guest/Account/Account";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
-const GuestBottomNav = ({ navigation }) => {
+const GuestBottomNav = () => {
   const Tab = createBottomTabNavigator();
+  const navigation = useNavigation();
+  const route = useRoute();
 
   const screenOptions = ({ route }) => ({
     tabBarIcon: ({ focused, color, size }) => {
@@ -90,16 +93,53 @@ const GuestBottomNav = ({ navigation }) => {
       textAlign: "center",
     },
     headerTitleAlign: "center",
-    headerLeft: () => (
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("HotelMap");
-        }}
-        style={{ marginLeft: 15 }}
-      >
-        <Ionicons name="location-outline" size={24} color="white" />
-      </TouchableOpacity>
-    ),
+    headerLeft: () => {
+      const currentRouteName = route.name;
+      const backScreens = [
+        "MyBookings",
+        "BookingReceipt",
+        "EditMyProfile",
+        "ChangePassword",
+        "MyRooms",
+      ];
+
+      if (backScreens.includes(currentRouteName)) {
+        return (
+          <TouchableOpacity
+            onPress={() => {
+              if (currentRouteName === "BookingReceipt") {
+                navigation.navigate("MyBookings");
+              } else if (
+                [
+                  "EditMyProfile",
+                  "ChangePassword",
+                  "MyRooms",
+                  "MyBookings",
+                ].includes(currentRouteName)
+              ) {
+                navigation.navigate("Account");
+              } else {
+                navigation.goBack();
+              }
+            }}
+            style={{ marginLeft: 15 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+        );
+      } else {
+        return (
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("HotelMap");
+            }}
+            style={{ marginLeft: 15 }}
+          >
+            <Ionicons name="location-outline" size={24} color="white" />
+          </TouchableOpacity>
+        );
+      }
+    },
     headerRight: () => (
       <TouchableOpacity
         onPress={() => {
@@ -205,6 +245,13 @@ const GuestBottomNav = ({ navigation }) => {
       <Tab.Screen
         name="HotelMap"
         component={HotelMap}
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
+      <Tab.Screen
+        name="BookingReceipt"
+        component={BookingReceipt}
         options={{
           tabBarButton: () => null,
         }}

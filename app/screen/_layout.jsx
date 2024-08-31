@@ -33,13 +33,18 @@ import BookingItems from "./Pages/Guest/Booking/BookingItems";
 import ConfirmBooking from "./Pages/Guest/Booking/ConfirmBooking";
 import Receipt from "./Pages/Guest/Booking/Receipt";
 import Ticket from "./Pages/Guest/Account/Ticket";
-
-const Stack = createNativeStackNavigator();
+// import { SafeAreaView } from "react-native-safe-area-context";
 
 function App() {
+  const Stack = createNativeStackNavigator();
   return (
-    <SafeAreaProvider>
-      <StatusBar translucent backgroundColor="transparent" />
+    <SafeAreaProvider style={{ flex: 1, backgroundColor: "black" }}>
+      <StatusBar
+        barStyle="dark-content"
+        hidden={false}
+        backgroundColor="#000"
+        translucent={false}
+      />
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={Login} />
@@ -79,11 +84,10 @@ function App() {
           <Stack.Screen name="ConfirmBooking" component={ConfirmBooking} />
           <Stack.Screen name="Receipt" component={Receipt} />
           <Stack.Screen name="Ticket" component={Ticket} />
-          {/* <Stack.Screen name="GuestDrawer" component={GuestDrawer} /> */}
         </Stack.Navigator>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
-registerRootComponent(Dashboard);
+registerRootComponent(App);
 export default App;

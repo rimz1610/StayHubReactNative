@@ -35,8 +35,8 @@ const ConfirmBooking = ({ navigation, route }) => {
     { name: "Room Service", details: "Cleaning, 2 times", totalItem: 50 },
   ]);
 
-  const handleConfirmPayment = () => {
-    console.log("Payment Submitted");
+  const handleConfirmPayment = (booking) => {
+    navigation.navigate("BookingReceipt", { booking });
   };
 
   const handleDeleteBooking = (index) => {

@@ -104,7 +104,7 @@ const BookingReceipt = ({ route, navigation }) => {
         onPress={() => navigation.navigate("Ticket")}
       >
         <Icon name="file-download" size={20} color="white" />
-        <Text style={styles.downloadButtonText}>Download Receipt</Text>
+        <Text style={styles.downloadButtonText}>Download Ticket</Text>
       </TouchableOpacity>
       <View style={styles.receipt}>
         <ReceiptHeader hotel={receiptData.hotel} />
