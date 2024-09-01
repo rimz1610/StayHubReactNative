@@ -1,19 +1,8 @@
-import RNPickerSelect from "react-native-picker-select";
+import RNPickerSelect from 'react-native-picker-select';
 import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  Alert,
-  ScrollView,
-  FlatList,
-  Modal,
-  Button,
-  TouchableWithoutFeedback,
-  Keyboard,
-  KeyboardAvoidingView,
+  StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert,
+  ScrollView, FlatList, Modal, Button, TouchableWithoutFeedback,
+  Keyboard, KeyboardAvoidingView
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
@@ -21,222 +10,278 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Formik } from "formik";
+import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused } from '@react-navigation/native';
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
   name: `Ali ${index + 1}`,
-  email: "ali123@yopmail.com",
+  email: 'ali123@yopmail.com',
   phoneNumber: `03456050369`,
-}));
 
+}));
 const Drawer = createDrawerNavigator();
+const addEditSchema = Yup.object().shape({
+  firstName: Yup.string().max(25, "Too long").required("Required"),
+  lastName: Yup.string().max(25, "Too long").required("Required"),
+  email: Yup.string().email("Invalid email address").required("Required"),
+  password: Yup.string().required("Required").min(6, "Password too short").matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/, "1 Upper, Lowercase, 1 Number and 1 Special Character")
+  ,
+  phoneNumber: Yup.string().required("Required"),
+});
 const StaffListContent = ({ navigation }) => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [currentItem, setCurrentItem] = useState({});
-
-  const itemsPerPage = 10;
-  const pages = Math.ceil(data.length / itemsPerPage);
   const isFocused = useIsFocused();
+  const [submitting, setSubmitting] = useState(false);
+  const itemsPerPage = 10;
+  const [pages, setPages] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const formik = useFormik({
+    initialValues: {
+      id: 0,
+      email: "",
+      password: "",
+      firstName: "",
+      lastName: "",
+      isActive: false,
+      isAdmin: true,
+      phoneNumber: ""
+    },
+    validationSchema: addEditSchema,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        values.isAdmin = true;
+      
+        setSubmitting(true);
+        const token = await AsyncStorage.getItem("token");
+        const response = await axios.post(
+          "http://majidalipl-001-site5.gtempurl.com/Staff/AddEditStaff",
+          values,
+          {
+            headers: { Authorization: `Bearer ${token}`, },
+          }
+        );
+        if (response.data.success) {
+          resetForm();
+          Alert.alert("Success", "Staff saved successfully.", [
+            {
+              text: "OK",
+              onPress: () => setModalVisible(false),
+            },
+          ]);
+        } else {
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+        console.warn(error);
+        Alert.alert("Error", "An error occurred while saving the staff.");
+      } finally {
+
+        fetchData();
+        setSubmitting(false);
+      }
+    },
+  });
+
+
+
   useEffect(() => {
     if (isFocused) {
       fetchData();
     }
   }, [isFocused]);
 
+
   // Function to refetch the updated room list
   const fetchData = async () => {
-    const token = await AsyncStorage.getItem("token");
+    const token = await AsyncStorage.getItem('token');
 
     setLoading(true);
     try {
-      const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffs",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffs", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
         }
-      );
+      });
 
       if (response.data.success) {
         setData(response.data.list);
         setPages(Math.ceil(response.data.list.length / itemsPerPage));
       } else {
-        Alert.alert("Error", response.data.message);
+        Alert.alert('Error', response.data.message);
       }
     } catch (error) {
       console.warn(error);
-      Alert.alert("Error", "Failed to fetch staffs.");
+      Alert.alert('Error', 'Failed to fetch staffs.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleEdit = (item) => {
-    setCurrentItem(item);
-    setEditMode(true);
+    formik.setValues(item);
     setModalVisible(true);
+
   };
 
   const handleDelete = (staffId) => {
-    Alert.alert("Are you sure?", "Do you want to delete this item?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert('Are you sure?', 'Do you want to delete this item?', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: "Yes, delete it",
+        text: 'Yes, delete it',
         onPress: async () => {
           try {
             setLoading(true);
 
-            const token = await AsyncStorage.getItem("token");
-            const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Staff/DeleteStaff?id=${staffId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
+            const token = await AsyncStorage.getItem('token');
+            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Staff/Delete?id=${staffId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
               }
-            );
+            });
 
             if (response.data.success) {
               // Refetch the updated list after deletion
               fetchData();
             } else {
-              Alert.alert("Error", response.data.message);
+              Alert.alert('Error', response.data.message);
             }
           } catch (error) {
             console.warn(error);
-            Alert.alert("Error", "Failed to delete the staff account.");
+            Alert.alert('Error', 'Failed to delete the staff account.');
           } finally {
             setLoading(false);
           }
-        },
-      },
+        }
+      }
+    ]);
+  };
+  const handleStatus = (item) => {
+    const msg = item.isActive ? "Do you want to inactivate this item?" : "Do you want to activate this item?"
+    Alert.alert('Are you sure?', msg, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes, sure',
+        onPress: async () => {
+          try {
+            setLoading(true);
+
+            const token = await AsyncStorage.getItem('token');
+            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Staff/ChangeStatus?id=${item.id}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            });
+
+            if (response.data.success) {
+              // Refetch the updated list after deletion
+              fetchData();
+            } else {
+              Alert.alert('Error', response.data.message);
+            }
+          } catch (error) {
+            console.warn(error);
+            Alert.alert('Error', 'Failed to change status.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
     ]);
   };
 
-  const handleSave = () => {
-    if (editMode) {
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === currentItem.id ? { ...currentItem } : item
-        )
-      );
-    } else {
-      setData((prevData) => [
-        ...prevData,
-        { ...currentItem, id: Date.now().toString() },
-      ]);
-    }
-    setModalVisible(false);
-    setCurrentItem(null);
-  };
+  // const handleSave = () => {
+  //   if (editMode) {
+  //     setData((prevData) =>
+  //       prevData.map((item) =>
+  //         item.id === currentItem.id ? { ...currentItem } : item
+  //       )
+  //     );
+  //   } else {
+  //     setData((prevData) => [...prevData, { ...currentItem, id: Date.now().toString() }]);
+  //   }
+  //   setModalVisible(false);
+  //   setCurrentItem(null);
+  // };
 
   const handlePageChange = (direction) => {
-    if (direction === "next" && currentPage < pages - 1) {
+    if (direction === 'next' && currentPage < pages - 1) {
       setCurrentPage(currentPage + 1);
-    } else if (direction === "previous" && currentPage > 0) {
+    } else if (direction === 'previous' && currentPage > 0) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell} numberOfLines={1}>
-        {item.id}
-      </Text>
-      <Text style={styles.tableCell} numberOfLines={1}>
-        {item.nam}
-      </Text>
-      <Text style={styles.tableCell} numberOfLines={1}>
-        {item.email}
-      </Text>
-      <Text style={styles.tableCell} numberOfLines={1}>
-        {item.phoneNumber}
-      </Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.firstName} {item.lastName}</Text>
+
+
       <View style={styles.tableActions}>
-        <TouchableOpacity
-          onPress={() => handleEdit(item)}
-          style={styles.editButton}
-        >
+        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("StaffActivityList")}
-          style={styles.editButton}
-        >
-          <Text style={styles.editButtonText}>Activities</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('StaffActivityList', { staffId: item.id, staffName: item.firstName + " " + item.lastName })} style={styles.activityButton}>
+          <Text style={styles.activityButtonText}>Activities</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => handleDelete(item)}
-          style={styles.deleteButton}
-        >
+        <TouchableOpacity onPress={() => handleStatus(item)} style={styles.activeButton}>
+          <Text style={styles.activeButtonText}>{item.isActive ? "Active" : "Inactive"}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
-
+  const renderEmptyTable = () => (
+    <View style={styles.emptyTableContainer}>
+      <Text style={styles.emptyTableText}>No rows are added</Text>
+    </View>
+  );
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.openDrawer()}
-        style={styles.menuButton}
-      >
+      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
         <Ionicons name="menu" size={24} color="black" />
       </TouchableOpacity>
 
       <Text style={styles.roomheading}>Staff</Text>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          setEditMode(false);
-          setCurrentItem({
-            name: "",
-            type: "",
-            shortDescription: "",
-            status: "",
-          });
-          setModalVisible(true);
-        }}
-      >
+      <TouchableOpacity style={styles.addButton} onPress={() => {
+        formik.setValues({ id: 0, isAdmin: false, isActive: false, firstName: "", lastName: "", email: "", password: "", phoneNumber: "" });
+        setModalVisible(true);
+      }}>
         <Text style={styles.addButtonText}>+ Add New</Text>
       </TouchableOpacity>
 
       {/* Table */}
       <View style={styles.tableContainer}>
         <View style={styles.tableHeader}>
-          <Text style={styles.tableHeaderText}>Id</Text>
+
           <Text style={styles.tableHeaderText}>Name</Text>
-          <Text style={styles.tableHeaderText}>Email</Text>
-          <Text style={styles.tableHeaderText}>Phone No</Text>
+
           <Text style={styles.tableHeaderText}>Action</Text>
         </View>
-        <FlatList
-          data={data.slice(
-            currentPage * itemsPerPage,
-            (currentPage + 1) * itemsPerPage
-          )}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-        />
+        {data.length > 0 ? (
+          <FlatList
+            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+          />
+        ) : (
+          renderEmptyTable()
+        )}
       </View>
 
       {/* Pagination */}
       <View style={styles.paginationContainer}>
         <TouchableOpacity
-          onPress={() => handlePageChange("previous")}
-          style={[
-            styles.paginationButton,
-            currentPage === 0 && styles.disabledButton,
-          ]}
+          onPress={() => handlePageChange('previous')}
+          style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
           disabled={currentPage === 0}
         >
           <Text style={styles.paginationButtonText}>Previous</Text>
@@ -245,18 +290,16 @@ const StaffListContent = ({ navigation }) => {
           Page {currentPage + 1} of {pages}
         </Text>
         <TouchableOpacity
-          onPress={() => handlePageChange("next")}
-          style={[
-            styles.paginationButton,
-            currentPage === pages - 1 && styles.disabledButton,
-          ]}
+          onPress={() => handlePageChange('next')}
+          style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
           disabled={currentPage === pages - 1}
         >
           <Text style={styles.paginationButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Modal for adding/editing */}
+
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -273,7 +316,7 @@ const StaffListContent = ({ navigation }) => {
                 <ScrollView contentContainerStyle={styles.scrollViewContent}>
                   <View style={styles.header}>
                     <Text style={styles.modalTitle}>
-                      {editMode ? "Edit Staff" : "Add New Staff"}
+                      {formik.values.id > 0 ? "Edit Staff" : "Add New Staff"}
                     </Text>
                     <TouchableOpacity
                       onPress={() => setModalVisible(false)}
@@ -287,38 +330,50 @@ const StaffListContent = ({ navigation }) => {
                     style={styles.input}
                     placeholder="First Name"
                     placeholderTextColor="#888"
-                    value={currentItem?.name}
-                    onChangeText={(text) =>
-                      setCurrentItem({ ...currentItem, name: text })
-                    }
+                    value={formik.values.firstName}
+                    onChangeText={formik.handleChange('firstName')}
                   />
+
+                  {formik.touched.firstName && formik.errors.firstName && <Text style={styles.errorText}>{formik.errors.firstName}</Text>}
+
+
                   <TextInput
                     style={styles.input}
                     placeholder="Last Name"
                     placeholderTextColor="#888"
-                    value={currentItem?.type}
-                    onChangeText={(text) =>
-                      setCurrentItem({ ...currentItem, type: text })
-                    }
+                    value={formik.values.lastName}
+                    onChangeText={formik.handleChange('lastName')}
                   />
+
+                  {formik.touched.lastName && formik.errors.lastName && <Text style={styles.errorText}>{formik.errors.lastName}</Text>}
                   <TextInput
                     style={styles.input}
                     placeholder="Email"
                     placeholderTextColor="#888"
-                    value={currentItem?.shortDescription}
-                    onChangeText={(text) =>
-                      setCurrentItem({ ...currentItem, shortDescription: text })
-                    }
+                    value={formik.values.email}
+                    onChangeText={formik.handleChange('email')}
                   />
+
+                  {formik.touched.email && formik.errors.email && <Text style={styles.errorText}>{formik.errors.email}</Text>}
                   <TextInput
                     style={styles.input}
                     placeholder="Phone Number"
                     placeholderTextColor="#888"
-                    value={currentItem?.status}
-                    onChangeText={(text) =>
-                      setCurrentItem({ ...currentItem, status: text })
-                    }
+                    value={formik.values.phoneNumber}
+                    onChangeText={formik.handleChange('phoneNumber')}
                   />
+
+                  {formik.touched.phoneNumber && formik.errors.phoneNumber && <Text style={styles.errorText}>{formik.errors.phoneNumber}</Text>}
+                  {formik.values.id == 0 &&
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Password"
+                      placeholderTextColor="#888"
+                      value={formik.values.password}
+                      onChangeText={formik.handleChange('password')}
+                    />
+                  }
+                  {formik.touched.password && formik.errors.password && <Text style={styles.errorText}>{formik.errors.password}</Text>}
 
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity
@@ -328,7 +383,7 @@ const StaffListContent = ({ navigation }) => {
                       <Text style={styles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={handleSave}
+                      onPress={formik.handleSubmit}
                       style={[styles.button, styles.saveButton]}
                     >
                       <Text style={styles.buttonText}>Save</Text>
@@ -350,7 +405,7 @@ const StaffList = () => {
       screenOptions={{
         headerShown: false,
         drawerStyle: {
-          width: "60%",
+          width: '60%',
         },
       }}
     >
@@ -432,23 +487,48 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   editButton: {
-    backgroundColor: "#007BFF",
+    backgroundColor: '#007BFF',
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
+
   },
   editButtonText: {
-    color: "white",
+    color: 'white',
+    fontSize: 12,
+  },
+  activityButton: {
+    backgroundColor: '#008000',
+    borderRadius: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    marginLeft: 1,
+  },
+  activityButtonText: {
+    color: 'white',
+    fontSize: 12,
+  },
+  activeButton: {
+    backgroundColor: '#123e66',
+    borderRadius: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    marginLeft: 1,
+  },
+  activeButtonText: {
+    color: 'white',
     fontSize: 12,
   },
   deleteButton: {
-    backgroundColor: "#FF6347",
+    backgroundColor: '#FF6347',
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
+    marginLeft: 1,
+
   },
   deleteButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 12,
   },
   paginationContainer: {
@@ -544,4 +624,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  errorText: {
+    fontSize: 12,
+    color: "red",
+  },
 });
+
