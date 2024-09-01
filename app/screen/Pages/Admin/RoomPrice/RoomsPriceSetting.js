@@ -22,7 +22,7 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 }));
 const addEditSchema = Yup.object().shape({
   status: Yup.string().required("Required"),
- rooms: Yup.array().min(1, 'At least select one'),
+  rooms: Yup.array().min(1, 'At least select one'),
   startDate: Yup.date().required("Required"),
   endDate: Yup.date().required("Required"),
   days: Yup.array().min(1, 'At least select one'),
@@ -225,8 +225,8 @@ const RoomPriceSettingContent = ({ navigation }) => {
             items={roomlist}
             uniqueKey="id"
             onSelectedItemsChange={(selectedRooms) => {
-              console.warn(selectedRooms);
-               formik.setFieldValue("rooms", selectedRooms); // Save the selected room IDs
+             
+              formik.setFieldValue("rooms", selectedRooms); // Save the selected room IDs
             }}
             selectedItems={formik.values.rooms}
             // onSelectedItemsChange={(e)=>{ formik.setFieldValue("rooms", Array.isArray(e) ? e.map(x => x.id) : [])}}
@@ -258,13 +258,13 @@ const RoomPriceSettingContent = ({ navigation }) => {
       </View>
       <View style={styles.row}>
         <View style={styles.multiSelectContainer}>
-          <Text style={styles.label}>Day of Week {JSON.stringify(formik.values.days)}</Text>
+          <Text style={styles.label}>Day of Week </Text>
           <MultiSelect
             items={daysOfWeek}
             uniqueKey="id"
             onSelectedItemsChange={(selectedDays) => {
-              console.warn(selectedDays);
-               formik.setFieldValue("days", selectedDays); // Save the selected room IDs
+           
+              formik.setFieldValue("days", selectedDays); // Save the selected room IDs
             }}
             selectedItems={formik.values.days}
             selectText="Pick Days"
@@ -303,7 +303,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
             style={styles.priceInput}
             keyboardType="numeric"
           />
-          {formik.touched.price && formik.errors.price&& (
+          {formik.touched.price && formik.errors.price && (
             <Text style={styles.errorText}>{formik.errors.price}</Text>
           )}
         </View>
@@ -328,10 +328,10 @@ const RoomPriceSettingContent = ({ navigation }) => {
           <RNPickerSelect
             onValueChange={(value) => formik.setFieldValue('status', value)}
             value={formik.values.status}
-        
+
             items={[
-              { label: 'Avaiable', value: 'A' },
-              { label: 'Unavailable', value: 'I' },
+              { label: 'Available', value: 'A' },
+              { label: 'Not Available', value: 'N' },
             ]}
             style={pickerSelectStyles}
           />
@@ -469,6 +469,14 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     paddingLeft: 10,
   },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    fontSize: 16,
+  },
   searchInputStyle: {
     color: '#333',
     fontSize: 16,
@@ -596,6 +604,10 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 15,
     backgroundColor: "white",
+  },
+  errorText: {
+    fontSize: 12,
+    color: "red",
   },
 });
 

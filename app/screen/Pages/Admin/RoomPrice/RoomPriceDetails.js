@@ -1,12 +1,17 @@
-import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
-import React, { useState } from 'react';
+import { Alert, Button, Modal, StyleSheet,ScrollView, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Text, TextInput, TouchableOpacity, View, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState ,useEffect} from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import RNPickerSelect from 'react-native-picker-select';
 import MultiSelect from 'react-native-multiple-select';
-
+import { useIsFocused } from '@react-navigation/native';
+import { Formik, useFormik } from 'formik';
+import * as Yup from "yup";
+import axios from "axios";
+import moment from "moment";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
   date: `2024-08-${index + 1}`,
@@ -16,46 +21,160 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
   addPricePerPerson: `$${(index + 1) * 2}`,
   bookingAvailable: index % 2 === 0 ? 'Yes' : 'No',
 }));
+const filterSchema = Yup.object().shape({
+  status: Yup.string().required("Required"),
+  rooms: Yup.array().min(1, 'At least select one'),
+  startDate: Yup.date().required("Required"),
+  endDate: Yup.date().required("Required"),
+  days: Yup.array().min(1, 'At least select one'),
+
+});
+const editSchema = Yup.object().shape({
+  status: Yup.string().required("Required"),
+  price: Yup.number().min(0, "Must be positive"),
+  addPersonPrice: Yup.number().min(0, "Must be positive"),
+
+});
 
 const Drawer = createDrawerNavigator();
 
 const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
+  const [pages, setPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
-  const [fromDate, setFromDate] = useState(new Date());
-  const [toDate, setToDate] = useState(new Date());
-  const [status, setStatus] = useState('Active');
-  const [selectedRooms, setSelectedRooms] = useState([]);
-  const [selectedDays, setSelectedDays] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [loading,setLoading]=useState(false);
+  const [roomlist, setRoomList] = useState([]);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const isFocused = useIsFocused();
+
+  const itemsPerPage = 5;
+
+  const formik = useFormik({
+    initialValues: {
+      status: "L",
+      rooms: [],
+      days: [],
+      startDate: new Date(),
+      endDate: new Date()
+    },
+    validationSchema: filterSchema,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        setSubmitting(true);
+        setLoading(true);
+        const token = await AsyncStorage.getItem('token');
+        const response = await axios.post("http://majidalipl-001-site5.gtempurl.com/Room/GetRoomsAvailabilityPrice", values, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        });
+
+        if (response.data.success) {
+        
+          setData(response.data.list);
+          setPages(Math.ceil(response.data.list.length / itemsPerPage));
+        
+        } else {
+          Alert.alert('Error', response.data.message);
+        }
+      } catch (error) {
+
+        Alert.alert('Error', 'An error occurred while fetching data.');
+      } finally {
+        setSubmitting(false);
+        setLoading(false);
+      }
+    }
+  });
+  const editformik = useFormik({
+    initialValues: {
+      id: 0,
+      price: 0,
+      status: "",
+      addPersonPrice: 0,
+    },
+    validationSchema: editSchema,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        setSubmitting(true);
+        const token = await AsyncStorage.getItem('token');
+        const response = await axios.post("http://majidalipl-001-site5.gtempurl.com/Room/UpdateSinglePrice", values, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        });
+
+        if (response.data.success) {
+          Alert.alert(
+            'Success',
+            'Changes saved successfully.',
+            [{
+              text: 'OK',
+              onPress: () => formik.handleSubmit()
+            }]
+          );
+        } else {
+          Alert.alert('Error', response.data.message);
+        }
+      } catch (error) {
+
+        Alert.alert('Error', 'An error occurred while fetching data.');
+      } finally {
+        setSubmitting(false);
+        resetForm();
+        setModalVisible(false);
+      }
+    }
+  });
+  
+  useEffect(() => {
+    if (isFocused) {
+      formik.resetForm();
+      editformik.resetForm();
+      setData([]);
+      fetchRoomDD();
+    }
+  }, [isFocused]);
 
 
-  const itemsPerPage = 10;
-  const pages = Math.ceil(data.length / itemsPerPage);
+
+  // Function to refetch the updated room list
+  const fetchRoomDD = async () => {
+    const token = await AsyncStorage.getItem('token');
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Room/GetRoomDD", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (response.data.success) {
+        setRoomList(response.data.list);
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      console.warn(error);
+      Alert.alert('Error', 'Failed to fetch rooms.');
+    } finally {
+
+    }
+  };
 
   const handleEdit = (item) => {
-    setCurrentItem(item);
-    setEditMode(true);
+    const result = {
+      id: item.id,
+      price: item.price.toString(),
+      addPersonPrice: item.addPersonPrice.toString(),
+      status:item.status
+    };
+    editformik.setValues(result);
     setModalVisible(true);
-  };
+  }
 
-  const handleSave = () => {
-    if (editMode) {
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === currentItem.id ? { ...currentItem } : item
-        )
-      );
-    } else {
-      setData((prevData) => [...prevData, { ...currentItem, id: Date.now().toString() }]);
-    }
-    setModalVisible(false);
-    setCurrentItem(null);
-  };
 
   const handlePageChange = (direction) => {
     if (direction === 'next' && currentPage < pages - 1) {
@@ -67,12 +186,13 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
 
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell}>{item.date}</Text>
-      <Text style={styles.tableCell}>{item.day}</Text>
+      <Text style={styles.tableCell}>{moment(item.date).format("MM/DD/YY")}</Text>
+      <Text style={styles.tableCell}>{item.days.substring(0, 3)}</Text>
       <Text style={styles.tableCell}>{item.roomName}</Text>
-      <Text style={styles.tableCell}>{item.price}</Text>
-      <Text style={styles.tableCell}>{item.addPricePerPerson}</Text>
-      <Text style={styles.tableCell}>{item.bookingAvailable}</Text>
+      <Text style={styles.tableCell}>{item.price.toLocaleString("en-US", { style: "currency", currency: "USD" })}</Text>
+      <Text style={styles.tableCell}>{item.addPersonPrice.toLocaleString("en-US", { style: "currency", currency: "USD" })}</Text>
+      {/* <Text style={styles.tableCell}>{formatCurrency({amount: item.price, code: "AUD" })}</Text> */}
+      <Text style={styles.tableCell}>{item.status.trim() == "A" ? "Available" : item.status.trim() == "B" ? "Booked" : "Not Available"}</Text>
       <View style={styles.tableActions}>
         <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
           <Ionicons name="pencil" size={14} color="white" />
@@ -81,29 +201,27 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
     </View>
   );
 
-  const rooms = [
-    { id: '1', name: 'Room 1' },
-    { id: '2', name: 'Room 2' },
-    { id: '3', name: 'Room 3' },
-  ];
-
   const daysOfWeek = [
-    { id: 'mon', name: 'Monday' },
-    { id: 'tue', name: 'Tuesday' },
-    { id: 'wed', name: 'Wednesday' },
-    { id: 'thu', name: 'Thursday' },
-    { id: 'fri', name: 'Friday' },
-    { id: 'sat', name: 'Saturday' },
-    { id: 'sun', name: 'Sunday' },
+    { id: 'Monday', name: 'Monday' },
+    { id: 'Tuesday', name: 'Tuesday' },
+    { id: 'Wednesday', name: 'Wednesday' },
+    { id: 'Thursday', name: 'Thursday' },
+    { id: 'Friday', name: 'Friday' },
+    { id: 'Saturday', name: 'Saturday' },
+    { id: 'Sunday', name: 'Sunday' },
   ];
-
+  const renderEmptyTable = () => (
+    <View style={styles.emptyTableContainer}>
+      <Text style={styles.emptyTableText}>No rows are added</Text>
+    </View>
+  );
   const renderHeader = () => (
     <>
       <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
         <Ionicons name="menu" size={24} color="black" />
       </TouchableOpacity>
 
-      <Text style={styles.roomheading}>Room Price & Availability Details</Text>
+      <Text style={styles.roomheading}>Room Price & Availability</Text>
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => {
@@ -114,77 +232,99 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.row}>
-      <View style={styles.inputContainer}>
-  <Text style={styles.label}>From Date</Text>
-  {Platform.OS === 'android' && (
-    <>
-      <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.datePicker}>
-        <Text>{fromDate.toLocaleDateString()}</Text>
-      </TouchableOpacity>
-      {showFromDatePicker && (
-        <DateTimePicker
-          value={fromDate}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowFromDatePicker(false);
-            if (selectedDate) setFromDate(selectedDate);
-          }}
-        />
-      )}
-    </>
-  )}
-  {Platform.OS === 'ios' && (
-    <DateTimePicker
-      value={fromDate}
-      mode="date"
-      display="default"
-      onChange={(event, selectedDate) => setFromDate(selectedDate || fromDate)}
-      style={styles.datePicker}
-    />
-  )}
-</View>
         <View style={styles.inputContainer}>
-        <Text style={styles.label}>To Date</Text>
-  {Platform.OS === 'android' && (
-    <>
-      <TouchableOpacity onPress={() => setShowToDatePicker(true)} style={styles.datePicker}>
-        <Text>{toDate.toLocaleDateString()}</Text>
-      </TouchableOpacity>
-      {showToDatePicker && (
-        <DateTimePicker
-          value={toDate}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowToDatePicker(false);
-            if (selectedDate) setToDate(selectedDate);
-          }}
-        />
-      )}
-    </>
-  )}
-  {Platform.OS === 'ios' && (
-    <DateTimePicker
-      value={toDate}
-      mode="date"
-      display="default"
-      onChange={(event, selectedDate) => setToDate(selectedDate || toDate)}
-      style={styles.datePicker}
-    />
-  )}
+          <Text style={styles.heading}>Start Date</Text>
+          {Platform.OS === 'android' && (
+            <>
+              <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.datePicker}>
+                <Text>{formik.values.startDate.toLocaleDateString()}</Text>
+              </TouchableOpacity>
+              {showFromDatePicker && (
+                <DateTimePicker
+                  value={formik.values.startDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowFromDatePicker(false);
+                    const currentDate = selectedDate || new Date();
+                    formik.setFieldValue("startDate", currentDate);
+                  }}
+                />
+              )}
+            </>
+          )}
+          {Platform.OS === 'ios' && (
+            <DateTimePicker
+              value={formik.values.startDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || new Date();
+                formik.setFieldValue("startDate", currentDate);
+              }}
+              style={styles.datePicker}
+            />
+          )}
+          {formik.touched.startDate && formik.errors.startDate && (
+            <Text style={styles.errorText}>{formik.errors.startDate}</Text>
+          )}
         </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.heading}>End Date</Text>
+          {Platform.OS === 'android' && (
+            <>
+              <TouchableOpacity onPress={() => setShowToDatePicker(true)} style={styles.datePicker}>
+                <Text>{formik.values.endDate.toLocaleDateString()}</Text>
+              </TouchableOpacity>
+              {showToDatePicker && (
+                <DateTimePicker
+                  value={formik.values.endDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowToDatePicker(false);
+                    const currentDate = selectedDate || new Date();
+                    formik.setFieldValue("endDate", currentDate);
+                  }}
+                />
+              )}
+            </>
+          )}
+          {Platform.OS === 'ios' && (
+            <DateTimePicker
+              value={formik.values.endDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || new Date();
+                formik.setFieldValue("endDate", currentDate);
+              }}
+              style={styles.datePicker}
+            />
+          )}
+          {formik.touched.endDate && formik.errors.endDate && (
+            <Text style={styles.errorText}>{formik.errors.endDate}</Text>
+          )}
+        </View>
+      </View>
+      <View style={styles.row}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Status</Text>
           <RNPickerSelect
-            onValueChange={(value) => setStatus(value)}
-            value={status}
+            onValueChange={(value) => formik.setFieldValue('status', value)}
+            value={formik.values.status}
+
             items={[
-              { label: 'Active', value: 'Active' },
-              { label: 'Pending', value: 'Pending' },
+              { label: 'All', value: 'L' },
+              { label: 'Booked', value: 'B' },
+              { label: 'Available', value: 'A' },
+              { label: 'Not Available', value: 'N' },
             ]}
             style={pickerSelectStyles}
           />
+          {formik.touched.status && formik.errors.status && (
+            <Text style={styles.errorText}>{formik.errors.status}</Text>
+          )}
         </View>
       </View>
 
@@ -192,10 +332,15 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
         <View style={styles.multiSelectContainer}>
           <Text style={styles.label}>Rooms</Text>
           <MultiSelect
-            items={rooms}
+            items={roomlist}
             uniqueKey="id"
-            onSelectedItemsChange={setSelectedRooms}
-            selectedItems={selectedRooms}
+            onSelectedItemsChange={(selectedRooms) => {
+             
+              formik.setFieldValue("rooms", selectedRooms); // Save the selected room IDs
+            }}
+            selectedItems={formik.values.rooms}
+            // onSelectedItemsChange={(e)=>{ formik.setFieldValue("rooms", Array.isArray(e) ? e.map(x => x.id) : [])}}
+            // selectedItems={rooms.filter(obj => formik.values.rooms.includes(obj.id))} 
             selectText="Pick Rooms"
             searchInputPlaceholderText="Search Rooms..."
             tagRemoveIconColor="#CCC"
@@ -216,6 +361,9 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
             submitButtonColor="#180161"
             submitButtonText="Select"
           />
+          {formik.touched.rooms && formik.errors.rooms && (
+            <Text style={styles.errorText}>{formik.errors.rooms}</Text>
+          )}
         </View>
       </View>
 
@@ -225,8 +373,11 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
           <MultiSelect
             items={daysOfWeek}
             uniqueKey="id"
-            onSelectedItemsChange={setSelectedDays}
-            selectedItems={selectedDays}
+            onSelectedItemsChange={(selectedDays) => {
+             
+              formik.setFieldValue("days", selectedDays); // Save the selected room IDs
+            }}
+            selectedItems={formik.values.days}
             selectText="Pick Days"
             searchInputPlaceholderText="Search Days..."
             tagRemoveIconColor="#CCC"
@@ -247,7 +398,17 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
             submitButtonColor="#180161"
             submitButtonText="Select"
           />
+          {formik.touched.days && formik.errors.days && (
+            <Text style={styles.errorText}>{formik.errors.days}</Text>
+          )}
         </View>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={formik.handleSubmit} disabled={submitting}>
+          <Text style={styles.buttonText}>View</Text>
+        </TouchableOpacity>
+
       </View>
 
       <View style={styles.tableHeader}>
@@ -255,13 +416,17 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
         <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail">Day</Text>
         <Text style={styles.tableHeaderText} numberOfLines={2} ellipsizeMode="tail">Room Name</Text>
         <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail">Price</Text>
-        <Text style={styles.tableHeaderText} numberOfLines={2} ellipsizeMode="tail">Add Price per Person</Text>
-        <Text style={styles.tableHeaderText} numberOfLines={2} >Booking Available</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={2} ellipsizeMode="tail">Add Person Price</Text>
+        <Text style={styles.tableHeaderText} numberOfLines={2} >Status</Text>
         <Text style={styles.tableHeaderText} numberOfLines={1} ellipsizeMode="tail"><Ionicons name="construct" size={12} color="black" /></Text>
       </View>
     </>
   );
-
+  const renderLoader = () => (
+    <View style={styles.loaderContainer}>
+      <ActivityIndicator size="large" color="#0000ff" />
+    </View>
+  );
   const renderFooter = () => (
     <View style={styles.paginationContainer}>
       <TouchableOpacity
@@ -294,58 +459,104 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
-        contentContainerStyle={styles.scrollViewContent}
+        ListFooterComponent={renderFooter}    
+        ListEmptyComponent={loading ? renderLoader() : renderEmptyTable} // Display loader or empty message
+        contentContainerStyle={[
+          styles.scrollViewContent,
+          { flexGrow: 1, justifyContent: data.length === 0 ? 'center' : 'flex-start' }, // Adjust based on content
+        ]}
       />
 
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Update Room Price</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Room Name"
-              placeholderTextColor="#888"
-              value={currentItem?.roomName}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, roomName: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Price"
-              placeholderTextColor="#888"
-              value={currentItem?.price}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, price: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Additional Price Per Person"
-              placeholderTextColor="#888"
-              value={currentItem?.addPricePerPerson}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, addPricePerPerson: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Booking Available"
-              placeholderTextColor="#888"
-              value={currentItem?.bookingAvailable}
-              onChangeText={(text) => setCurrentItem({ ...currentItem, bookingAvailable: text })}
-            />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <ScrollView contentContainerStyle={styles.modalScrollViewContent}>
+                  <View style={styles.header}>
+                    <Text style={styles.modalTitle}>
+                      Update Room Price
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setModalVisible(false)}
+                      style={styles.closeButton}
+                    >
+                      <Text style={styles.closeButtonText}>X</Text>
+                    </TouchableOpacity>
+                  </View>
 
-            <View style={styles.modalButtons}>
-              <Button title="Cancel" onPress={() => setModalVisible(false)} color="#FF6347" />
-              <Button title="Save" onPress={handleSave} color="#180161" />
+                  <Text style={styles.heading}>Price</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Name"
+                    placeholderTextColor="#888"
+                     keyboardType="numeric"
+                    onChangeText={editformik.handleChange("price")}
+                    value={editformik.values.price}
+                  />
+                 
+                  {editformik.touched.price && editformik.errors.price && (
+                    <Text style={styles.errorText}>{editformik.errors.price}</Text>
+                  )}
+                   <Text style={styles.haeding}>Additional Person Price</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Name"
+                    placeholderTextColor="#888"
+                     keyboardType="numeric"
+                     onChangeText={editformik.handleChange("addPersonPrice")}
+                    value={editformik.values.addPersonPrice}
+                  />
+                  
+                  {editformik.touched.addPersonPrice && editformik.errors.addPersonPrice && (
+                    <Text style={styles.errorText}>{editformik.errors.addPersonPrice}</Text>
+                  )}
+                 <Text style={styles.heading}>Status</Text>
+                  <RNPickerSelect
+                    onValueChange={(value) => editformik.setFieldValue('status', value)}
+                    value={editformik.values.status}
+
+                    items={[
+                      { label: 'Available', value: 'A' },
+                      { label: 'Not Available', value: 'N' },
+                    ]}
+                    style={pickerSelectStyles}
+                  />
+                  {editformik.touched.status && editformik.errors.status && (
+                    <Text style={styles.errorText}>{editformik.errors.status}</Text>
+                  )}
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      onPress={() => setModalVisible(false)}
+                      style={[styles.button, styles.cancelButton]}
+                    >
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      disabled={submitting}
+                      onPress={editformik.handleSubmit}
+                      style={[styles.button, styles.saveButton]}
+                    >
+                      <Text style={styles.buttonText}>Save</Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </View>
             </View>
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
 
     </KeyboardAvoidingView>
-    
+
   );
 };
 
@@ -375,19 +586,39 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     padding: 20,
   },
+  modalScrollViewContent: {
+    padding: 20,
+  },
   menuButton: {
     position: 'absolute',
     top: 30,
     left: 10,
     zIndex: 1,
-},
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#180161',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   roomheading: {
     color: '#180161',
-    width:'80%',
+    width: '80%',
     fontWeight: 'bold',
     fontSize: 20,
     textAlign: 'center',
-    left:40,
+    left: 40,
     marginVertical: 20,
   },
   addButton: {
@@ -397,7 +628,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     marginBottom: 20,
-    marginTop:10,
+    marginTop: 10,
   },
   addButtonText: {
     color: 'white',
@@ -441,9 +672,9 @@ const styles = StyleSheet.create({
   },
   selectTextStyle: {
     fontSize: 16,
-    color: '#888', 
+    color: '#888',
     textAlign: 'left',
-    paddingLeft:10,
+    paddingLeft: 10,
   },
   searchInputStyle: {
     color: '#333',
@@ -501,6 +732,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    fontSize: 16,
+  },
   editButton: {
     backgroundColor: '#007BFF',
     borderRadius: 6,
@@ -511,7 +750,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 10,
     fontWeight: 'bold',
-    width:40,
+    width: 40,
   },
   paginationContainer: {
     flexDirection: 'row',
@@ -539,22 +778,55 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
-    padding: 24,
-    width: '90%',
-    maxHeight: '80%',
+    padding: 20,
+    width: "90%",
+    maxWidth: 400,
+    maxHeight: "80%",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#180161",
+  },
+  closeButton: {
+    padding: 5,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#888",
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 20,
-    color: '#180161',
+  },
+  priceInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    backgroundColor: 'white',
+    fontSize: 16,
+
   },
   input: {
     borderWidth: 1,
@@ -568,6 +840,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 24,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "red",
   },
 });
 
@@ -593,5 +869,24 @@ const pickerSelectStyles = StyleSheet.create({
     color: 'black',
     paddingRight: 30,
     backgroundColor: '#fff',
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: "#180161",
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 15,
+    backgroundColor: "white",
+  },
+  emptyTableContainer: {
+    flex: 1, // Allows the container to grow and center its content vertically
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+ 
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
   },
 });
