@@ -56,6 +56,7 @@ const DrawerContent = (props) => {
         {renderDrawerItem("Manage Guests", "GuestList")}
         {renderDrawerItem("Manage Gyms", "GymList")}
         {renderDrawerItem("Manage Spas", "SpaList")}
+        {renderDrawerItem("Change Password", "AdminChangePassword")}
         <TouchableOpacity
           style={styles.drawerLastItem}
           onPress={async () => await handleLogout()}

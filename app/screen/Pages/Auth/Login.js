@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect,useState} from "react";
 import {
   StyleSheet,
   Text,
@@ -18,10 +18,10 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
+import { useIsFocused } from '@react-navigation/native';
 const Login = ({ navigation }) => {
   const [submitting, setSubmitting] = React.useState(false);
-
+  const isFocused = useIsFocused();
   const SetToken = async (loginModel) => {
     const expireTime = Date.now() + 300000;
     await AsyncStorage.setItem("expireTime", expireTime.toString());
@@ -41,15 +41,17 @@ const Login = ({ navigation }) => {
 
   const formik = useFormik({
     initialValues: {
-      email: "admin@gmail.com",
-      password: "Admin123",
+      email: "",
+      password: "",
     },
     validationSchema: SigninSchema,
     onSubmit: (values) => {
+      
       setSubmitting(true);
       axios
         .post("http://majidalipl-001-site5.gtempurl.com/Account/Login", values)
         .then(function (response) {
+         
           if (response.data.success) {
             SetToken(response.data.data);
             setSubmitting(false);
@@ -75,6 +77,14 @@ const Login = ({ navigation }) => {
         });
     },
   });
+
+
+  useEffect(() => {
+    if (isFocused) {
+     formik.resetForm();
+
+    }
+  }, [isFocused]);
   // const ScreenWrapper = ({ children }) => (
   //   <View style={{ flex: 1, backgroundColor: "black" }}>{children}</View>
   // );
@@ -128,7 +138,7 @@ const Login = ({ navigation }) => {
                 ) : null}
                 <Text
                   style={styles.forgotPasswordText}
-                  onPress={() => navigation.navigate("ForgetPassword")}
+                  onPress={() => navigation.navigate("ForgotPassword")}
                 >
                   Forgot Password?
                 </Text>

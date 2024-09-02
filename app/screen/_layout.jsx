@@ -22,7 +22,7 @@ import SpaList from "./Pages/Admin/Spa/SpaList";
 import AddEditSpa from "./Pages/Admin/Spa/AddEditSpa";
 import StaffList from "./Pages/Admin/Staff/StaffList";
 import StaffActivityList from "./Pages/Admin/Staff/StaffActivities";
-import ForgetPassword from "./Pages/Auth/ForgetPassword";
+import ForgotPassword from "./Pages/Auth/ForgotPassword";
 import ChangePassword from "./Pages/Guest/Account/ChangePassword";
 import ResetPassword from "./Pages/Auth/ResetPassword";
 import GuestBottomNav from "../components/GuestBottomNav";
@@ -33,6 +33,7 @@ import BookingItems from "./Pages/Guest/Booking/BookingItems";
 import ConfirmBooking from "./Pages/Guest/Booking/ConfirmBooking";
 import Receipt from "./Pages/Guest/Booking/Receipt";
 import Ticket from "./Pages/Guest/Account/Ticket";
+import AdminChangePassword from "./Pages/Admin/ChangePassword";
 // import { SafeAreaView } from "react-native-safe-area-context";
 
 function App() {
@@ -49,7 +50,7 @@ function App() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Signup" component={Signup} />
-          <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
           <Stack.Screen name="ChangePassword" component={ChangePassword} />
           <Stack.Screen name="ResetPassword" component={ResetPassword} />
           <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -73,6 +74,7 @@ function App() {
           <Stack.Screen name="GuestList" component={GuestList} />
           <Stack.Screen name="GuestDetails" component={GuestDetails} />
           <Stack.Screen name="StaffList" component={StaffList} />
+          <Stack.Screen name="AdminChangePassword" component={AdminChangePassword}/>
           <Stack.Screen
             name="StaffActivityList"
             component={StaffActivityList}
