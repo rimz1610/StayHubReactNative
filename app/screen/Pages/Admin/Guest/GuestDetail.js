@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
 } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,71 +41,75 @@ const GuestDetailsContent = ({ navigation }) => {
     </View>
   );
 
+  // Create a header component to display above the FlatList
+  const renderHeader = () => (
+    <View>
+      <TouchableOpacity
+        onPress={() => navigation.openDrawer()}
+        style={styles.menuButton}
+      >
+        <Ionicons name="menu" size={24} color="black" />
+      </TouchableOpacity>
+      <Text style={styles.bookingtxt}>Guest Details</Text>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("GuestList")}
+        style={styles.backbtn}
+      >
+        <Text style={styles.backbtnText}>Back</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.guestDetailsHeading}>Guest Details</Text>
+      <View style={styles.lineup} />
+
+      <View style={styles.infoContainer}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Guest No:</Text>
+          <Text style={styles.infoText}>12345</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Name:</Text>
+          <Text style={styles.infoText}>John Doe</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Email:</Text>
+          <Text style={styles.infoText}>guest@example.com</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Phone:</Text>
+          <Text style={styles.infoText}>+1 234 567 8900</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Address:</Text>
+          <Text style={styles.infoText}>123 Main St, City</Text>
+        </View>
+      </View>
+
+      <View style={styles.linedown} />
+
+      <Text style={styles.tableHeading}>Booking Details</Text>
+      <View style={styles.tableHeader}>
+        <Text style={styles.headerCell}>Booking No</Text>
+        <Text style={styles.headerCell}>Date</Text>
+        <Text style={styles.headerCell}>Total Amount</Text>
+        <Text style={styles.headerCell}>Paid Amount</Text>
+        <Text style={styles.headerCell}>Status</Text>
+        <Text style={styles.headerCell}>Action</Text>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity
-          onPress={() => navigation.openDrawer()}
-          style={styles.menuButton}
-        >
-          <Ionicons name="menu" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.bookingtxt}>Guest Details</Text>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate("GuestList")}
-          style={styles.backbtn}
-        >
-          <Text style={styles.backbtnText}>Back</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.guestDetailsHeading}>Guest Details</Text>
-        <View style={styles.lineup} />
-
-        <View style={styles.infoContainer}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Guest No:</Text>
-            <Text style={styles.infoText}>12345</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Name:</Text>
-            <Text style={styles.infoText}>John Doe</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email:</Text>
-            <Text style={styles.infoText}>guest@example.com</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Phone:</Text>
-            <Text style={styles.infoText}>+1 234 567 8900</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Address:</Text>
-            <Text style={styles.infoText}>123 Main St, City</Text>
-          </View>
-        </View>
-
-        <View style={styles.linedown} />
-
-        <Text style={styles.tableHeading}>Booking Details</Text>
-        <View style={styles.tableContainer}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.headerCell}>Booking No</Text>
-            <Text style={styles.headerCell}>Date</Text>
-            <Text style={styles.headerCell}>Total Amount</Text>
-            <Text style={styles.headerCell}>Paid Amount</Text>
-            <Text style={styles.headerCell}>Status</Text>
-            <Text style={styles.headerCell}>Action</Text>
-          </View>
-          <FlatList
-            data={bookingData}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={true}
-            nestedScrollEnabled={true}
-          />
-        </View>
-      </ScrollView>
+      <FlatList
+        data={bookingData}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader} // Set the header component
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        style={styles.tableContainer} // Set height for the table container
+      />
     </SafeAreaView>
   );
 };
@@ -138,7 +141,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   scrollContent: {
-    flexGrow: 1,
     padding: 20,
   },
   bookingtxt: {
@@ -206,14 +208,13 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   tableContainer: {
-    width: "100%",
+    height: 100, // Set height for the FlatList (table) container
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
     overflow: "hidden",
     marginBottom: 20,
     backgroundColor: "white",
-    height: 300, // Fixed height for the table container
   },
   tableHeader: {
     flexDirection: "row",

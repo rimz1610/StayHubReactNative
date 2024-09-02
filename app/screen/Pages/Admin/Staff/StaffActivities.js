@@ -1,8 +1,19 @@
-import RNPickerSelect from 'react-native-picker-select';
+import RNPickerSelect from "react-native-picker-select";
 import {
-  StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert,
-  ScrollView, FlatList, Modal, Button, TouchableWithoutFeedback,
-  Keyboard, KeyboardAvoidingView
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Alert,
+  ScrollView,
+  FlatList,
+  Modal,
+  Button,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
@@ -15,7 +26,7 @@ import * as Yup from "yup";
 import moment from "moment";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from "@react-navigation/native";
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index,
@@ -30,7 +41,7 @@ const addEditSchema = Yup.object().shape({
   activityDate: Yup.date().required("Required"),
   activityDescription: Yup.string().required("Required"),
 });
-const StaffActivitiesContent = ({route, navigation }) => {
+const StaffActivitiesContent = ({ route, navigation }) => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
@@ -48,19 +59,18 @@ const StaffActivitiesContent = ({route, navigation }) => {
       staffId: staffId,
       activityName: "",
       activityDate: new Date(),
-      activityDescription: ""
+      activityDescription: "",
     },
     validationSchema: addEditSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-       
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Staff/SaveActivity",
           values,
           {
-            headers: { Authorization: `Bearer ${token}`, },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         if (response.data.success) {
@@ -78,14 +88,11 @@ const StaffActivitiesContent = ({route, navigation }) => {
         console.warn(error);
         Alert.alert("Error", "An error occurred while saving the activity.");
       } finally {
-
         fetchData();
         setSubmitting(false);
       }
     },
   });
-
-
 
   useEffect(() => {
     if (isFocused) {
@@ -93,29 +100,32 @@ const StaffActivitiesContent = ({route, navigation }) => {
     }
   }, [isFocused]);
 
-
   // Function to refetch the updated room list
   const fetchData = async () => {
     if (staffId > 0) {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
 
       setLoading(true);
       try {
-        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffActivities?id=" + staffId, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
+        const response = await axios.get(
+          "http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffActivities?id=" +
+            staffId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.data.success) {
           setData(response.data.list);
           setPages(Math.ceil(response.data.list.length / itemsPerPage));
         } else {
-          Alert.alert('Error', response.data.message);
+          Alert.alert("Error", response.data.message);
         }
       } catch (error) {
         console.warn(error);
-        Alert.alert('Error', 'Failed to fetch activities.');
+        Alert.alert("Error", "Failed to fetch activities.");
       } finally {
         setLoading(false);
       }
@@ -123,69 +133,81 @@ const StaffActivitiesContent = ({route, navigation }) => {
   };
 
   const handleEdit = (item) => {
-    var obj={
+    var obj = {
       id: item.id,
       staffId: staffId,
       activityName: item.activityName,
       activityDate: new Date(item.activityDate),
-      activityDescription: item.activityDescription
-    }
+      activityDescription: item.activityDescription,
+    };
     formik.setValues(obj);
     setModalVisible(true);
-
   };
 
   const handleDelete = (activityId) => {
-    Alert.alert('Are you sure?', 'Do you want to delete this item?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Are you sure?", "Do you want to delete this item?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Yes, delete it',
+        text: "Yes, delete it",
         onPress: async () => {
           try {
             setLoading(true);
 
-            const token = await AsyncStorage.getItem('token');
-            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Staff/DeleteActivity?id=${activityId}`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
+            const token = await AsyncStorage.getItem("token");
+            const response = await axios.get(
+              `http://majidalipl-001-site5.gtempurl.com/Staff/DeleteActivity?id=${activityId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
               }
-            });
+            );
 
             if (response.data.success) {
               // Refetch the updated list after deletion
               fetchData();
             } else {
-              Alert.alert('Error', response.data.message);
+              Alert.alert("Error", response.data.message);
             }
           } catch (error) {
             console.warn(error);
-            Alert.alert('Error', 'Failed to delete the staff activity.');
+            Alert.alert("Error", "Failed to delete the staff activity.");
           } finally {
             setLoading(false);
           }
-        }
-      }
+        },
+      },
     ]);
   };
 
   const handlePageChange = (direction) => {
-    if (direction === 'next' && currentPage < pages - 1) {
+    if (direction === "next" && currentPage < pages - 1) {
       setCurrentPage(currentPage + 1);
-    } else if (direction === 'previous' && currentPage > 0) {
+    } else if (direction === "previous" && currentPage > 0) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.activityName}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{moment(item.activityDate).format("MM/DD/YYYY")}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>
+        {item.activityName}
+      </Text>
+      <Text style={styles.tableCell} numberOfLines={1}>
+        {moment(item.activityDate).format("MM/DD/YYYY")}
+      </Text>
 
       <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
+        <TouchableOpacity
+          onPress={() => handleEdit(item)}
+          style={styles.editButton}
+        >
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+        <TouchableOpacity
+          onPress={() => handleDelete(item.id)}
+          style={styles.deleteButton}
+        >
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
@@ -206,23 +228,25 @@ const StaffActivitiesContent = ({route, navigation }) => {
       </TouchableOpacity>
 
       <Text style={styles.roomheading}>Staff Activities</Text>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          formik.resetForm();
-          setModalVisible(true);
-        }}
-      >
-        <Text style={styles.addButtonText}>+ Add New</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          navigation.navigate("StaffList");
-        }}
-      >
-        <Text style={styles.addButtonText}>Back</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            formik.resetForm();
+            setModalVisible(true);
+          }}
+        >
+          <Text style={styles.addButtonText}>+ Add New</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            navigation.navigate("StaffList");
+          }}
+        >
+          <Text style={styles.addButtonText}>Back</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.tableHeading}>Staff Name: {staffName}</Text>
       {/* Table */}
       <View style={styles.tableContainer}>
@@ -233,7 +257,10 @@ const StaffActivitiesContent = ({route, navigation }) => {
         </View>
         {data.length > 0 ? (
           <FlatList
-            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            data={data.slice(
+              currentPage * itemsPerPage,
+              (currentPage + 1) * itemsPerPage
+            )}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
           />
@@ -286,7 +313,9 @@ const StaffActivitiesContent = ({route, navigation }) => {
                 <ScrollView contentContainerStyle={styles.scrollViewContent}>
                   <View style={styles.header}>
                     <Text style={styles.modalTitle}>
-                      {formik.values.id>0 ? "Edit Activity" : "Assign New Activity"}
+                      {formik.values.id > 0
+                        ? "Edit Activity"
+                        : "Assign New Activity"}
                     </Text>
                     <TouchableOpacity
                       onPress={() => setModalVisible(false)}
@@ -301,31 +330,37 @@ const StaffActivitiesContent = ({route, navigation }) => {
                     placeholder="Name"
                     placeholderTextColor="#888"
                     value={formik.values.activityName}
-                    onChangeText={formik.handleChange('activityName')}
+                    onChangeText={formik.handleChange("activityName")}
                   />
-                  {formik.touched.activityName && formik.errors.activityName && <Text style={styles.errorText}>{formik.errors.activityName}</Text>}
+                  {formik.touched.activityName &&
+                    formik.errors.activityName && (
+                      <Text style={styles.errorText}>
+                        {formik.errors.activityName}
+                      </Text>
+                    )}
 
                   <TouchableOpacity
-                      onPress={() => setShowActivityDate(true)}
-                      style={styles.dateButton}
-                    >
-                      <Text>
-                        {formik.values.activityDate.toLocaleDateString()}
-                      </Text>
-                    </TouchableOpacity>
-                    {showActivityDate && (
-                      <DateTimePicker
-                        value={formik.values.activityDate}
-                        mode="date"
-                        display="default"
-                        onChange={(event, selectedDate) => {
-                          const currentDate = selectedDate || new Date();
-                          setShowActivityDate(false);
-                          formik.setFieldValue("activityDate", currentDate);
-                        }}
-                      />
-                    )}
-                    {formik.touched.activityDate && formik.errors.activityDate && (
+                    onPress={() => setShowActivityDate(true)}
+                    style={styles.dateButton}
+                  >
+                    <Text>
+                      {formik.values.activityDate.toLocaleDateString()}
+                    </Text>
+                  </TouchableOpacity>
+                  {showActivityDate && (
+                    <DateTimePicker
+                      value={formik.values.activityDate}
+                      mode="date"
+                      display="default"
+                      onChange={(event, selectedDate) => {
+                        const currentDate = selectedDate || new Date();
+                        setShowActivityDate(false);
+                        formik.setFieldValue("activityDate", currentDate);
+                      }}
+                    />
+                  )}
+                  {formik.touched.activityDate &&
+                    formik.errors.activityDate && (
                       <Text style={styles.errorText}>
                         {formik.errors.activityDate}
                       </Text>
@@ -335,11 +370,16 @@ const StaffActivitiesContent = ({route, navigation }) => {
                     placeholder="Description"
                     placeholderTextColor="#888"
                     value={formik.values.activityDescription}
-                    onChangeText={formik.handleChange('activityDescription')}
+                    onChangeText={formik.handleChange("activityDescription")}
                     multiline={true}
                     numberOfLines={4}
                   />
-                  {formik.touched.activityDescription && formik.errors.activityDescription && <Text style={styles.errorText}>{formik.errors.activityDescription}</Text>}
+                  {formik.touched.activityDescription &&
+                    formik.errors.activityDescription && (
+                      <Text style={styles.errorText}>
+                        {formik.errors.activityDescription}
+                      </Text>
+                    )}
 
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity
@@ -372,15 +412,18 @@ const StaffActivityList = ({ route }) => {
       screenOptions={{
         headerShown: false,
         drawerStyle: {
-          width: '60%',
+          width: "60%",
         },
       }}
     >
-      <Drawer.Screen name="StaffActivityListContent" component={StaffActivitiesContent} initialParams={{ staffId: staffId, staffName: staffName }} />
+      <Drawer.Screen
+        name="StaffActivityListContent"
+        component={StaffActivitiesContent}
+        initialParams={{ staffId: staffId, staffName: staffName }}
+      />
     </Drawer.Navigator>
   );
 };
-
 
 export default StaffActivityList;
 
@@ -400,20 +443,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 20,
   },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 10,
+  },
   addButton: {
     marginTop: 30,
-    alignSelf: "flex-end",
     backgroundColor: "#180161",
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 4,
   },
   addButtonText: {
     color: "white",
     fontSize: 16,
+    fontWeight: "bold",
+  },
+  tableHeading: {
+    marginTop: 30,
+    fontWeight: "bold",
+    // fontSize: 12,
   },
   tableContainer: {
     width: "100%",
-    height: "50%",
+    height: "40%",
     borderWidth: 1,
     borderColor: "black",
     borderRadius: 4,
@@ -432,7 +486,7 @@ const styles = StyleSheet.create({
   },
   tableHeaderText: {
     fontWeight: "bold",
-    fontSize: 12,
+    // fontSize: 12,
     flex: 1,
     textAlign: "center",
   },
@@ -473,7 +527,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
-    marginLeft:1
+    marginLeft: 1,
   },
   deleteButtonText: {
     color: "white",
@@ -578,8 +632,8 @@ const styles = StyleSheet.create({
   },
   emptyTableContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 20,
   },
   dateButton: {
@@ -592,7 +646,7 @@ const styles = StyleSheet.create({
   },
   emptyTableText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   errorText: {
     fontSize: 12,

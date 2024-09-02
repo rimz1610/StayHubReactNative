@@ -1,4 +1,10 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+} from "react-native";
 import React from "react";
 import DrawerContent from "../../../../components/DrawerContent";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -21,103 +27,105 @@ const BookingDetailsContent = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.openDrawer()}
-        style={styles.menuButton}
-      >
-        <Ionicons name="menu" size={24} color="black" />
-      </TouchableOpacity>
-      <Text style={styles.bookingtxt}>Booking Details</Text>
+    <ScrollView style={styles.ScrollView}>
+      <View style={styles.container}>
+        <TouchableOpacity
+          onPress={() => navigation.openDrawer()}
+          style={styles.menuButton}
+        >
+          <Ionicons name="menu" size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.bookingtxt}>Booking Details</Text>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Dashboard")}
-        style={styles.backbtn}
-      >
-        <Text style={styles.backbtnText}>Back</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Dashboard")}
+          style={styles.backbtn}
+        >
+          <Text style={styles.backbtnText}>Back</Text>
+        </TouchableOpacity>
 
-      <Text style={styles.guestDetailsHeading}>Guest Details</Text>
+        <Text style={styles.guestDetailsHeading}>Guest Details</Text>
 
-      {/* Black Line */}
-      <View style={styles.lineup} />
+        {/* Black Line */}
+        <View style={styles.lineup} />
 
-      {/* Guest Information */}
-      <View style={styles.infoContainer}>
-        <View style={styles.infoRow}>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoText}>Guest No:</Text>
-            <Text style={styles.infoText}>Email:</Text>
-            <Text style={styles.infoText}>Address:</Text>
-            <Text style={styles.infoText}>Booking Ref no:</Text>
+        {/* Guest Information */}
+        <View style={styles.infoContainer}>
+          <View style={styles.infoRow}>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoText}>Guest No:</Text>
+              <Text style={styles.infoText}>Email:</Text>
+              <Text style={styles.infoText}>Address:</Text>
+              <Text style={styles.infoText}>Booking Ref no:</Text>
+            </View>
+            <View style={styles.infoColumn}>
+              <Text style={styles.infoText}>Name:</Text>
+              <Text style={styles.infoText}>Phone:</Text>
+              <Text style={styles.infoText}>Booking Date:</Text>
+            </View>
           </View>
-          <View style={styles.infoColumn}>
-            <Text style={styles.infoText}>Name:</Text>
-            <Text style={styles.infoText}>Phone:</Text>
-            <Text style={styles.infoText}>Booking Date:</Text>
+        </View>
+
+        {/* Black Line */}
+        <View style={styles.linedown} />
+
+        {/* Table Heading */}
+        <Text style={styles.tableHeading}>Items Details</Text>
+
+        {/* Table Container */}
+        <View style={styles.tableWrapper}>
+          <View style={styles.tableContainer}>
+            <View style={styles.tableHeader}>
+              <Text style={styles.tableHeaderText}>Type</Text>
+              <Text style={styles.tableHeaderText}>Details</Text>
+              <Text style={styles.tableHeaderText}>Price</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <View style={styles.tableCell}>
+                {getIconForType("Room")}
+                <Text> Room</Text>
+              </View>
+              <Text style={[styles.tableCell, styles.tableDetailCell]}>
+                Deluxe Room with Sea View
+              </Text>
+              <Text style={styles.tableCell}>$200</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <View style={styles.tableCell}>
+                {getIconForType("Meal")}
+                <Text> Meal</Text>
+              </View>
+              <Text style={[styles.tableCell, styles.tableDetailCell]}>
+                Breakfast Included
+              </Text>
+              <Text style={styles.tableCell}>$50</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <View style={styles.tableCell}>
+                {getIconForType("Service")}
+                <Text> Service</Text>
+              </View>
+              <Text style={[styles.tableCell, styles.tableDetailCell]}>
+                Airport Pickup
+              </Text>
+              <Text style={styles.tableCell}>$30</Text>
+            </View>
+          </View>
+
+          {/* Small Table */}
+          <View style={styles.smallTableContainer}>
+            <View style={styles.smallTableRow}>
+              <Text style={styles.smallTableHeader}>Order Total:</Text>
+              <Text style={styles.smallTableAmount}>$280</Text>
+            </View>
+            <View style={styles.smallTableRow}>
+              <Text style={styles.smallTableHeader}>Paid Amount:</Text>
+              <Text style={styles.smallTableAmount}>$280</Text>
+            </View>
           </View>
         </View>
       </View>
-
-      {/* Black Line */}
-      <View style={styles.linedown} />
-
-      {/* Table Heading */}
-      <Text style={styles.tableHeading}>Items Details</Text>
-
-      {/* Table Container */}
-      <View style={styles.tableWrapper}>
-        <View style={styles.tableContainer}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.tableHeaderText}>Type</Text>
-            <Text style={styles.tableHeaderText}>Details</Text>
-            <Text style={styles.tableHeaderText}>Price</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <View style={styles.tableCell}>
-              {getIconForType("Room")}
-              <Text> Room</Text>
-            </View>
-            <Text style={[styles.tableCell, styles.tableDetailCell]}>
-              Deluxe Room with Sea View
-            </Text>
-            <Text style={styles.tableCell}>$200</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <View style={styles.tableCell}>
-              {getIconForType("Meal")}
-              <Text> Meal</Text>
-            </View>
-            <Text style={[styles.tableCell, styles.tableDetailCell]}>
-              Breakfast Included
-            </Text>
-            <Text style={styles.tableCell}>$50</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <View style={styles.tableCell}>
-              {getIconForType("Service")}
-              <Text> Service</Text>
-            </View>
-            <Text style={[styles.tableCell, styles.tableDetailCell]}>
-              Airport Pickup
-            </Text>
-            <Text style={styles.tableCell}>$30</Text>
-          </View>
-        </View>
-
-        {/* Small Table */}
-        <View style={styles.smallTableContainer}>
-          <View style={styles.smallTableRow}>
-            <Text style={styles.smallTableHeader}>Order Total:</Text>
-            <Text style={styles.smallTableAmount}>$280</Text>
-          </View>
-          <View style={styles.smallTableRow}>
-            <Text style={styles.smallTableHeader}>Paid Amount:</Text>
-            <Text style={styles.smallTableAmount}>$280</Text>
-          </View>
-        </View>
-      </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -147,6 +155,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingHorizontal: 20,
+  },
+  ScrollView: {
+    flex: 1,
   },
   bookingtxt: {
     color: "#180161",
