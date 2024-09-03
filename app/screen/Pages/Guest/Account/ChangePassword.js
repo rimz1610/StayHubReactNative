@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,15 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const ChangePassword = ({ navigation }) => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -41,21 +48,43 @@ const ChangePassword = ({ navigation }) => {
             />
 
             <Text style={styles.label}>New Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter new password"
-              placeholderTextColor="#ccc"
-              secureTextEntry={true}
-            />
-
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Enter new password"
+                placeholderTextColor="#ccc"
+                secureTextEntry={!isPasswordVisible}
+              />
+              <TouchableOpacity
+                onPress={togglePasswordVisibility}
+                style={styles.eyeIconContainer}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? "eye-off" : "eye"}
+                  size={20}
+                  color="white"
+                />
+              </TouchableOpacity>
+            </View>
             <Text style={styles.label}>Confirm Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Confirm new password"
-              placeholderTextColor="#ccc"
-              secureTextEntry={true}
-            />
-
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Confirm new password"
+                placeholderTextColor="#ccc"
+                secureTextEntry={!isPasswordVisible}
+              />
+              <TouchableOpacity
+                onPress={togglePasswordVisibility}
+                style={styles.eyeIconContainer}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? "eye-off" : "eye"}
+                  size={20}
+                  color="white"
+                />
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
               <Text style={styles.backToLogin}>Back to Login?</Text>
             </TouchableOpacity>
@@ -108,6 +137,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 20,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "85%",
+    height: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    borderColor: "grey",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  passwordInput: {
+    flex: 1,
+    color: "white",
+    paddingHorizontal: 10,
+  },
+  eyeIconContainer: {
+    paddingHorizontal: 10,
   },
   backToLogin: {
     fontSize: 14,

@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,12 +14,14 @@ import {
   ScrollView,
 } from "react-native";
 import { ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from "@react-navigation/native";
 const Login = ({ navigation }) => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const isFocused = useIsFocused();
   const SetToken = async (loginModel) => {
@@ -33,7 +35,9 @@ const Login = ({ navigation }) => {
     await AsyncStorage.setItem("loginId", loginModel.id);
     await AsyncStorage.setItem("generated", new Date().toISOString());
   };
-
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
   const SigninSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email address").required("Required"),
     password: Yup.string().required("Required"),
@@ -46,12 +50,10 @@ const Login = ({ navigation }) => {
     },
     validationSchema: SigninSchema,
     onSubmit: (values) => {
-      
       setSubmitting(true);
       axios
         .post("http://majidalipl-001-site5.gtempurl.com/Account/Login", values)
         .then(function (response) {
-         
           if (response.data.success) {
             SetToken(response.data.data);
             setSubmitting(false);
@@ -78,11 +80,9 @@ const Login = ({ navigation }) => {
     },
   });
 
-
   useEffect(() => {
     if (isFocused) {
-     formik.resetForm();
-
+      formik.resetForm();
     }
   }, [isFocused]);
   // const ScreenWrapper = ({ children }) => (
@@ -124,15 +124,27 @@ const Login = ({ navigation }) => {
                   <Text style={styles.errorText}>{formik.errors.email}</Text>
                 ) : null}
                 <Text style={styles.heading}>Password</Text>
-                <TextInput
-                  placeholder="Password"
-                  name="password"
-                  onChangeText={formik.handleChange("password")}
-                  value={formik.values.password}
-                  placeholderTextColor="white"
-                  secureTextEntry={true}
-                  style={styles.input}
-                />
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    placeholder="Password"
+                    name="password"
+                    onChangeText={formik.handleChange("password")}
+                    value={formik.values.password}
+                    placeholderTextColor="white"
+                    secureTextEntry={!isPasswordVisible} // Hide or show password based on state
+                    style={styles.passwordInput}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                    style={styles.eyeIcon}
+                  >
+                    <Ionicons
+                      name={isPasswordVisible ? "eye-off" : "eye"}
+                      size={20}
+                      color="white"
+                    />
+                  </TouchableOpacity>
+                </View>
                 {formik.touched.password && formik.errors.password ? (
                   <Text style={styles.errorText}>{formik.errors.password}</Text>
                 ) : null}
@@ -213,6 +225,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 40,
     backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  passwordContainer: {
+    position: "relative",
+    marginBottom: 15,
+  },
+  passwordInput: {
+    color: "white",
+    borderColor: "grey",
+
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    height: 40,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    paddingRight: 50, // Adjust padding to avoid overlap with the icon
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 10,
+    top: 10, // Adjust this value based on your design to vertically center the icon
   },
   forgotPasswordText: {
     color: "#007bff",
