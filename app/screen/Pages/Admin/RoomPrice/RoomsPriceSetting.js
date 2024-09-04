@@ -367,7 +367,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
             ref={priceInputRef}
             placeholder="Price"
             placeholderTextColor="#888"
-            onChangeText={handlePriceChange}
+            onEndEditing={handlePriceChange}
             value={formik.values.price}
             style={styles.priceInput}
             keyboardType="numeric"
@@ -382,7 +382,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
             ref={personPriceInputRef}
             placeholder="Price per Person"
             placeholderTextColor={"#888"}
-            onChangeText={handlePersonPriceChange}
+            onEndEditing={handlePersonPriceChange}
             value={formik.values.addPersonPrice}
             style={styles.priceInput}
             keyboardType="numeric"

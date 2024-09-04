@@ -10,8 +10,8 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-const RoomCard = ({ roomNumber, title, image, onPress, navigation }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress}>
+const RoomCard = ({ roomNumber, title, image, navigation }) => (
+  <View style={styles.card}>
     <Image source={image} style={styles.image} />
     <View style={styles.cardContent}>
       <View style={styles.roomInfo}>
@@ -20,13 +20,15 @@ const RoomCard = ({ roomNumber, title, image, onPress, navigation }) => (
       </View>
       <TouchableOpacity
         style={styles.viewButton}
-        onPress={() => navigation.navigate("RoomServiceBooking")}
+        onPress={() =>
+          navigation.navigate("RoomServiceBooking", { roomNumber })
+        }
       >
         <Text style={styles.viewButtonText}>Services</Text>
         <Ionicons name="arrow-forward" size={18} color="#fff" />
       </TouchableOpacity>
     </View>
-  </TouchableOpacity>
+  </View>
 );
 
 const MyRooms = () => {
@@ -53,10 +55,6 @@ const MyRooms = () => {
     },
   ];
 
-  const handleRoomPress = (room) => {
-    navigation.navigate("RoomServiceBooking", { room });
-  };
-
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Select Your Room</Text>
@@ -66,7 +64,7 @@ const MyRooms = () => {
           roomNumber={room.roomNumber}
           title={room.title}
           image={room.image}
-          onPress={() => handleRoomPress(room)}
+          navigation={navigation}
         />
       ))}
     </ScrollView>
