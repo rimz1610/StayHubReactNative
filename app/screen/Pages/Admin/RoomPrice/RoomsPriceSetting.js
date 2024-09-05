@@ -1,8 +1,13 @@
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Button,
   Modal,
   StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
   Text,
   TextInput,
   TouchableOpacity,
@@ -11,8 +16,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import { ActivityIndicator } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -21,9 +24,7 @@ import MultiSelect from "react-native-multiple-select";
 import DrawerContent from "../../../../components/DrawerContent"; // Adjust the path as necessary
 import { useIsFocused } from "@react-navigation/native";
 import { Formik, useFormik } from "formik";
-import { Calendar } from "react-native-calendars";
 import * as Yup from "yup";
-import moment from "moment";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const initialData = Array.from({ length: 25 }, (_, index) => ({
@@ -46,28 +47,19 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 const addEditSchema = Yup.object().shape({
   status: Yup.string().required("Required"),
   rooms: Yup.array().min(1, "At least select one"),
-  dateRange: Yup.object().shape({
-    startDate: Yup.date().required("Start date is required"),
-    endDate: Yup.date().required("End date is required"),
-  }),
+  startDate: Yup.date().required("Required"),
+  endDate: Yup.date().required("Required"),
   days: Yup.array().min(1, "At least select one"),
   price: Yup.number().min(0, "Must be positive"),
   addPersonPrice: Yup.number().min(0, "Must be positive"),
 });
 const Drawer = createDrawerNavigator();
-
 const RoomPriceSettingContent = ({ navigation }) => {
   const [submitting, setSubmitting] = useState(false);
   const [roomlist, setRoomList] = useState([]);
-  const priceInputRef = React.useRef(null);
-  const personPriceInputRef = React.useRef(null);
-  // const [showFromDatePicker, setShowFromDatePicker] = useState(false);
-  // const [showToDatePicker, setShowToDatePicker] = useState(false);
-  const [dateRange, setDateRange] = useState({});
-  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
   const isFocused = useIsFocused();
-
   const formik = useFormik({
     initialValues: {
       price: 0,
@@ -75,17 +67,13 @@ const RoomPriceSettingContent = ({ navigation }) => {
       addPersonPrice: 0,
       rooms: [],
       days: [],
-      dateRange: {
-        startDate: null,
-        endDate: null,
-      },
+      startDate: new Date(),
+      endDate: new Date(),
     },
     validationSchema: addEditSchema,
-    validateOnChange: false,
     onSubmit: async (values, { resetForm }) => {
       try {
         setSubmitting(true);
-        setLoading(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Room/SaveBulkRoomPrice",
@@ -96,14 +84,12 @@ const RoomPriceSettingContent = ({ navigation }) => {
             },
           }
         );
-
         if (response.data.success) {
           Alert.alert("Success", "Prices saved successfully.", [
             {
               text: "OK",
               onPress: () => {
                 resetForm();
-                fetchRoomDD();
               },
             },
           ]);
@@ -114,17 +100,14 @@ const RoomPriceSettingContent = ({ navigation }) => {
         Alert.alert("Error", "An error occurred while saving the enteries.");
       } finally {
         setSubmitting(false);
-        setLoading(false);
       }
     },
   });
-
   useEffect(() => {
     if (isFocused) {
       fetchRoomDD();
     }
   }, [isFocused]);
-
   // Function to refetch the updated room list
   const fetchRoomDD = async () => {
     const token = await AsyncStorage.getItem("token");
@@ -137,7 +120,6 @@ const RoomPriceSettingContent = ({ navigation }) => {
           },
         }
       );
-
       if (response.data.success) {
         setRoomList(response.data.list);
       } else {
@@ -149,24 +131,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
     } finally {
     }
   };
-
   const renderItem = ({ item }) => <></>;
-
-  // Re-focus the input if necessary
-  const handlePriceChange = (text) => {
-    formik.setFieldValue("price", text);
-    if (priceInputRef.current) {
-      priceInputRef.current.focus();
-    }
-  };
-
-  const handlePersonPriceChange = (text) => {
-    formik.setFieldValue("addPersonPrice", text);
-    if (personPriceInputRef.current) {
-      personPriceInputRef.current.focus();
-    }
-  };
-
   const daysOfWeek = [
     { id: "Monday", name: "Monday" },
     { id: "Tuesday", name: "Tuesday" },
@@ -176,77 +141,8 @@ const RoomPriceSettingContent = ({ navigation }) => {
     { id: "Saturday", name: "Saturday" },
     { id: "Sunday", name: "Sunday" },
   ];
-  const handleDateSelection = (day) => {
-    let newRange = {};
-    if (
-      Object.keys(dateRange).length === 0 ||
-      Object.keys(dateRange).length === 2
-    ) {
-      newRange = {
-        [day.dateString]: {
-          startingDay: true,
-          color: "#180161",
-          textColor: "white",
-        },
-      };
-      formik.setFieldValue("dateRange", {
-        startDate: day.dateString,
-        endDate: null,
-      });
-    } else {
-      const startDate = Object.keys(dateRange)[0];
-      if (moment(day.dateString).isSameOrAfter(startDate)) {
-        newRange = {
-          ...dateRange,
-          [startDate]: {
-            startingDay: true,
-            color: "#180161",
-            textColor: "white",
-          },
-          [day.dateString]: {
-            endingDay: true,
-            color: "#180161",
-            textColor: "white",
-          },
-        };
-        let currentDate = moment(startDate).add(1, "days");
-        const endDate = moment(day.dateString);
-        while (currentDate.isBefore(endDate)) {
-          newRange[currentDate.format("YYYY-MM-DD")] = {
-            color: "#180161",
-            textColor: "white",
-          };
-          currentDate = currentDate.add(1, "days");
-        }
-        formik.setFieldValue("dateRange", {
-          startDate: startDate,
-          endDate: day.dateString,
-        });
-        setIsCalendarVisible(false);
-      } else {
-        newRange = {
-          [day.dateString]: {
-            startingDay: true,
-            color: "#180161",
-            textColor: "white",
-          },
-        };
-        formik.setFieldValue("dateRange", {
-          startDate: day.dateString,
-          endDate: null,
-        });
-      }
-    }
-    setDateRange(newRange);
-  };
-
   const renderHeader = () => (
     <>
-      {loading && (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#180161" />
-        </View>
-      )}
       <TouchableOpacity
         onPress={() => navigation.openDrawer()}
         style={styles.menuButton}
@@ -254,37 +150,91 @@ const RoomPriceSettingContent = ({ navigation }) => {
         <Ionicons name="menu" size={24} color="black" />
       </TouchableOpacity>
       <Text style={styles.roomheading}>Rooms Price Settings</Text>
-
       <TouchableOpacity
         onPress={() => navigation.navigate("RoomsPriceDetails")}
         style={styles.backbtn}
       >
         <Text style={styles.backbtnText}>Back</Text>
       </TouchableOpacity>
-
       <View style={styles.row}>
-        <View style={styles.dateRangeContainer}>
-          <Text style={styles.heading}>Date Range</Text>
-          <TouchableOpacity
-            style={styles.dateRangeButton}
-            onPress={() => setIsCalendarVisible(true)}
-          >
-            <Text style={styles.dateRangeButtonText}>
-              {formik.values.dateRange.startDate &&
-              formik.values.dateRange.endDate
-                ? `${moment(formik.values.dateRange.startDate).format(
-                    "MMM DD, YYYY"
-                  )} - ${moment(formik.values.dateRange.endDate).format(
-                    "MMM DD, YYYY"
-                  )}`
-                : "Select Date Range"}
-            </Text>
-          </TouchableOpacity>
-          {formik.touched.dateRange && formik.errors.dateRange && (
-            <Text style={styles.errorText}>
-              {formik.errors.dateRange.startDate ||
-                formik.errors.dateRange.endDate}
-            </Text>
+        <View style={styles.inputContainer}>
+          <Text style={styles.heading}>Start Date</Text>
+          {Platform.OS === "android" && (
+            <>
+              <TouchableOpacity
+                onPress={() => setShowFromDatePicker(true)}
+                style={styles.dateButton}
+              >
+                <Text>{formik.values.startDate.toLocaleDateString()}</Text>
+              </TouchableOpacity>
+              {showFromDatePicker && (
+                <DateTimePicker
+                  value={formik.values.startDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowFromDatePicker(false);
+                    const currentDate = selectedDate || new Date();
+                    formik.setFieldValue("startDate", currentDate);
+                  }}
+                />
+              )}
+            </>
+          )}
+          {Platform.OS === "ios" && (
+            <DateTimePicker
+              value={formik.values.startDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || new Date();
+                formik.setFieldValue("startDate", currentDate);
+              }}
+              style={styles.datePicker}
+            />
+          )}
+          {formik.touched.startDate && formik.errors.startDate && (
+            <Text style={styles.errorText}>{formik.errors.startDate}</Text>
+          )}
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.heading}>End Date</Text>
+          {Platform.OS === "android" && (
+            <>
+              <TouchableOpacity
+                onPress={() => setShowToDatePicker(true)}
+                style={styles.dateButton}
+              >
+                <Text>{formik.values.endDate.toLocaleDateString()}</Text>
+              </TouchableOpacity>
+              {showToDatePicker && (
+                <DateTimePicker
+                  value={formik.values.endDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowToDatePicker(false);
+                    const currentDate = selectedDate || new Date();
+                    formik.setFieldValue("endDate", currentDate);
+                  }}
+                />
+              )}
+            </>
+          )}
+          {Platform.OS === "ios" && (
+            <DateTimePicker
+              value={formik.values.endDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || new Date();
+                formik.setFieldValue("endDate", currentDate);
+              }}
+              style={styles.datePicker}
+            />
+          )}
+          {formik.touched.endDate && formik.errors.endDate && (
+            <Text style={styles.errorText}>{formik.errors.endDate}</Text>
           )}
         </View>
       </View>
@@ -364,10 +314,9 @@ const RoomPriceSettingContent = ({ navigation }) => {
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Price</Text>
           <TextInput
-            ref={priceInputRef}
             placeholder="Price"
-            placeholderTextColor="#888"
-            onEndEditing={handlePriceChange}
+            placeholderTextColor={"#888"}
+            onEndEditing={formik.handleChange("price")}
             value={formik.values.price}
             style={styles.priceInput}
             keyboardType="numeric"
@@ -379,10 +328,9 @@ const RoomPriceSettingContent = ({ navigation }) => {
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Price per Person</Text>
           <TextInput
-            ref={personPriceInputRef}
             placeholder="Price per Person"
             placeholderTextColor={"#888"}
-            onEndEditing={handlePersonPriceChange}
+            onEndEditing={formik.handleChange("addPersonPrice")}
             value={formik.values.addPersonPrice}
             style={styles.priceInput}
             keyboardType="numeric"
@@ -420,7 +368,6 @@ const RoomPriceSettingContent = ({ navigation }) => {
       </View>
     </>
   );
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -434,53 +381,9 @@ const RoomPriceSettingContent = ({ navigation }) => {
         ListFooterComponent={null}
         contentContainerStyle={styles.scrollViewContent}
       />
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isCalendarVisible}
-        onRequestClose={() => setIsCalendarVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.calendarModalContainer}>
-            <View style={styles.calendarHeader}>
-              <Text style={styles.calendarTitle}>Select Date Range</Text>
-              <TouchableOpacity onPress={() => setIsCalendarVisible(false)}>
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-            <Calendar
-              markingType={"period"}
-              markedDates={dateRange}
-              onDayPress={handleDateSelection}
-              theme={{
-                backgroundColor: "#ffffff",
-                calendarBackground: "#ffffff",
-                textSectionTitleColor: "#b6c1cd",
-                selectedDayBackgroundColor: "#180161",
-                selectedDayTextColor: "#ffffff",
-                todayTextColor: "#180161",
-                dayTextColor: "#2d4150",
-                textDisabledColor: "#d9e1e8",
-                dotColor: "#180161",
-                selectedDotColor: "#ffffff",
-                arrowColor: "#180161",
-                monthTextColor: "#180161",
-                indicatorColor: "#180161",
-                textDayFontWeight: "300",
-                textMonthFontWeight: "bold",
-                textDayHeaderFontWeight: "300",
-                textDayFontSize: 16,
-                textMonthFontSize: 18,
-                textDayHeaderFontSize: 14,
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
     </KeyboardAvoidingView>
   );
 };
-
 const RoomPriceSetting = () => {
   return (
     <Drawer.Navigator
@@ -545,60 +448,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
-  },
-  heading: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: "#333",
-  },
-  calendarContainer: {
-    marginBottom: 20,
-  },
-  dateRangeContainer: {
-    marginBottom: 20,
-  },
-  dateRangeButton: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
-  },
-  dateRangeButtonText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  calendarModalContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    width: "90%",
-    maxWidth: 400,
-  },
-  calendarHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: "#333",
-  },
-  calendarTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#180161",
   },
   inputContainer: {
     flex: 1,

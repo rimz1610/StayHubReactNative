@@ -8,6 +8,7 @@ import Dashboard from "./Pages/Admin/Booking/Dashboard";
 import BookingDetails from "./Pages/Admin/Booking/BookingDetails";
 import RoomList from "./Pages/Admin/Room/RoomList";
 import AddEditRoom from "./Pages/Admin/Room/AddEditRoom";
+import { SafeAreaView, ScrollView } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
 import RoomPriceAvailabilityDetails from "./Pages/Admin/RoomPrice/RoomPriceDetails";
@@ -39,14 +40,16 @@ import AdminChangePassword from "./Pages/Admin/ChangePassword";
 function App() {
   const Stack = createNativeStackNavigator();
   return (
-    <SafeAreaProvider style={{ flex: 1, backgroundColor: "black" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar
         barStyle="dark-content"
         hidden={false}
         backgroundColor="#000"
         translucent={false}
       />
+
       <GestureHandlerRootView style={{ flex: 1 }}>
+        {/* <ScrollView> */}
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Signup" component={Signup} />
@@ -74,7 +77,10 @@ function App() {
           <Stack.Screen name="GuestList" component={GuestList} />
           <Stack.Screen name="GuestDetails" component={GuestDetails} />
           <Stack.Screen name="StaffList" component={StaffList} />
-          <Stack.Screen name="AdminChangePassword" component={AdminChangePassword}/>
+          <Stack.Screen
+            name="AdminChangePassword"
+            component={AdminChangePassword}
+          />
           <Stack.Screen
             name="StaffActivityList"
             component={StaffActivityList}
@@ -87,8 +93,9 @@ function App() {
           <Stack.Screen name="Receipt" component={Receipt} />
           <Stack.Screen name="Ticket" component={Ticket} />
         </Stack.Navigator>
+        {/* </ScrollView> */}
       </GestureHandlerRootView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 registerRootComponent(App);

@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import {
   Alert,
   Button,
@@ -16,14 +15,15 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Calendar } from "react-native-calendars";
+import React, { useState, useEffect } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import RNPickerSelect from "react-native-picker-select";
 import MultiSelect from "react-native-multiple-select";
 import { useIsFocused } from "@react-navigation/native";
-import { useFormik } from "formik";
+import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import moment from "moment";
@@ -48,10 +48,8 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 const filterSchema = Yup.object().shape({
   status: Yup.string().required("Required"),
   rooms: Yup.array().min(1, "At least select one"),
-  dateRange: Yup.object().shape({
-    startDate: Yup.date().required("Start date is required"),
-    endDate: Yup.date().required("End date is required"),
-  }),
+  startDate: Yup.date().required("Required"),
+  endDate: Yup.date().required("Required"),
   days: Yup.array().min(1, "At least select one"),
 });
 const editSchema = Yup.object().shape({
@@ -70,11 +68,8 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [roomlist, setRoomList] = useState([]);
-  // const [dateRange, setDateRange] = useState({});
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
-  const [dateRange, setDateRange] = useState({});
-  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   const isFocused = useIsFocused();
 
   const itemsPerPage = 5;
@@ -84,10 +79,8 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       status: "L",
       rooms: [],
       days: [],
-      dateRange: {
-        startDate: null,
-        endDate: null,
-      },
+      startDate: new Date(),
+      endDate: new Date(),
     },
     validationSchema: filterSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -97,11 +90,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Room/GetRoomsAvailabilityPrice",
-          {
-            ...values,
-            startDate: values.dateRange.startDate,
-            endDate: values.dateRange.endDate,
-          },
+          values,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -123,7 +112,6 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       }
     },
   });
-
   const editformik = useFormik({
     initialValues: {
       id: 0,
@@ -271,70 +259,6 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       <Text style={styles.emptyTableText}>No rows are added</Text>
     </View>
   );
-  const handleDateSelection = (day) => {
-    let newRange = {};
-    if (
-      Object.keys(dateRange).length === 0 ||
-      Object.keys(dateRange).length === 2
-    ) {
-      newRange = {
-        [day.dateString]: {
-          startingDay: true,
-          color: "#180161",
-          textColor: "white",
-        },
-      };
-      formik.setFieldValue("dateRange", {
-        startDate: day.dateString,
-        endDate: null,
-      });
-    } else {
-      const startDate = Object.keys(dateRange)[0];
-      if (moment(day.dateString).isSameOrAfter(startDate)) {
-        newRange = {
-          ...dateRange,
-          [startDate]: {
-            startingDay: true,
-            color: "#180161",
-            textColor: "white",
-          },
-          [day.dateString]: {
-            endingDay: true,
-            color: "#180161",
-            textColor: "white",
-          },
-        };
-        let currentDate = moment(startDate).add(1, "days");
-        const endDate = moment(day.dateString);
-        while (currentDate.isBefore(endDate)) {
-          newRange[currentDate.format("YYYY-MM-DD")] = {
-            color: "#180161",
-            textColor: "white",
-          };
-          currentDate = currentDate.add(1, "days");
-        }
-        formik.setFieldValue("dateRange", {
-          startDate: startDate,
-          endDate: day.dateString,
-        });
-        setIsCalendarVisible(false);
-      } else {
-        newRange = {
-          [day.dateString]: {
-            startingDay: true,
-            color: "#180161",
-            textColor: "white",
-          },
-        };
-        formik.setFieldValue("dateRange", {
-          startDate: day.dateString,
-          endDate: null,
-        });
-      }
-    }
-    setDateRange(newRange);
-  };
-
   const renderHeader = () => (
     <>
       <TouchableOpacity
@@ -355,28 +279,84 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.row}>
-        <View style={styles.dateRangeContainer}>
-          <Text style={styles.heading}>Date Range</Text>
-          <TouchableOpacity
-            style={styles.dateRangeButton}
-            onPress={() => setIsCalendarVisible(true)}
-          >
-            <Text style={styles.dateRangeButtonText}>
-              {formik.values.dateRange.startDate &&
-              formik.values.dateRange.endDate
-                ? `${moment(formik.values.dateRange.startDate).format(
-                    "MMM DD, YYYY"
-                  )} - ${moment(formik.values.dateRange.endDate).format(
-                    "MMM DD, YYYY"
-                  )}`
-                : "Select Date Range"}
-            </Text>
-          </TouchableOpacity>
-          {formik.touched.dateRange && formik.errors.dateRange && (
-            <Text style={styles.errorText}>
-              {formik.errors.dateRange.startDate ||
-                formik.errors.dateRange.endDate}
-            </Text>
+        <View style={styles.inputContainer}>
+          <Text style={styles.heading}>Start Date</Text>
+          {Platform.OS === "android" && (
+            <>
+              <TouchableOpacity
+                onPress={() => setShowFromDatePicker(true)}
+                style={styles.datePicker}
+              >
+                <Text>{formik.values.startDate.toLocaleDateString()}</Text>
+              </TouchableOpacity>
+              {showFromDatePicker && (
+                <DateTimePicker
+                  value={formik.values.startDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowFromDatePicker(false);
+                    const currentDate = selectedDate || new Date();
+                    formik.setFieldValue("startDate", currentDate);
+                  }}
+                />
+              )}
+            </>
+          )}
+          {Platform.OS === "ios" && (
+            <DateTimePicker
+              value={formik.values.startDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || new Date();
+                formik.setFieldValue("startDate", currentDate);
+              }}
+              style={styles.datePicker}
+            />
+          )}
+          {formik.touched.startDate && formik.errors.startDate && (
+            <Text style={styles.errorText}>{formik.errors.startDate}</Text>
+          )}
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.heading}>End Date</Text>
+          {Platform.OS === "android" && (
+            <>
+              <TouchableOpacity
+                onPress={() => setShowToDatePicker(true)}
+                style={styles.datePicker}
+              >
+                <Text>{formik.values.endDate.toLocaleDateString()}</Text>
+              </TouchableOpacity>
+              {showToDatePicker && (
+                <DateTimePicker
+                  value={formik.values.endDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowToDatePicker(false);
+                    const currentDate = selectedDate || new Date();
+                    formik.setFieldValue("endDate", currentDate);
+                  }}
+                />
+              )}
+            </>
+          )}
+          {Platform.OS === "ios" && (
+            <DateTimePicker
+              value={formik.values.endDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || new Date();
+                formik.setFieldValue("endDate", currentDate);
+              }}
+              style={styles.datePicker}
+            />
+          )}
+          {formik.touched.endDate && formik.errors.endDate && (
+            <Text style={styles.errorText}>{formik.errors.endDate}</Text>
           )}
         </View>
       </View>
@@ -584,49 +564,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
           }, // Adjust based on content
         ]}
       />
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isCalendarVisible}
-        onRequestClose={() => setIsCalendarVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.calendarModalContainer}>
-            <View style={styles.calendarHeader}>
-              <Text style={styles.calendarTitle}>Select Date Range</Text>
-              <TouchableOpacity onPress={() => setIsCalendarVisible(false)}>
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-            <Calendar
-              markingType={"period"}
-              markedDates={dateRange}
-              onDayPress={handleDateSelection}
-              theme={{
-                backgroundColor: "#ffffff",
-                calendarBackground: "#ffffff",
-                textSectionTitleColor: "#b6c1cd",
-                selectedDayBackgroundColor: "#180161",
-                selectedDayTextColor: "#ffffff",
-                todayTextColor: "#180161",
-                dayTextColor: "#2d4150",
-                textDisabledColor: "#d9e1e8",
-                dotColor: "#180161",
-                selectedDotColor: "#ffffff",
-                arrowColor: "#180161",
-                monthTextColor: "#180161",
-                indicatorColor: "#180161",
-                textDayFontWeight: "300",
-                textMonthFontWeight: "bold",
-                textDayHeaderFontWeight: "300",
-                textDayFontSize: 16,
-                textMonthFontSize: 18,
-                textDayHeaderFontSize: 14,
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -758,54 +696,6 @@ const styles = StyleSheet.create({
   modalScrollViewContent: {
     padding: 20,
   },
-  calendarContainer: {
-    marginBottom: 20,
-  },
-  heading: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: "#333",
-  },
-  dateRangeContainer: {
-    marginBottom: 20,
-  },
-  dateRangeButton: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
-  },
-  dateRangeButtonText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  calendarModalContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    width: "90%",
-    maxWidth: 400,
-  },
-  calendarHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  calendarTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#180161",
-  },
   menuButton: {
     position: "absolute",
     top: 30,
@@ -816,7 +706,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 20,
-    marginTop: 20,
   },
   button: {
     backgroundColor: "#180161",
