@@ -1,96 +1,145 @@
-import { StyleSheet, Text, View, FlatList,Pressable , TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
-import RNPickerSelect from 'react-native-picker-select'; 
+import { StyleSheet, Text, View, FlatList, Pressable, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import RNPickerSelect from 'react-native-picker-select';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 
 const Drawer = createDrawerNavigator();
 const DashboardContent = ({ navigation }) => {
-  const [selectedGuest, setSelectedGuest] = useState('');
-  const [selectedPaymentType, setSelectedPaymentType] = useState('');
+  const [data, setData] = useState([]);
+  const [selectedGuest, setSelectedGuest] = useState(0);
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [pages, setPages] = useState(0);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
-
+  const isFocused = useIsFocused();
   const guestOptions = [
-    { label: 'Guest 1', value: 'guest1' },
-    { label: 'Guest 2', value: 'guest2' },
-    { label: 'Guest 3', value: 'guest3' },
+    { label: 'Guest 1', value: 1 },
+    { label: 'Guest 2', value: 2 },
+    { label: 'Guest 3', value: 3 },
   ];
 
-  const paymentOptions = [
-    { label: 'Credit Card', value: 'credit_card' },
-    { label: 'PayPal', value: 'paypal' },
-    { label: 'Bank Transfer', value: 'bank_transfer' },
+  const statusOptions = [
+    { label: 'Paid', value: 'Paid' },
+    { label: 'UnPaid', value: 'UnPaid' },
+    //{ label: 'Cancelled', value: 'Cancelled' },
   ];
 
-  const tableData = [
-    { id: '1', bookingNo: 'B1', name: 'Mohtashim', date: '2024-08-01', totalAmount: '$100', paidAmount: '$50', status: 'Pending' },
-    { id: '2', bookingNo: 'B2', name: 'Fazal', date: '2024-08-02', totalAmount: '$150', paidAmount: '$150', status: 'Completed' },
-    { id: '3', bookingNo: 'B3', name: 'Moiz', date: '2024-08-03', totalAmount: '$200', paidAmount: '$0', status: 'Pending' },
-    // Add more data to test pagination
-    { id: '4', bookingNo: 'B4', name: 'John', date: '2024-08-04', totalAmount: '$250', paidAmount: '$200', status: 'Pending' },
-    { id: '5', bookingNo: 'B5', name: 'Jane', date: '2024-08-05', totalAmount: '$300', paidAmount: '$150', status: 'Completed' },
-    { id: '6', bookingNo: 'B6', name: 'Doe', date: '2024-08-06', totalAmount: '$350', paidAmount: '$100', status: 'Pending' },
-    { id: '7', bookingNo: 'B4', name: 'John', date: '2024-08-04', totalAmount: '$250', paidAmount: '$200', status: 'Pending' },
-    { id: '8', bookingNo: 'B5', name: 'Jane', date: '2024-08-05', totalAmount: '$300', paidAmount: '$150', status: 'Completed' },
-    { id: '9', bookingNo: 'B6', name: 'Doe', date: '2024-08-06', totalAmount: '$350', paidAmount: '$100', status: 'Pending' },
-    { id: '10', bookingNo: 'B4', name: 'John', date: '2024-08-04', totalAmount: '$250', paidAmount: '$200', status: 'Pending' },
-    { id: '11', bookingNo: 'B5', name: 'Jane', date: '2024-08-05', totalAmount: '$300', paidAmount: '$150', status: 'Completed' },
-    { id: '12', bookingNo: 'B6', name: 'Doe', date: '2024-08-06', totalAmount: '$350', paidAmount: '$100', status: 'Pending' },
-  ];
+  // const tableData = [
+  //   { id: '1', bookingNo: 'B1', name: 'Mohtashim', date: '2024-08-01', totalAmount: '$100', paidAmount: '$50', status: 'Pending' },
+  //   { id: '2', bookingNo: 'B2', name: 'Fazal', date: '2024-08-02', totalAmount: '$150', paidAmount: '$150', status: 'Completed' },
+  //   { id: '3', bookingNo: 'B3', name: 'Moiz', date: '2024-08-03', totalAmount: '$200', paidAmount: '$0', status: 'Pending' },
+  //   // Add more data to test pagination
+  //   { id: '4', bookingNo: 'B4', name: 'John', date: '2024-08-04', totalAmount: '$250', paidAmount: '$200', status: 'Pending' },
+  //   { id: '5', bookingNo: 'B5', name: 'Jane', date: '2024-08-05', totalAmount: '$300', paidAmount: '$150', status: 'Completed' },
+  //   { id: '6', bookingNo: 'B6', name: 'Doe', date: '2024-08-06', totalAmount: '$350', paidAmount: '$100', status: 'Pending' },
+  //   { id: '7', bookingNo: 'B4', name: 'John', date: '2024-08-04', totalAmount: '$250', paidAmount: '$200', status: 'Pending' },
+  //   { id: '8', bookingNo: 'B5', name: 'Jane', date: '2024-08-05', totalAmount: '$300', paidAmount: '$150', status: 'Completed' },
+  //   { id: '9', bookingNo: 'B6', name: 'Doe', date: '2024-08-06', totalAmount: '$350', paidAmount: '$100', status: 'Pending' },
+  //   { id: '10', bookingNo: 'B4', name: 'John', date: '2024-08-04', totalAmount: '$250', paidAmount: '$200', status: 'Pending' },
+  //   { id: '11', bookingNo: 'B5', name: 'Jane', date: '2024-08-05', totalAmount: '$300', paidAmount: '$150', status: 'Completed' },
+  //   { id: '12', bookingNo: 'B6', name: 'Doe', date: '2024-08-06', totalAmount: '$350', paidAmount: '$100', status: 'Pending' },
+  // ];
 
   // Calculate the data slice for the current page
-  const paginatedData = tableData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  //const paginatedData = tableData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
+  const handleStatusChange = (status) => {
+  
+    setSelectedStatus(status);
+    fetchData();
+  }
+  const handleGuestChange = (gId) => {
+  
+    setSelectedGuest(gId);
+    fetchData();
+  }
+
+  // Function to refetch the updated room list
+  const fetchData = async () => {
+    const token = await AsyncStorage.getItem('token');
+
+    setLoading(true);
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?status" +
+        selectedStatus + "&guestId=" + selectedGuest, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (response.data.success) {
+        setData(response.data.list);
+        setPages(Math.ceil(response.data.list.length / itemsPerPage));
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      console.warn(error);
+      Alert.alert('Error', 'Failed to fetch bookings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handlePageChange = (direction) => {
+    if (direction === 'next' && currentPage < pages - 1) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === 'previous' && currentPage > 0) {
       setCurrentPage(currentPage - 1);
     }
   };
 
-  const handleNextPage = () => {
-    if (currentPage * itemsPerPage < tableData.length) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-
- 
-  const renderTableItem = ({ item }) => (
+  const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell}>{item.bookingNo}</Text>
-      <Text style={styles.tableCell}>{item.name}</Text>
-      <Text style={styles.tableCell}>{item.date}</Text>
-      <Text style={styles.tableCell}>{item.totalAmount}</Text>
-      <Text style={styles.tableCell}>{item.paidAmount}</Text>
-      <Text style={styles.tableCell}>{item.status}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.referenceNumber}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.firstName}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.bookingDate}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.bookingDate}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.bookingDate}</Text>
       <View style={styles.tableActions}>
-        <TouchableOpacity  onPress={() => navigation.navigate('BookingDetails')}
-        style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>Detail</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('BookingDetails', { id: item.id })} style={styles.detailButton}>
+          <Text style={styles.detailButtonText}>Details</Text>
         </TouchableOpacity>
+
       </View>
-     
     </View>
   );
+  const renderEmptyTable = () => (
+    <View style={styles.emptyTableContainer}>
+      <Text style={styles.emptyTableText}>No rows are added</Text>
+    </View>
+  );
+
+
+
+
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
         <Ionicons name="menu" size={24} color="black" />
       </TouchableOpacity>
-      <Text style={styles.bookingtxt}>Booking</Text>
-      {/* <TouchableOpacity style={styles.nextbtn} onPress={() => navigation.navigate('Postpages')}>
-        <Text style={styles.skipText}>Next page</Text>
-    </TouchableOpacity> */}
+
+      <Text style={styles.bookingtxt}>Bookings</Text>
       <View style={styles.options}>
         <View style={styles.dropdownContainer}>
           <Text style={styles.dropdownLabel}>Select Guest</Text>
           <RNPickerSelect
             placeholder={{ label: 'Select a guest...', value: '' }}
-            onValueChange={(value) => setSelectedGuest(value)}
+            onValueChange={(value) => handleGuestChange(value)}
             items={guestOptions}
             style={pickerSelectStyles}
             value={selectedGuest}
@@ -98,51 +147,62 @@ const DashboardContent = ({ navigation }) => {
         </View>
 
         <View style={styles.dropdownContainer}>
-          <Text style={styles.dropdownLabel}>Select Payment Type</Text>
+          <Text style={styles.dropdownLabel}>Select Status</Text>
           <RNPickerSelect
-            placeholder={{ label: 'Select a payment type...', value: '' }}
-            onValueChange={(value) => setSelectedPaymentType(value)}
-            items={paymentOptions}
+            placeholder={{ label: 'Select status...', value: '' }}
+            onValueChange={(value) => handleStatusChange(value)}
+            items={statusOptions}
             style={pickerSelectStyles}
-            value={selectedPaymentType}
+            value={selectedStatus}
           />
         </View>
       </View>
-      
+
+      {/* Table */}
       <View style={styles.tableContainer}>
         <View style={styles.tableHeader}>
-          <Text style={styles.headerCell}>Booking No</Text>
-          <Text style={styles.headerCell}>Name</Text>
-          <Text style={styles.headerCell}>Date</Text>
-          <Text style={styles.headerCell}>Total Amount</Text>
-          <Text style={styles.headerCell}>Paid Amount</Text>
-          <Text style={styles.headerCell}>Status</Text>
-          <Text style={styles.headerCell}>Action</Text>
+          <Text style={styles.tableHeaderText}>RefNo</Text>
+          <Text style={styles.tableHeaderText}>Name</Text>
+          <Text style={styles.tableHeaderText}>Date</Text>
+          <Text style={styles.tableHeaderText}>Total</Text>
+          <Text style={styles.tableHeaderText}>Paid</Text>
+          <Text style={styles.tableHeaderText}>Status</Text>
+          <Text style={styles.tableHeaderText}>Action</Text>
         </View>
-        <FlatList
-          data={paginatedData}
-          renderItem={renderTableItem}
-          keyExtractor={(item) => item.id}
-        />
+        {data.length > 0 ? (
+          <FlatList
+            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+          />
+        ) : (
+          renderEmptyTable()
+        )}
       </View>
 
+      {/* Pagination */}
       <View style={styles.paginationContainer}>
         <TouchableOpacity
-          style={[styles.paginationButton, currentPage === 1 && styles.disabledButton]}
-          onPress={handlePreviousPage}
-          disabled={currentPage === 1}
+          onPress={() => handlePageChange('previous')}
+          style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
+          disabled={currentPage === 0}
         >
-          <Text style={styles.paginationTextbtn}>Previous</Text>
+          <Text style={styles.paginationButtonText}>Previous</Text>
         </TouchableOpacity>
-        <Text style={styles.paginationText}>Page {currentPage}</Text>
+        <Text style={styles.pageIndicator}>
+          Page {currentPage + 1} of {pages}
+        </Text>
         <TouchableOpacity
-          style={[styles.paginationButton, (currentPage * itemsPerPage >= tableData.length) && styles.disabledButton]}
-          onPress={handleNextPage}
-          disabled={currentPage * itemsPerPage >= tableData.length}
+          onPress={() => handlePageChange('next')}
+          style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
+          disabled={currentPage === pages - 1}
         >
-          <Text style={styles.paginationTextbtn}>Next</Text>
+          <Text style={styles.paginationButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal for adding/editing */}
+
     </View>
   );
 };
@@ -191,9 +251,7 @@ export default Dashboard;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#F5F5F5',
+    padding: 10,
   },
   bookingtxt: {
     color: '#180161',
@@ -256,15 +314,19 @@ const styles = StyleSheet.create({
   },
   paginationContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 20,
-    width: '100%',
+    alignItems: 'center',
+    marginVertical: 10,
   },
   paginationButton: {
-    padding: 10,
-    backgroundColor: '#180161',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
     borderRadius: 4,
+    backgroundColor: '#180161',
+  },
+  paginationButtonText: {
+    fontSize: 14,
+    color: 'white',
   },
   disabledButton: {
     backgroundColor: '#ccc',
@@ -277,6 +339,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
+  pageIndicator: {
+    fontSize: 14,
+  },
   nextbtn: {
     position: 'absolute',
     top: 25,
@@ -287,38 +352,48 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'white',
-},
-skipText: {
+  },
+  skipText: {
     color: 'blue',
     fontSize: 12,
-},
-menuButton: {
-  position: 'absolute',
-  top: 40,
-  left: 20,
-  zIndex: 1,
-},
-tableActions: {
-  flexDirection: 'row',
-  justifyContent: 'space-around',
-  alignItems: 'center',
-},
-detailButton: {
-  backgroundColor: '#007BFF',
-  borderRadius: 4,
-  paddingVertical: 5,
-  paddingHorizontal: 8,
-},
-detailButtonText: {
-  color: 'white',
-  fontSize: 12,
-},
-menuButton: {
-  position: 'absolute',
-  top: 40,
-  left: 20,
-  zIndex: 1,
-},
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
+  },
+  tableActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  detailButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+  },
+  detailButtonText: {
+    color: 'white',
+    fontSize: 12,
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
+  },
 });
 
 

@@ -1,8 +1,12 @@
 import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import DrawerContent from '../../../../components/DrawerContent';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id:index ,
@@ -14,18 +18,79 @@ const initialData = Array.from({ length: 25 }, (_, index) => ({
 
 const Drawer = createDrawerNavigator();
 const GuestListContent = ({ navigation }) => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
- 
+  const [pages, setPages] = useState(0);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
-  const pages = Math.ceil(data.length / itemsPerPage);
-  const handleDelete = (item) => {
-    Alert.alert('Are you sure?', 'Do you want to delete this item?', [
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
+
+
+
+  // Function to refetch the updated room list
+  const fetchData = async () => {
+    const token = await AsyncStorage.getItem('token');
+  
+    setLoading(true);
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Guest/GetGuests", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+  
+      if (response.data.success) {
+        setData(response.data.list);
+        setPages(Math.ceil(response.data.list.length / itemsPerPage));
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      console.warn(error);
+      Alert.alert('Error', 'Failed to fetch guests.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleDelete = (guestId) => {
+    Alert.alert('Are you sure?', 'Do you want to delete this guest?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Yes, delete it',
-        onPress: () => setData(data.filter((d) => d.id !== item.id)),
-      },
+        onPress: async () => {
+          try {
+            setLoading(true);
+  
+            // Get the JWT token from AsyncStorage
+            const token = await AsyncStorage.getItem('token');
+  
+            // Send the delete request
+            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Guest/Delete?guestId=${guestId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            });
+  
+            if (response.data.success) {
+              // Refetch the updated list after deletion
+              fetchData();
+            } else {
+              Alert.alert('Error', response.data.message);
+            }
+          } catch (error) {
+            console.warn(error);
+            Alert.alert('Error', 'Failed to delete the guest.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
     ]);
   };
 
@@ -39,19 +104,22 @@ const GuestListContent = ({ navigation }) => {
 
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.guestNo}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.name}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.email}</Text>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.phoneNumber}</Text>    
+      <Text style={styles.tableCell} numberOfLines={1}>{item.guestNumber}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.firstName} {item.lastName}</Text>
+      <Text style={styles.tableCell} numberOfLines={1}>{item.email}</Text>   
       <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() => navigation.navigate('GuestDetails')} style={styles.editButton}>
+        <TouchableOpacity onPress={() => navigation.navigate('GuestDetails', { id: item.id })} style={styles.editButton}>
           <Text style={styles.editButtonText}>Detail</Text>
         </TouchableOpacity>
       
       </View>
     </View>
   );
-
+  const renderEmptyTable = () => (
+    <View style={styles.emptyTableContainer}>
+      <Text style={styles.emptyTableText}>No rows are added</Text>
+    </View>
+  );
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
@@ -70,11 +138,15 @@ const GuestListContent = ({ navigation }) => {
           <Text style={styles.tableHeaderText}>Phone Number</Text>
           <Text style={styles.tableHeaderText}>Action</Text>
         </View>
-        <FlatList
-          data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-        />
+        {data.length > 0 ? (
+          <FlatList
+            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+          />
+        ) : (
+          renderEmptyTable()
+        )}
       </View>
 
       {/* Pagination */}
@@ -266,5 +338,15 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
     zIndex: 1,
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
   },
 });

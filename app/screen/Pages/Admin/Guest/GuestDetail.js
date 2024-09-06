@@ -22,7 +22,7 @@ const bookingArr = Array.from({ length: 25 }, (_, index) => ({
   status: "Paid",
 }));
 
-const GuestDetailsContent = ({ navigation }) => {
+const GuestDetailsContent = ({ route, navigation }) => {
   const [bookingData] = useState(bookingArr);
 
   const renderItem = ({ item }) => (

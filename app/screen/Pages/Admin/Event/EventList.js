@@ -116,7 +116,7 @@ const renderItem = ({ item }) => (
     </View>
   </View>
 );
-    const renderEmptyTable = () => (
+const renderEmptyTable = () => (
       <View style={styles.emptyTableContainer}>
         <Text style={styles.emptyTableText}>No rows are added</Text>
       </View>

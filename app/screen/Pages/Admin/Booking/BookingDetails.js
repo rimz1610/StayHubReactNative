@@ -12,7 +12,11 @@ import { Ionicons } from "@expo/vector-icons";
 
 const Drawer = createDrawerNavigator();
 
-const BookingDetailsContent = ({ navigation }) => {
+const BookingDetailsContent = ({route, navigation }) => {
+
+  const bookingId=  route.params?.id || 0;
+  
+
   const getIconForType = (type) => {
     switch (type) {
       case "Room":
