@@ -83,6 +83,7 @@ const Login = ({ navigation }) => {
   useEffect(() => {
     if (isFocused) {
       formik.resetForm();
+      
     }
   }, [isFocused]);
   // const ScreenWrapper = ({ children }) => (

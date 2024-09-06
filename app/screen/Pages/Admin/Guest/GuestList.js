@@ -108,10 +108,12 @@ const GuestListContent = ({ navigation }) => {
       <Text style={styles.tableCell} numberOfLines={1}>{item.firstName} {item.lastName}</Text>
       <Text style={styles.tableCell} numberOfLines={1}>{item.email}</Text>   
       <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() => navigation.navigate('GuestDetails', { id: item.id })} style={styles.editButton}>
-          <Text style={styles.editButtonText}>Detail</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('GuestDetails', { id: item.id })} style={styles.detailButton}>
+          <Text style={styles.detailButtonText}>Detail</Text>
         </TouchableOpacity>
-      
+        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -275,6 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
+    marginLeft:1
   },
   deleteButtonText: {
     color: 'white',
@@ -348,5 +351,15 @@ const styles = StyleSheet.create({
   emptyTableText: {
     fontSize: 16,
     color: '#666',
+  },
+  detailButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+  },
+  detailButtonText: {
+    color: 'white',
+    fontSize: 12,
   },
 });

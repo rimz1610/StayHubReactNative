@@ -3,28 +3,100 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
+  ScrollView, FlatList,Alert
 } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-
+import { useIsFocused } from '@react-navigation/native';
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Drawer = createDrawerNavigator();
 
-const BookingDetailsContent = ({route, navigation }) => {
+const BookingDetailsContent = ({ route, navigation }) => {
 
-  const bookingId=  route.params?.id || 0;
-  
+  const [loading, setLoading] = useState(false);
+  const bookingId = route.params?.id || 0;
+  const isFocused = useIsFocused();
+  const [data, setData] = useState({
+    booking: {
+      id: 0,
+      guestNumber: "",
+      firstName: "",
+      lastName: "",
+      bookingDate: "",
+      bookingAmount: "",
+      paidAmount: "",
+      email: "",
+      phone: "",
+      location: "",
+      referenceNumber: "",
+      notes: "",
+      paidDate: "",
+      status: "",
+      creditCard: "",
+      guestId: 0,
+      txnRef: ""
+    },
+    bookingType:[
+      {
+        typeId:0,
+        typeName:"",
+        description:"",
+        amount:""
+      }
+    ]
+
+
+  });
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused, bookingId]);
+
+  // Function to refetch the updated room list
+  const fetchData = async () => {
+    if (bookingId > 0) {
+      const token = await AsyncStorage.getItem('token');
+
+      setLoading(true);
+      try {
+        console.warn("http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId="+bookingId)
+        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId="+bookingId, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        });
+
+        if (response.data.success) {
+          setData(response.data.data);
+        } else {
+          Alert.alert('Error', response.data.message);
+        }
+      } catch (error) {
+        console.warn(error);
+        Alert.alert('Error', 'Failed to fetch booking details.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   const getIconForType = (type) => {
     switch (type) {
       case "Room":
         return <Ionicons name="bed-outline" size={18} color="#180161" />;
-      case "Meal":
+      case "Event":
         return <Ionicons name="restaurant-outline" size={18} color="#180161" />;
-      case "Service":
+      case "RoomService":
         return <Ionicons name="car-outline" size={18} color="#180161" />;
+      case "Gym":
+        return <Ionicons name="fitness" size={18} color="#180161" />;
+      case "Spa":
+        return <Ionicons name="water" size={18} color="#180161" />;
       default:
         return null;
     }
@@ -57,15 +129,15 @@ const BookingDetailsContent = ({route, navigation }) => {
         <View style={styles.infoContainer}>
           <View style={styles.infoRow}>
             <View style={styles.infoColumn}>
-              <Text style={styles.infoText}>Guest No:</Text>
-              <Text style={styles.infoText}>Email:</Text>
-              <Text style={styles.infoText}>Address:</Text>
-              <Text style={styles.infoText}>Booking Ref no:</Text>
+              <Text style={styles.infoText}>Guest No: {data.booking.guestNumber}</Text>
+              <Text style={styles.infoText}>Email: {data.booking.email}</Text>
+
+              <Text style={styles.infoText}>Booking Ref no: {data.booking.referenceNumber}</Text>
             </View>
             <View style={styles.infoColumn}>
-              <Text style={styles.infoText}>Name:</Text>
-              <Text style={styles.infoText}>Phone:</Text>
-              <Text style={styles.infoText}>Booking Date:</Text>
+              <Text style={styles.infoText}>Name: {data.booking.firstName} {data.booking.lastName}</Text>
+              <Text style={styles.infoText}>Phone: {data.booking.phone}</Text>
+              <Text style={styles.infoText}>Booking Date: {data.booking.bookingDate}</Text>
             </View>
           </View>
         </View>
@@ -84,47 +156,32 @@ const BookingDetailsContent = ({route, navigation }) => {
               <Text style={styles.tableHeaderText}>Details</Text>
               <Text style={styles.tableHeaderText}>Price</Text>
             </View>
-            <View style={styles.tableRow}>
+            {data.bookingType.length > 0 && data.bookingType.map((item, index) => (
+              <View style={styles.tableRow}>
               <View style={styles.tableCell}>
-                {getIconForType("Room")}
-                <Text> Room</Text>
+                {getIconForType(item.typeName)}
+        
               </View>
               <Text style={[styles.tableCell, styles.tableDetailCell]}>
-                Deluxe Room with Sea View
+                {item.description}
               </Text>
-              <Text style={styles.tableCell}>$200</Text>
+              <Text style={styles.tableCell}>{item.amount}</Text>
             </View>
-            <View style={styles.tableRow}>
-              <View style={styles.tableCell}>
-                {getIconForType("Meal")}
-                <Text> Meal</Text>
-              </View>
-              <Text style={[styles.tableCell, styles.tableDetailCell]}>
-                Breakfast Included
-              </Text>
-              <Text style={styles.tableCell}>$50</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <View style={styles.tableCell}>
-                {getIconForType("Service")}
-                <Text> Service</Text>
-              </View>
-              <Text style={[styles.tableCell, styles.tableDetailCell]}>
-                Airport Pickup
-              </Text>
-              <Text style={styles.tableCell}>$30</Text>
-            </View>
+             ))
+            }
+           
           </View>
 
           {/* Small Table */}
           <View style={styles.smallTableContainer}>
             <View style={styles.smallTableRow}>
-              <Text style={styles.smallTableHeader}>Order Total:</Text>
-              <Text style={styles.smallTableAmount}>$280</Text>
+              <Text style={styles.smallTableHeader}>Booking Amount:</Text>
+              <Text style={styles.smallTableAmount}>{data.booking.bookingAmount}</Text>
             </View>
+
             <View style={styles.smallTableRow}>
               <Text style={styles.smallTableHeader}>Paid Amount:</Text>
-              <Text style={styles.smallTableAmount}>$280</Text>
+              <Text style={styles.smallTableAmount}>{data.booking.paidAmount}</Text>
             </View>
           </View>
         </View>
@@ -133,7 +190,9 @@ const BookingDetailsContent = ({route, navigation }) => {
   );
 };
 
-const BookingDetails = () => {
+const BookingDetails = ({ route }) => {
+
+  const { id } = route.params || {};
   return (
     <Drawer.Navigator
       drawerContent={(props) => <DrawerContent {...props} />}
@@ -147,6 +206,7 @@ const BookingDetails = () => {
       <Drawer.Screen
         name="BookingDetailsContent"
         component={BookingDetailsContent}
+        initialParams={{ id: id }}
       />
     </Drawer.Navigator>
   );
@@ -273,7 +333,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   smallTableContainer: {
-    width: 170,
+    width: 250,
     borderWidth: 1,
     borderColor: "black",
     borderRadius: 4,
@@ -300,5 +360,15 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
     zIndex: 1,
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: '#666',
   },
 });
