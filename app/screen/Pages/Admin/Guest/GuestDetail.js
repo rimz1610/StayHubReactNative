@@ -78,7 +78,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
       const token = await AsyncStorage.getItem('token');
       setLoading(true);
       const status = "";
-      console.warn(guestId);
+   
       try {
         const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
           &status=${status}`, {
@@ -219,7 +219,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Phone:</Text>
-          <Text style={styles.infoText}>{guestData.phone}</Text>
+          <Text style={styles.infoText}>{guestData.phoneNumber}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Address:</Text>

@@ -64,7 +64,6 @@ const BookingDetailsContent = ({ route, navigation }) => {
 
       setLoading(true);
       try {
-        console.warn("http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId="+bookingId)
         const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId="+bookingId, {
           headers: {
             'Authorization': `Bearer ${token}`,

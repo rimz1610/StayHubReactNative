@@ -78,7 +78,7 @@ const AddEditGymContent = ({
   const fetchGymData = useCallback(
     async (formikSetValues, setFieldValue) => {
       if (id > 0) {
-        console.warn("fetching data");
+       
         try {
           const token = await AsyncStorage.getItem("token");
 
@@ -91,13 +91,12 @@ const AddEditGymContent = ({
             }
           );
           if (response.data.success) {
-            console.warn(response.data.data);
+           
             response.data.data.fee = response.data.data.fee.toString();
             response.data.data.capacity =
               response.data.data.capacity.toString();
             formikSetValues(response.data.data);
 
-            console.warn(response.data.data);
           } else {
             Alert.alert("Error", response.data.message);
           }

@@ -227,7 +227,7 @@ const AddEditEvent = ({
               response.data.data.maxTicket.toString();
             formikSetValues(response.data.data);
             // setFieldValue("adultTicketPrice","67");
-            console.warn(response.data.data.adultTicketPrice);
+           
           } else {
             Alert.alert("Error", response.data.message);
           }
@@ -247,7 +247,7 @@ const AddEditEvent = ({
         const myPhoto = await AsyncStorage.getItem("eventFile");
         const formData = new FormData();
         //console.warn(photo);
-        console.warn(myPhoto);
+      
         if (photo != null) {
           const imageUri = photo.uri.startsWith("file://")
             ? photo.uri
