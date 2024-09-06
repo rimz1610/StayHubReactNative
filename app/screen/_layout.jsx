@@ -40,7 +40,7 @@ import AdminChangePassword from "./Pages/Admin/ChangePassword";
 function App() {
   const Stack = createNativeStackNavigator();
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+    <SafeAreaProvider style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar
         barStyle="dark-content"
         hidden={false}
@@ -95,7 +95,7 @@ function App() {
         </Stack.Navigator>
         {/* </ScrollView> */}
       </GestureHandlerRootView>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 registerRootComponent(App);
