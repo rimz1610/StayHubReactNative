@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import { Feather } from "@expo/vector-icons";
 // import { RichEditor, RichToolbar, actions } from "react-native-rich-editor";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -37,7 +38,19 @@ const addEditSchema = Yup.object().shape({
   ),
 });
 
-const AddEditRoom = ({ route, navigation }) => {
+const AddEditRoom = ({
+  route,
+  navigation,
+  handleChange,
+  values = {},
+  touched = {},
+  errors = {},
+}) => {
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [textAlign, setTextAlign] = useState("left");
+  const [listType, setListType] = useState(null);
+  const inputRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
   const id = route.params?.id || 0;
   const initialValues = {
@@ -58,6 +71,74 @@ const AddEditRoom = ({ route, navigation }) => {
       },
     ],
   };
+  const handleTextChange = (text) => {
+    if (handleChange && typeof handleChange === "function") {
+      handleChange("description")(text);
+    }
+  };
+
+  const getTextStyle = () => ({
+    fontWeight: isBold ? "bold" : "normal",
+    fontStyle: isItalic ? "italic" : "normal",
+    textAlign: textAlign,
+  });
+
+  const applyListFormat = (type) => {
+    const currentText = values.description || "";
+
+    // Check if the current text is a valid string
+    if (typeof currentText !== "string") {
+      console.warn("Description is not a string:", currentText);
+      return;
+    }
+
+    // Split the text by new lines
+    const lines = currentText.split("\n");
+    const lastLine = lines[lines.length - 1];
+
+    // Determine if we are adding or removing the list format
+    const isAddingList = listType !== type;
+
+    // Add or remove the appropriate list format for bullets or numbers
+    if (isAddingList) {
+      if (type === "bullet") {
+        // Add bullet points
+        lines[lines.length - 1] = lastLine ? `• ${lastLine}` : "• ";
+      } else if (type === "numbered") {
+        // Add numbered list
+        const numberedPrefix = `${lines.length}. `;
+        lines[lines.length - 1] = lastLine
+          ? `${numberedPrefix}${lastLine}`
+          : numberedPrefix;
+      }
+    } else {
+      // Remove the existing list format
+      lines[lines.length - 1] = lastLine.replace(/^[•\d]+\.\s/, "");
+    }
+
+    // Update the state with the newly formatted text
+    handleTextChange(lines.join("\n"));
+
+    // Update the list type state
+    setListType(isAddingList ? type : null);
+
+    // Re-focus the input field to maintain user interaction
+    inputRef.current?.focus();
+  };
+
+  const renderToolbarButton = (icon, action, isActive, style = {}) => (
+    <TouchableOpacity
+      onPress={action}
+      style={[styles.toolbarButton, isActive && styles.activeButton]}
+    >
+      <Feather
+        name={icon}
+        size={20}
+        color={isActive ? "#ffffff" : "#333333"}
+        style={style}
+      />
+    </TouchableOpacity>
+  );
 
   const fetchRoomData = useCallback(
     async (formikSetValues) => {
@@ -259,13 +340,61 @@ const AddEditRoom = ({ route, navigation }) => {
               </View>
 
               <View style={styles.singleRow}>
-                <Text style={styles.label}>Description</Text>
+                <Text style={styles.dlabel}>Description</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.toolbar}
+                >
+                  {renderToolbarButton(
+                    "bold",
+                    () => setIsBold(!isBold),
+                    isBold
+                  )}
+                  {renderToolbarButton(
+                    "italic",
+                    () => setIsItalic(!isItalic),
+                    isItalic
+                  )}
+                  {renderToolbarButton(
+                    "align-left",
+                    () => setTextAlign("left"),
+                    textAlign === "left"
+                  )}
+                  {renderToolbarButton(
+                    "align-center",
+                    () => setTextAlign("center"),
+                    textAlign === "center"
+                  )}
+                  {renderToolbarButton(
+                    "align-right",
+                    () => setTextAlign("right"),
+                    textAlign === "right"
+                  )}
+                  {renderToolbarButton(
+                    "list",
+                    () => applyListFormat("bullet"),
+                    listType === "bullet"
+                  )}
+                  {renderToolbarButton(
+                    "list",
+                    () => applyListFormat("numbered"),
+                    listType === "numbered",
+                    { transform: [{ rotate: "90deg" }] }
+                  )}
+                  {renderToolbarButton("type")}
+                </ScrollView>
                 <TextInput
+                  ref={inputRef}
                   onChangeText={handleChange("description")}
-                  value={values.description}
-                  style={[styles.input, styles.textArea]}
+                  value={
+                    typeof values.description === "string"
+                      ? values.description
+                      : ""
+                  }
+                  style={[styles.dinput, styles.dtextArea, getTextStyle()]}
                   placeholder="Description"
-                  placeholderTextColor="#555"
+                  placeholderTextColor="#999"
                   multiline
                 />
                 {touched.description && errors.description && (
@@ -472,9 +601,47 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontSize: 18,
   },
+  // errorText: {
+  //   fontSize: 12,
+  //   color: "red",
+  // },
+
+  dlabel: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  toolbar: {
+    flexDirection: "row",
+    marginBottom: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    padding: 5,
+  },
+  toolbarButton: {
+    padding: 8,
+    marginRight: 5,
+    borderRadius: 4,
+  },
+  activeButton: {
+    backgroundColor: "#007AFF",
+  },
+  dinput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
+  dtextArea: {
+    minHeight: 150,
+    textAlignVertical: "top",
+  },
   errorText: {
+    color: "#FF3B30",
     fontSize: 12,
-    color: "red",
+    marginTop: 5,
   },
 });
 

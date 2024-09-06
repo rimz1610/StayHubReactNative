@@ -8,7 +8,8 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
+import { Feather } from "@expo/vector-icons";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
@@ -35,14 +36,25 @@ const addEditSchema = Yup.object().shape({
   childTicketPrice: Yup.number().min(0, "Must be positive"),
   maxTicket: Yup.number().min(0, "Must be positive"),
 });
-const AddEditEvent = ({ route, navigation }) => {
+const AddEditEvent = ({
+  route,
+  navigation,
+  handleChange,
+  values = {},
+  touched = {},
+  errors = {},
+}) => {
   const [photo, setImage] = useState(null);
   const [showStartDate, setShowStartDate] = useState(false);
   const [showEndDate, setShowEndDate] = useState(false);
   const [showEventDate, setShowEventDate] = useState(false);
   const [showStartTime, setShowStartTime] = useState(false);
   const [showEndTime, setShowEndTime] = useState(false);
-
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [textAlign, setTextAlign] = useState("left");
+  const [listType, setListType] = useState(null);
+  const inputRef = useRef(null);
   useEffect(() => {
     (async () => {
       if (Platform.OS !== "web") {
@@ -80,6 +92,64 @@ const AddEditEvent = ({ route, navigation }) => {
     date.setHours(hours, minutes, seconds, 0);
     return date;
   };
+  const handleTextChange = (text) => {
+    if (handleChange && typeof handleChange === "function") {
+      handleChange("description")(text);
+    }
+  };
+
+  const getTextStyle = () => ({
+    fontWeight: isBold ? "bold" : "normal",
+    fontStyle: isItalic ? "italic" : "normal",
+    textAlign: textAlign,
+  });
+
+  const applyListFormat = (type) => {
+    setListType(listType === type ? null : type);
+    const currentText = values.description || "";
+    if (typeof currentText !== "string") {
+      console.warn("Description is not a string:", currentText);
+      return;
+    }
+    const lines = currentText.split("\n");
+    const lastLine = lines[lines.length - 1];
+
+    if (listType === type) {
+      // Remove list formatting
+      lines[lines.length - 1] = lastLine.replace(/^[•\d]+\.\s/, "");
+    } else {
+      // Add list formatting
+      const prefix = type === "bullet" ? "• " : `${lines.length}. `;
+      lines[lines.length - 1] = lastLine ? `${prefix}${lastLine}` : prefix;
+    }
+
+    handleTextChange(lines.join("\n"));
+    inputRef.current?.focus();
+  };
+
+  const addParagraph = () => {
+    const currentText = values.description || "";
+    if (typeof currentText !== "string") {
+      console.warn("Description is not a string:", currentText);
+      return;
+    }
+    handleTextChange(currentText + "\n\n");
+    inputRef.current?.focus();
+  };
+
+  const renderToolbarButton = (icon, action, isActive, style = {}) => (
+    <TouchableOpacity
+      onPress={action}
+      style={[styles.toolbarButton, isActive && styles.activeButton]}
+    >
+      <Feather
+        name={icon}
+        size={20}
+        color={isActive ? "#ffffff" : "#333333"}
+        style={style}
+      />
+    </TouchableOpacity>
+  );
   // const handleChoosePhoto = async () => {
   //     // No permissions request is necessary for launching the image library
   //     let result = await ImagePicker.launchImageLibraryAsync({
@@ -467,11 +537,59 @@ const AddEditEvent = ({ route, navigation }) => {
                 </View>
 
                 <View style={styles.fullWidthContainer}>
-                  <Text style={styles.heading}>Description</Text>
+                  <Text style={styles.dlabel}>Description</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.toolbar}
+                  >
+                    {renderToolbarButton(
+                      "bold",
+                      () => setIsBold(!isBold),
+                      isBold
+                    )}
+                    {renderToolbarButton(
+                      "italic",
+                      () => setIsItalic(!isItalic),
+                      isItalic
+                    )}
+                    {renderToolbarButton(
+                      "align-left",
+                      () => setTextAlign("left"),
+                      textAlign === "left"
+                    )}
+                    {renderToolbarButton(
+                      "align-center",
+                      () => setTextAlign("center"),
+                      textAlign === "center"
+                    )}
+                    {renderToolbarButton(
+                      "align-right",
+                      () => setTextAlign("right"),
+                      textAlign === "right"
+                    )}
+                    {renderToolbarButton(
+                      "list",
+                      () => applyListFormat("bullet"),
+                      listType === "bullet"
+                    )}
+                    {renderToolbarButton(
+                      "list",
+                      () => applyListFormat("numbered"),
+                      listType === "numbered",
+                      { transform: [{ rotate: "90deg" }] }
+                    )}
+                    {renderToolbarButton("type", addParagraph)}
+                  </ScrollView>
                   <TextInput
+                    ref={inputRef}
                     onChangeText={handleChange("description")}
-                    value={values.description}
-                    style={[styles.input, styles.descriptionInput]}
+                    value={
+                      typeof values.description === "string"
+                        ? values.description
+                        : ""
+                    }
+                    style={[styles.dinput, styles.dtextArea, getTextStyle()]}
                     placeholder="Description"
                     placeholderTextColor="#999"
                     multiline
@@ -702,9 +820,48 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: "white",
   },
+  dlabel: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  toolbar: {
+    flexDirection: "row",
+    marginBottom: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    padding: 5,
+  },
+  toolbarButton: {
+    padding: 8,
+    marginRight: 5,
+    borderRadius: 4,
+  },
+  activeButton: {
+    backgroundColor: "#007AFF",
+  },
+  dinput: {
+    borderWidth: 1,
+    // borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#fff",
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 4,
+    // elevation: 3,
+  },
+  dtextArea: {
+    minHeight: 150,
+    textAlignVertical: "top",
+  },
   errorText: {
+    color: "#FF3B30",
     fontSize: 12,
-    color: "red",
+    marginTop: 5,
   },
 });
 
