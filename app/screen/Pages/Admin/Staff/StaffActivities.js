@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
@@ -87,11 +88,11 @@ const StaffActivitiesContent = ({ route, navigation }) => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "An error occurred while saving the activity.");
         }
-        else{
-        console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the activity.");}
       } finally {
         fetchData();
         setSubmitting(false);
@@ -131,11 +132,11 @@ const StaffActivitiesContent = ({ route, navigation }) => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch activities.");
         }
-        else{
-        console.warn(error);
-        Alert.alert("Error", "Failed to fetch activities.");}
       } finally {
         setLoading(false);
       }
@@ -265,7 +266,15 @@ const StaffActivitiesContent = ({ route, navigation }) => {
           <Text style={styles.tableHeaderText}>Date</Text>
           <Text style={styles.tableHeaderText}>Action</Text>
         </View>
-        {data.length > 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator
+              size="large"
+              color="#180161"
+              style={styles.activityIndicator}
+            />
+          </View>
+        ) : data.length > 0 ? (
           <FlatList
             data={data.slice(
               currentPage * itemsPerPage,
@@ -445,6 +454,15 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "white",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  activityIndicator: {
+    padding: 20,
   },
   roomheading: {
     color: "#180161",

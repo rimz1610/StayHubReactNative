@@ -8,6 +8,7 @@ import {
   Image,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -78,7 +79,6 @@ const AddEditGymContent = ({
   const fetchGymData = useCallback(
     async (formikSetValues, setFieldValue) => {
       if (id > 0) {
-       
         try {
           const token = await AsyncStorage.getItem("token");
 
@@ -91,22 +91,20 @@ const AddEditGymContent = ({
             }
           );
           if (response.data.success) {
-           
             response.data.data.fee = response.data.data.fee.toString();
             response.data.data.capacity =
               response.data.data.capacity.toString();
             formikSetValues(response.data.data);
-
           } else {
             Alert.alert("Error", response.data.message);
           }
         } catch (error) {
           if (error.response && error.response.status === 401) {
             // Redirect to login page
-            navigation.navigate('Login');
+            navigation.navigate("Login");
+          } else {
+            Alert.alert("Error", "Failed to fetch gym data");
           }
-          else{
-          Alert.alert("Error", "Failed to fetch gym data");}
         }
       }
     },
@@ -140,11 +138,11 @@ const AddEditGymContent = ({
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "An error occurred while saving the gym.");
         }
-        else{
-        console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the gym.");}
       } finally {
         setSubmitting(false);
       }
@@ -477,7 +475,11 @@ const AddEditGymContent = ({
                   disabled={isSubmitting}
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.saveButtonText}>SAVE</Text>
+                  {isSubmitting ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>SAVE</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </ScrollView>

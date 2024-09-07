@@ -1,8 +1,20 @@
-import RNPickerSelect from 'react-native-picker-select';
+import RNPickerSelect from "react-native-picker-select";
 import {
-  StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert,
-  ScrollView, FlatList, Modal, Button, TouchableWithoutFeedback,
-  Keyboard, KeyboardAvoidingView
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Alert,
+  ScrollView,
+  FlatList,
+  Modal,
+  Button,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
@@ -14,23 +26,26 @@ import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from "@react-navigation/native";
 // Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index.toString(),
   name: `Ali ${index + 1}`,
-  email: 'ali123@yopmail.com',
+  email: "ali123@yopmail.com",
   phoneNumber: `03456050369`,
-
 }));
 const Drawer = createDrawerNavigator();
 const addEditSchema = Yup.object().shape({
   firstName: Yup.string().max(25, "Too long").required("Required"),
   lastName: Yup.string().max(25, "Too long").required("Required"),
   email: Yup.string().email("Invalid email address").required("Required"),
-  password: Yup.string().required("Required").min(6, "Password too short").matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/, "1 Upper, Lowercase, 1 Number and 1 Special Character")
-  ,
+  password: Yup.string()
+    .required("Required")
+    .min(6, "Password too short")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/,
+      "1 Upper, Lowercase, 1 Number and 1 Special Character"
+    ),
   phoneNumber: Yup.string().required("Required"),
 });
 const StaffListContent = ({ navigation }) => {
@@ -51,20 +66,20 @@ const StaffListContent = ({ navigation }) => {
       lastName: "",
       isActive: false,
       isAdmin: true,
-      phoneNumber: ""
+      phoneNumber: "",
     },
     validationSchema: addEditSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
         values.isAdmin = true;
-      
+
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Staff/AddEditStaff",
           values,
           {
-            headers: { Authorization: `Bearer ${token}`, },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         if (response.data.success) {
@@ -81,20 +96,17 @@ const StaffListContent = ({ navigation }) => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "An error occurred while saving the staff.");
         }
-        else{
-        console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the staff.");}
       } finally {
-
         fetchData();
         setSubmitting(false);
       }
     },
   });
-
-
 
   useEffect(() => {
     if (isFocused) {
@@ -102,33 +114,35 @@ const StaffListContent = ({ navigation }) => {
     }
   }, [isFocused]);
 
-
   // Function to refetch the updated room list
   const fetchData = async () => {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem("token");
 
     setLoading(true);
     try {
-      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffs", {
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await axios.get(
+        "http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffs",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (response.data.success) {
         setData(response.data.list);
         setPages(Math.ceil(response.data.list.length / itemsPerPage));
       } else {
-        Alert.alert('Error', response.data.message);
+        Alert.alert("Error", response.data.message);
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         // Redirect to login page
-        navigation.navigate('Login');
+        navigation.navigate("Login");
+      } else {
+        console.warn(error);
+        Alert.alert("Error", "Failed to fetch staffs.");
       }
-      else{
-      console.warn(error);
-      Alert.alert('Error', 'Failed to fetch staffs.');}
     } finally {
       setLoading(false);
     }
@@ -137,72 +151,79 @@ const StaffListContent = ({ navigation }) => {
   const handleEdit = (item) => {
     formik.setValues(item);
     setModalVisible(true);
-
   };
 
   const handleDelete = (staffId) => {
-    Alert.alert('Are you sure?', 'Do you want to delete this item?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Are you sure?", "Do you want to delete this item?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Yes, delete it',
+        text: "Yes, delete it",
         onPress: async () => {
           try {
             setLoading(true);
 
-            const token = await AsyncStorage.getItem('token');
-            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Staff/Delete?id=${staffId}`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
+            const token = await AsyncStorage.getItem("token");
+            const response = await axios.get(
+              `http://majidalipl-001-site5.gtempurl.com/Staff/Delete?id=${staffId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
               }
-            });
+            );
 
             if (response.data.success) {
               // Refetch the updated list after deletion
               fetchData();
             } else {
-              Alert.alert('Error', response.data.message);
+              Alert.alert("Error", response.data.message);
             }
           } catch (error) {
             console.warn(error);
-            Alert.alert('Error', 'Failed to delete the staff account.');
+            Alert.alert("Error", "Failed to delete the staff account.");
           } finally {
             setLoading(false);
           }
-        }
-      }
+        },
+      },
     ]);
   };
   const handleStatus = (item) => {
-    const msg = item.isActive ? "Do you want to inactivate this item?" : "Do you want to activate this item?"
-    Alert.alert('Are you sure?', msg, [
-      { text: 'Cancel', style: 'cancel' },
+    const msg = item.isActive
+      ? "Do you want to inactivate this item?"
+      : "Do you want to activate this item?";
+    Alert.alert("Are you sure?", msg, [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Yes, sure',
+        text: "Yes, sure",
         onPress: async () => {
           try {
             setLoading(true);
 
-            const token = await AsyncStorage.getItem('token');
-            const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Staff/ChangeStatus?id=${item.id}`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
+            const token = await AsyncStorage.getItem("token");
+            const response = await axios.get(
+              `http://majidalipl-001-site5.gtempurl.com/Staff/ChangeStatus?id=${item.id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
               }
-            });
+            );
 
             if (response.data.success) {
               // Refetch the updated list after deletion
               fetchData();
             } else {
-              Alert.alert('Error', response.data.message);
+              Alert.alert("Error", response.data.message);
             }
           } catch (error) {
             console.warn(error);
-            Alert.alert('Error', 'Failed to change status.');
+            Alert.alert("Error", "Failed to change status.");
           } finally {
             setLoading(false);
           }
-        }
-      }
+        },
+      },
     ]);
   };
 
@@ -221,29 +242,49 @@ const StaffListContent = ({ navigation }) => {
   // };
 
   const handlePageChange = (direction) => {
-    if (direction === 'next' && currentPage < pages - 1) {
+    if (direction === "next" && currentPage < pages - 1) {
       setCurrentPage(currentPage + 1);
-    } else if (direction === 'previous' && currentPage > 0) {
+    } else if (direction === "previous" && currentPage > 0) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell} numberOfLines={1}>{item.firstName} {item.lastName}</Text>
-
+      <Text style={styles.tableCell} numberOfLines={1}>
+        {item.firstName} {item.lastName}
+      </Text>
 
       <View style={styles.tableActions}>
-        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
+        <TouchableOpacity
+          onPress={() => handleEdit(item)}
+          style={styles.editButton}
+        >
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('StaffActivityList', { staffId: item.id, staffName: item.firstName + " " + item.lastName })} style={styles.activityButton}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("StaffActivityList", {
+              staffId: item.id,
+              staffName: item.firstName + " " + item.lastName,
+            })
+          }
+          style={styles.activityButton}
+        >
           <Text style={styles.activityButtonText}>Activities</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleStatus(item)} style={styles.activeButton}>
-          <Text style={styles.activeButtonText}>{item.isActive ? "Active" : "Inactive"}</Text>
+        <TouchableOpacity
+          onPress={() => handleStatus(item)}
+          style={styles.activeButton}
+        >
+          <Text style={styles.activeButtonText}>
+            {item.isActive ? "Active" : "Inactive"}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+        <TouchableOpacity
+          onPress={() => handleDelete(item.id)}
+          style={styles.deleteButton}
+        >
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
@@ -256,29 +297,54 @@ const StaffListContent = ({ navigation }) => {
   );
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+      <TouchableOpacity
+        onPress={() => navigation.openDrawer()}
+        style={styles.menuButton}
+      >
         <Ionicons name="menu" size={24} color="black" />
       </TouchableOpacity>
 
       <Text style={styles.roomheading}>Staff</Text>
-      <TouchableOpacity style={styles.addButton} onPress={() => {
-        formik.setValues({ id: 0, isAdmin: false, isActive: false, firstName: "", lastName: "", email: "", password: "", phoneNumber: "" });
-        setModalVisible(true);
-      }}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          formik.setValues({
+            id: 0,
+            isAdmin: false,
+            isActive: false,
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
+            phoneNumber: "",
+          });
+          setModalVisible(true);
+        }}
+      >
         <Text style={styles.addButtonText}>+ Add New</Text>
       </TouchableOpacity>
 
       {/* Table */}
       <View style={styles.tableContainer}>
         <View style={styles.tableHeader}>
-
           <Text style={styles.tableHeaderText}>Name</Text>
 
           <Text style={styles.tableHeaderText}>Action</Text>
         </View>
-        {data.length > 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator
+              size="large"
+              color="#180161"
+              style={styles.activityIndicator}
+            />
+          </View>
+        ) : data.length > 0 ? (
           <FlatList
-            data={data.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
+            data={data.slice(
+              currentPage * itemsPerPage,
+              (currentPage + 1) * itemsPerPage
+            )}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
           />
@@ -290,8 +356,11 @@ const StaffListContent = ({ navigation }) => {
       {/* Pagination */}
       <View style={styles.paginationContainer}>
         <TouchableOpacity
-          onPress={() => handlePageChange('previous')}
-          style={[styles.paginationButton, currentPage === 0 && styles.disabledButton]}
+          onPress={() => handlePageChange("previous")}
+          style={[
+            styles.paginationButton,
+            currentPage === 0 && styles.disabledButton,
+          ]}
           disabled={currentPage === 0}
         >
           <Text style={styles.paginationButtonText}>Previous</Text>
@@ -300,15 +369,16 @@ const StaffListContent = ({ navigation }) => {
           Page {currentPage + 1} of {pages}
         </Text>
         <TouchableOpacity
-          onPress={() => handlePageChange('next')}
-          style={[styles.paginationButton, currentPage === pages - 1 && styles.disabledButton]}
+          onPress={() => handlePageChange("next")}
+          style={[
+            styles.paginationButton,
+            currentPage === pages - 1 && styles.disabledButton,
+          ]}
           disabled={currentPage === pages - 1}
         >
           <Text style={styles.paginationButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
-
-
 
       <Modal
         animationType="fade"
@@ -341,49 +411,66 @@ const StaffListContent = ({ navigation }) => {
                     placeholder="First Name"
                     placeholderTextColor="#888"
                     value={formik.values.firstName}
-                    onChangeText={formik.handleChange('firstName')}
+                    onChangeText={formik.handleChange("firstName")}
                   />
 
-                  {formik.touched.firstName && formik.errors.firstName && <Text style={styles.errorText}>{formik.errors.firstName}</Text>}
-
+                  {formik.touched.firstName && formik.errors.firstName && (
+                    <Text style={styles.errorText}>
+                      {formik.errors.firstName}
+                    </Text>
+                  )}
 
                   <TextInput
                     style={styles.input}
                     placeholder="Last Name"
                     placeholderTextColor="#888"
                     value={formik.values.lastName}
-                    onChangeText={formik.handleChange('lastName')}
+                    onChangeText={formik.handleChange("lastName")}
                   />
 
-                  {formik.touched.lastName && formik.errors.lastName && <Text style={styles.errorText}>{formik.errors.lastName}</Text>}
+                  {formik.touched.lastName && formik.errors.lastName && (
+                    <Text style={styles.errorText}>
+                      {formik.errors.lastName}
+                    </Text>
+                  )}
                   <TextInput
                     style={styles.input}
                     placeholder="Email"
                     placeholderTextColor="#888"
                     value={formik.values.email}
-                    onChangeText={formik.handleChange('email')}
+                    onChangeText={formik.handleChange("email")}
                   />
 
-                  {formik.touched.email && formik.errors.email && <Text style={styles.errorText}>{formik.errors.email}</Text>}
+                  {formik.touched.email && formik.errors.email && (
+                    <Text style={styles.errorText}>{formik.errors.email}</Text>
+                  )}
                   <TextInput
                     style={styles.input}
                     placeholder="Phone Number"
                     placeholderTextColor="#888"
                     value={formik.values.phoneNumber}
-                    onChangeText={formik.handleChange('phoneNumber')}
+                    onChangeText={formik.handleChange("phoneNumber")}
                   />
 
-                  {formik.touched.phoneNumber && formik.errors.phoneNumber && <Text style={styles.errorText}>{formik.errors.phoneNumber}</Text>}
-                  {formik.values.id == 0 &&
+                  {formik.touched.phoneNumber && formik.errors.phoneNumber && (
+                    <Text style={styles.errorText}>
+                      {formik.errors.phoneNumber}
+                    </Text>
+                  )}
+                  {formik.values.id == 0 && (
                     <TextInput
                       style={styles.input}
                       placeholder="Password"
                       placeholderTextColor="#888"
                       value={formik.values.password}
-                      onChangeText={formik.handleChange('password')}
+                      onChangeText={formik.handleChange("password")}
                     />
-                  }
-                  {formik.touched.password && formik.errors.password && <Text style={styles.errorText}>{formik.errors.password}</Text>}
+                  )}
+                  {formik.touched.password && formik.errors.password && (
+                    <Text style={styles.errorText}>
+                      {formik.errors.password}
+                    </Text>
+                  )}
 
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity
@@ -415,7 +502,7 @@ const StaffList = () => {
       screenOptions={{
         headerShown: false,
         drawerStyle: {
-          width: '60%',
+          width: "60%",
         },
       }}
     >
@@ -430,6 +517,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  activityIndicator: {
+    padding: 20,
   },
   roomheading: {
     color: "#180161",
@@ -497,48 +593,46 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   editButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: "#007BFF",
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
-
   },
   editButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   activityButton: {
-    backgroundColor: '#008000',
+    backgroundColor: "#008000",
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
     marginLeft: 1,
   },
   activityButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   activeButton: {
-    backgroundColor: '#123e66',
+    backgroundColor: "#123e66",
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
     marginLeft: 1,
   },
   activeButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   deleteButton: {
-    backgroundColor: '#FF6347',
+    backgroundColor: "#FF6347",
     borderRadius: 4,
     paddingVertical: 5,
     paddingHorizontal: 8,
     marginLeft: 1,
-
   },
   deleteButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   paginationContainer: {
@@ -636,17 +730,16 @@ const styles = StyleSheet.create({
   },
   emptyTableContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 20,
   },
   emptyTableText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   errorText: {
     fontSize: 12,
     color: "red",
   },
 });
-

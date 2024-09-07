@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 // import { RichEditor, RichToolbar, actions } from "react-native-rich-editor";
@@ -18,7 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import RNPickerSelect from "react-native-picker-select";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import DrawerContent from "../../../../components/DrawerContent"; // Adjust the path as needed
-import {ROOM_TYPES} from "../../../constant";
+import { ROOM_TYPES } from "../../../constant";
 const Drawer = createDrawerNavigator();
 
 const addEditSchema = Yup.object().shape({
@@ -50,6 +51,7 @@ const AddEditRoom = ({
   const [isItalic, setIsItalic] = useState(false);
   const [textAlign, setTextAlign] = useState("left");
   const [listType, setListType] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
   const id = route.params?.id || 0;
@@ -162,10 +164,10 @@ const AddEditRoom = ({
         } catch (error) {
           if (error.response && error.response.status === 401) {
             // Redirect to login page
-            navigation.navigate('Login');
+            navigation.navigate("Login");
+          } else {
+            Alert.alert("Error", "Failed to fetch room data");
           }
-          else{
-          Alert.alert("Error", "Failed to fetch room data");}
         }
       }
     },
@@ -200,10 +202,10 @@ const AddEditRoom = ({
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          Alert.alert("Error", "An error occurred while saving the room.");
         }
-        else{
-        Alert.alert("Error", "An error occurred while saving the room.");}
       } finally {
         setSubmitting(false);
       }
@@ -481,7 +483,11 @@ const AddEditRoom = ({
                 disabled={isSubmitting}
                 onPress={handleSubmit}
               >
-                <Text style={styles.saveButtonText}>SAVE</Text>
+                {isSubmitting ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text style={styles.saveButtonText}>SAVE</Text>
+                )}
               </TouchableOpacity>
             </View>
           </ScrollView>

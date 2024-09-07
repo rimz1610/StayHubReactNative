@@ -7,6 +7,7 @@ import {
   Image,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -227,17 +228,16 @@ const AddEditEvent = ({
               response.data.data.maxTicket.toString();
             formikSetValues(response.data.data);
             // setFieldValue("adultTicketPrice","67");
-           
           } else {
             Alert.alert("Error", response.data.message);
           }
         } catch (error) {
           if (error.response && error.response.status === 401) {
             // Redirect to login page
-            navigation.navigate('Login');
+            navigation.navigate("Login");
+          } else {
+            Alert.alert("Error", "Failed to fetch event  data");
           }
-          else{
-          Alert.alert("Error", "Failed to fetch event  data");}
         }
       }
     },
@@ -252,7 +252,7 @@ const AddEditEvent = ({
         const myPhoto = await AsyncStorage.getItem("eventFile");
         const formData = new FormData();
         //console.warn(photo);
-      
+
         if (photo != null) {
           const imageUri = photo.uri.startsWith("file://")
             ? photo.uri
@@ -305,11 +305,11 @@ const AddEditEvent = ({
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "An error occurred while saving the event.");
         }
-        else{
-        console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the event.");}
       } finally {
         setSubmitting(false);
       }
@@ -711,7 +711,11 @@ const AddEditEvent = ({
                   disabled={isSubmitting}
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.saveButtonText}>SAVE</Text>
+                  {isSubmitting ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>SAVE</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </ScrollView>

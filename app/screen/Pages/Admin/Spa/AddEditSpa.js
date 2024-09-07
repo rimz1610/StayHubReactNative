@@ -7,6 +7,7 @@ import {
   Image,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -95,10 +96,10 @@ const AddEditSpaContent = ({
         } catch (error) {
           if (error.response && error.response.status === 401) {
             // Redirect to login page
-            navigation.navigate('Login');
+            navigation.navigate("Login");
+          } else {
+            Alert.alert("Error", "Failed to fetch spa data");
           }
-          else{
-          Alert.alert("Error", "Failed to fetch spa data");}
         }
       }
     },
@@ -130,11 +131,11 @@ const AddEditSpaContent = ({
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "An error occurred while saving the spa.");
         }
-        else{
-        console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the spa.");}
       } finally {
         setSubmitting(false);
       }
@@ -423,7 +424,11 @@ const AddEditSpaContent = ({
                   disabled={isSubmitting}
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.saveButtonText}>SAVE</Text>
+                  {isSubmitting ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>SAVE</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </ScrollView>

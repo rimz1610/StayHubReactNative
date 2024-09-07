@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
-  Text, Alert,
+  Text,
+  Alert,
   View,
   Image,
   TouchableOpacity,
   Modal,
-  ScrollView, ActivityIndicator,
+  ScrollView,
+  ActivityIndicator,
   Dimensions,
   Platform,
 } from "react-native";
@@ -26,7 +28,10 @@ import * as Yup from "yup";
 import axios from "axios";
 import moment from "moment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { saveCartToSecureStore, getCartFromSecureStore } from '../../../../components/secureStore';
+import {
+  saveCartToSecureStore,
+  getCartFromSecureStore,
+} from "../../../../components/secureStore";
 
 const filterSchema = Yup.object().shape({
   roomType: Yup.string().notRequired(),
@@ -53,7 +58,6 @@ const RoomBooking = () => {
     },
     validationSchema: filterSchema,
     onSubmit: async (values, { resetForm }) => {
-
       try {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
@@ -68,9 +72,7 @@ const RoomBooking = () => {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-
         Alert.alert("Error", "An error occurred while rooms.");
-
       } finally {
         setSubmitting(false);
       }
@@ -86,25 +88,21 @@ const RoomBooking = () => {
   handleShowRoomDetails = (roomId) => {
     setCurrentRoomId(roomId);
     fetchRoomData();
-  }
+  };
 
   handleAddToBooking = async (item) => {
-
     const token = await AsyncStorage.getItem("token");
     if (token == null) {
       navigation.navigate("Login");
+    } else {
     }
-    else {
-
-    }
-  }
-
+  };
 
   const fetchRoomData = async () => {
     if (currentRoomId > 0) {
       try {
-
-        const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=${currentRoomId}`
+        const response = await axios.get(
+          `http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=${currentRoomId}`
         );
         if (response.data.success) {
           setRoomDetail(response.data.data);
@@ -116,12 +114,14 @@ const RoomBooking = () => {
       } catch (error) {
         Alert.alert("Error", "Failed to fetch room details");
       }
-
     }
   };
 
   const handleDateSelect = (date) => {
-    if (!formik.values.checkInDate || (formik.values.checkInDate && formik.values.checkOutDate)) {
+    if (
+      !formik.values.checkInDate ||
+      (formik.values.checkInDate && formik.values.checkOutDate)
+    ) {
       formik.setFieldValue("checkInDate", date.dateString);
       formik.setFieldValue("checkOutDate", null);
     } else {
@@ -138,7 +138,11 @@ const RoomBooking = () => {
     if (!formik.values.checkInDate) return {};
 
     const markedDates = {
-      [formik.values.checkInDate]: { startingDay: true, color: "#180161", textColor: "white" },
+      [formik.values.checkInDate]: {
+        startingDay: true,
+        color: "#180161",
+        textColor: "white",
+      },
     };
 
     if (formik.values.checkOutDate) {
@@ -173,9 +177,12 @@ const RoomBooking = () => {
       <View style={styles.roomInfo}>
         <Text style={styles.roomName}>{item.roomName}</Text>
         <Text style={styles.roomType}>{item.roomType}</Text>
-        <Text style={styles.roomPrice}>{item.price.toLocaleString("en-US", {
-          style: "currency", currency: "USD"
-        })}</Text>
+        <Text style={styles.roomPrice}>
+          {item.price.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+          })}
+        </Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             onPress={() => handleShowRoomDetails(item.roomId)}
@@ -252,10 +259,13 @@ const RoomBooking = () => {
         >
           <Text style={styles.datePickerButtonText}>
             {formik.values.checkInDate && formik.values.checkOutDate
-              ? `${format(new Date(formik.values.checkInDate), "MMM dd, yyyy")} - ${format(
-                new Date(formik.values.checkOutDate),
-                "MMM dd, yyyy"
-              )}`
+              ? `${format(
+                  new Date(formik.values.checkInDate),
+                  "MMM dd, yyyy"
+                )} - ${format(
+                  new Date(formik.values.checkOutDate),
+                  "MMM dd, yyyy"
+                )}`
               : "Select dates"}
           </Text>
         </TouchableOpacity>
@@ -312,7 +322,9 @@ const RoomBooking = () => {
         </Text>
         <Text style={styles.stayInfoText}>
           Check-out:{" "}
-          {formik.values.checkOutDate ? format(new Date(formik.values.checkOutDate), "MMM dd, yyyy") : "Not selected"}
+          {formik.values.checkOutDate
+            ? format(new Date(formik.values.checkOutDate), "MMM dd, yyyy")
+            : "Not selected"}
         </Text>
         <Text style={styles.stayInfoText}>Number of Nights: {nights}</Text>
         {formik.touched.checkInDate && formik.errors.checkInDate && (
@@ -328,7 +340,9 @@ const RoomBooking = () => {
           <View style={styles.pickerWrapper}>
             <Text style={styles.pickerLabel}>Additional Person</Text>
             <RNPickerSelect
-              onValueChange={(value) => formik.setFieldValue("noOfAdditionalPerson", value)}
+              onValueChange={(value) =>
+                formik.setFieldValue("noOfAdditionalPerson", value)
+              }
               items={additionalPersonOptions}
               style={pickerSelectStyles}
               value={formik.values.noOfAdditionalPerson}
@@ -364,32 +378,35 @@ const RoomBooking = () => {
             />
           </View>
         </View>
-        <TouchableOpacity style={styles.filterButton} onPress={formik.handleSubmit}
-          disabled={submitting} >
-
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={formik.handleSubmit}
+          disabled={submitting}
+        >
           {submitting ? (
             <ActivityIndicator size="small" color="#ffff" />
           ) : (
-            <><Ionicons name="filter" size={24} color="#fff" /><Text style={styles.filterButtonText}>Filter</Text></>
+            <>
+              <Ionicons name="filter" size={24} color="#fff" />
+              <Text style={styles.filterButtonText}>Filter</Text>
+            </>
           )}
-
         </TouchableOpacity>
       </View>
 
       <Text style={styles.availableRoomsHeading}>Available Rooms</Text>
       {submitting ? (
-        <ActivityIndicator size="large" color="#180161"/>) : (
-        data.length === 0 ? (
-          <Text>No rooms are available.</Text>
-        ) : (
-          data != undefined && data.map((room, index) => {
-            return (
-              <View key={index}>
-                {renderRoomItem(room)}
-              </View>
-            );
-          })
-        ))}
+        <ActivityIndicator size="large" color="#180161" />
+      ) : data.length === 0 ? (
+        <View style={styles.noRoomContainer}>
+          <Text style={styles.noRoom}>No rooms are available</Text>
+        </View>
+      ) : (
+        data != undefined &&
+        data.map((room, index) => {
+          return <View key={index}>{renderRoomItem(room)}</View>;
+        })
+      )}
       {/* {renderRoomItem("Cozy Suite", "Deluxe", 150, RoomImage)}
       {renderRoomItem("Ocean View", "Suite", 250, RoomImage1)}
       {renderRoomItem("Standard Room", "Standard", 100, RoomImage2)}
@@ -405,9 +422,7 @@ const RoomBooking = () => {
           <Text style={styles.modalTitle}>Room Details</Text>
           <Text style={styles.modalText}>{roomDetail.name}</Text>
           <View style={styles.bulletPointContainer}>
-            <Text style={styles.bulletPoint}>
-              {roomDetail.type}
-            </Text>
+            <Text style={styles.bulletPoint}>{roomDetail.type}</Text>
             <Text style={styles.bulletPoint}>
               {roomDetail.shortDescription}
             </Text>
@@ -430,17 +445,19 @@ const RoomBooking = () => {
           </View>
 
           <View style={styles.imageGrid}>
-            {
-              roomDetail.imagesUrl != undefined && roomDetail.imagesUrl.map((image, index) => (
+            {roomDetail.imagesUrl != undefined &&
+              roomDetail.imagesUrl.map((image, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => handleImagePress(image.imageUrl)}
                   style={styles.imageContainer}
                 >
-                  <Image source={{ uri: image.imageUrl }} style={styles.gridImage} />
+                  <Image
+                    source={{ uri: image.imageUrl }}
+                    style={styles.gridImage}
+                  />
                 </TouchableOpacity>
-              ))
-            }
+              ))}
             {/* {[RoomImage1, RoomImage2, RoomImage3].map((image, index) => (
               <TouchableOpacity
                 key={index}
@@ -468,7 +485,10 @@ const RoomBooking = () => {
         onRequestClose={() => setSelectedImage(null)}
       >
         <View style={styles.fullScreenImageContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.fullScreenImage} />
+          <Image
+            source={{ uri: selectedImage }}
+            style={styles.fullScreenImage}
+          />
           <TouchableOpacity
             style={styles.closeFullScreenButton}
             onPress={() => setSelectedImage(null)}
@@ -813,6 +833,22 @@ const styles = StyleSheet.create({
     color: "#FF3B30",
     fontSize: 12,
     marginTop: 5,
+  },
+  noRoomContainer: {
+    backgroundColor: "white",
+    alignSelf: "center",
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 10,
+  },
+  noRoom: {
+    color: "#180161",
+    fontWeight: "500",
   },
 });
 

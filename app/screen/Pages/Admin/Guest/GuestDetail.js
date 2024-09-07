@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from "react";
 import {
-  StyleSheet, ActivityIndicator,
-  Text, ScrollView,
-  View, Alert, Keyboard,
-  FlatList, Modal, KeyboardAvoidingView, Platform,
-  TouchableOpacity,TouchableWithoutFeedback,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+  ScrollView,
+  View,
+  Alert,
+  Keyboard,
+  FlatList,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
   SafeAreaView,
+  // ActivityIndicator,
 } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import DrawerContent from "../../../../components/DrawerContent";
 import moment from "moment";
 import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useIsFocused } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 const Drawer = createDrawerNavigator();
 
 const bookingArr = Array.from({ length: 25 }, (_, index) => ({
@@ -32,7 +41,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const isFocused = useIsFocused();
   const [modalVisible, setModalVisible] = useState(false);
-  const [currentBookingId,setCurrentBookingId ]=useState(0);
+  const [currentBookingId, setCurrentBookingId] = useState(0);
   const [bookingDetail, setBookingDetail] = useState({
     booking: {
       id: 0,
@@ -51,16 +60,16 @@ const GuestDetailsContent = ({ route, navigation }) => {
       status: "",
       creditCard: "",
       guestId: 0,
-      txnRef: ""
+      txnRef: "",
     },
     bookingType: [
       {
         typeId: 0,
         typeName: "",
         description: "",
-        amount: ""
-      }
-    ]
+        amount: "",
+      },
+    ],
   });
   useEffect(() => {
     if (isFocused) {
@@ -70,103 +79,116 @@ const GuestDetailsContent = ({ route, navigation }) => {
   const handleBookingDetail = (bId) => {
     setCurrentBookingId(bId);
     fetchBookingDetail();
-    
   };
   // Function to refetch the updated room list
   const fetchData = async () => {
     if (guestId > 0) {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       setLoading(true);
       const status = "";
-   
+
       try {
-        const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
-          &status=${status}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
+        const response = await axios.get(
+          `http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
+          &status=${status}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.data.success) {
           setBookingData(response.data.list);
-          
         } else {
-          Alert.alert('Error', response.data.message);
+          Alert.alert("Error", response.data.message);
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch booking details.");
         }
-        else{
-        console.warn(error);
-        Alert.alert('Error', 'Failed to fetch booking details.');}
       } finally {
         setLoading(false);
       }
       try {
-        const response2 = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Guest/GetGuestById?guestId=${guestId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
+        const response2 = await axios.get(
+          `http://majidalipl-001-site5.gtempurl.com/Guest/GetGuestById?guestId=${guestId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response2.data.success) {
           setGuestData(response2.data.data);
         } else {
-          Alert.alert('Error', response2.data.message);
+          Alert.alert("Error", response2.data.message);
         }
-      } catch (error) { 
+      } catch (error) {
         if (error.response && error.response.status === 401) {
-        // Redirect to login page
-        navigation.navigate('Login');
-      }
-      else{
-        console.warn(error);
-        Alert.alert('Error', 'Failed to fetch guest details.');}
+          // Redirect to login page
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch guest details.");
+        }
       } finally {
         setLoading(false);
       }
-
     }
   };
 
   const fetchBookingDetail = async () => {
     if (currentBookingId > 0) {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
 
       setLoading(true);
       try {
-        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId="+currentBookingId, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
+        const response = await axios.get(
+          "http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId=" +
+            currentBookingId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.data.success) {
           setBookingDetail(response.data.data);
           setModalVisible(true);
         } else {
-          Alert.alert('Error', response.data.message);
+          Alert.alert("Error", response.data.message);
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch booking details.");
         }
-        else{
-        console.warn(error);
-        Alert.alert('Error', 'Failed to fetch booking details.');}
       } finally {
         setLoading(false);
       }
     }
   };
-  const renderLoader = () => (
-    <View style={styles.loaderContainer}>
-      <ActivityIndicator size="large" color="#0000ff" />
-    </View>
-  );
+  const renderLoader = () => {
+    return loading ? (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator
+          size="large"
+          color="#180161"
+          style={styles.activityIndicator}
+        />
+      </View>
+    ) : null;
+  };
   const renderItem = ({ item }) => (
     <View style={styles.tableRow}>
       <Text style={styles.tableCell}>{item.referenceNumber}</Text>
@@ -226,7 +248,9 @@ const GuestDetailsContent = ({ route, navigation }) => {
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Name:</Text>
-          <Text style={styles.infoText}>{guestData.firstName} {guestData.lastName}</Text>
+          <Text style={styles.infoText}>
+            {guestData.firstName} {guestData.lastName}
+          </Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Email:</Text>
@@ -238,7 +262,10 @@ const GuestDetailsContent = ({ route, navigation }) => {
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Address:</Text>
-          <Text style={styles.infoText}>{guestData.address} {guestData.city} {guestData.state} {guestData.zipcode}</Text>
+          <Text style={styles.infoText}>
+            {guestData.address} {guestData.city} {guestData.state}{" "}
+            {guestData.zipcode}
+          </Text>
         </View>
       </View>
 
@@ -255,6 +282,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
       </View>
     </View>
   );
+
   const renderEmptyTable = () => (
     <View style={styles.emptyTableContainer}>
       <Text style={styles.emptyTableText}>No rows are added</Text>
@@ -299,7 +327,6 @@ const GuestDetailsContent = ({ route, navigation }) => {
                     >
                       <Text style={styles.closeButtonText}>X</Text>
                     </TouchableOpacity>
-
                   </View>
                   <View style={styles.tableWrapper}>
                     <View style={styles.tableContainer}>
@@ -308,32 +335,40 @@ const GuestDetailsContent = ({ route, navigation }) => {
                         <Text style={styles.tableHeaderText}>Details</Text>
                         <Text style={styles.tableHeaderText}>Price</Text>
                       </View>
-                      {bookingDetail.bookingType.length > 0 && bookingDetail.bookingType.map((ele, index) => (
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableCell}>
-                            {getIconForType(ele.typeName)}
-
+                      {bookingDetail.bookingType.length > 0 &&
+                        bookingDetail.bookingType.map((ele, index) => (
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableCell}>
+                              {getIconForType(ele.typeName)}
+                            </View>
+                            <Text
+                              style={[styles.tableCell, styles.tableDetailCell]}
+                            >
+                              {ele.description}
+                            </Text>
+                            <Text style={styles.tableCell}>{ele.amount}</Text>
                           </View>
-                          <Text style={[styles.tableCell, styles.tableDetailCell]}>
-                            {ele.description}
-                          </Text>
-                          <Text style={styles.tableCell}>{ele.amount}</Text>
-                        </View>
-                      ))
-                      }
-
+                        ))}
                     </View>
 
                     {/* Small Table */}
                     <View style={styles.smallTableContainer}>
                       <View style={styles.smallTableRow}>
-                        <Text style={styles.smallTableHeader}>Booking Amount:</Text>
-                        <Text style={styles.smallTableAmount}>{bookingDetail.booking.bookingAmount}</Text>
+                        <Text style={styles.smallTableHeader}>
+                          Booking Amount:
+                        </Text>
+                        <Text style={styles.smallTableAmount}>
+                          {bookingDetail.booking.bookingAmount}
+                        </Text>
                       </View>
 
                       <View style={styles.smallTableRow}>
-                        <Text style={styles.smallTableHeader}>Paid Amount:</Text>
-                        <Text style={styles.smallTableAmount}>{bookingDetail.booking.paidAmount}</Text>
+                        <Text style={styles.smallTableHeader}>
+                          Paid Amount:
+                        </Text>
+                        <Text style={styles.smallTableAmount}>
+                          {bookingDetail.booking.paidAmount}
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -350,7 +385,6 @@ const GuestDetailsContent = ({ route, navigation }) => {
 const GuestDetails = ({ route }) => {
   const { id } = route.params || {};
   return (
-
     <Drawer.Navigator
       drawerContent={(props) => <DrawerContent {...props} />}
       screenOptions={{
@@ -473,7 +507,7 @@ const styles = StyleSheet.create({
   },
   tableCell: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 8,
     textAlign: "center",
   },
   detailButton: {
@@ -530,7 +564,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   tableCell: {
-    fontSize: 16,
+    // fontWeight: "bold",
+    fontSize: 10,
     flex: 1,
     textAlign: "center",
     flexDirection: "row",
@@ -590,13 +625,13 @@ const styles = StyleSheet.create({
   },
   emptyTableContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 20,
   },
   emptyTableText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   header: {
     flexDirection: "row",
@@ -616,5 +651,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#888",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  activityIndicator: {
+    padding: 20,
   },
 });
