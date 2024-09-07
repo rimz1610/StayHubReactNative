@@ -51,8 +51,13 @@ const GuestListContent = ({ navigation }) => {
         Alert.alert('Error', response.data.message);
       }
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate('Login');
+      }
+      else{
       console.warn(error);
-      Alert.alert('Error', 'Failed to fetch guests.');
+      Alert.alert('Error', 'Failed to fetch guests.');}
     } finally {
       setLoading(false);
     }
@@ -84,8 +89,13 @@ const GuestListContent = ({ navigation }) => {
               Alert.alert('Error', response.data.message);
             }
           } catch (error) {
+            if (error.response && error.response.status === 401) {
+              // Redirect to login page
+              navigation.navigate('Login');
+            }
+            else{
             console.warn(error);
-            Alert.alert('Error', 'Failed to delete the guest.');
+            Alert.alert('Error', 'Failed to delete the guest.');}
           } finally {
             setLoading(false);
           }

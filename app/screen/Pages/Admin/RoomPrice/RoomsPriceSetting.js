@@ -97,7 +97,12 @@ const RoomPriceSettingContent = ({ navigation }) => {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-        Alert.alert("Error", "An error occurred while saving the enteries.");
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
+        Alert.alert("Error", "An error occurred while saving the enteries.");}
       } finally {
         setSubmitting(false);
       }
@@ -126,8 +131,13 @@ const RoomPriceSettingContent = ({ navigation }) => {
         Alert.alert("Error", response.data.message);
       }
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate('Login');
+      }
+      else{
       console.warn(error);
-      Alert.alert("Error", "Failed to fetch rooms.");
+      Alert.alert("Error", "Failed to fetch rooms.");}
     } finally {
     }
   };

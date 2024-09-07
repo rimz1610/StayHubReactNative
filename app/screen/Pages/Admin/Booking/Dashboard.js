@@ -58,8 +58,14 @@ const DashboardContent = ({ navigation }) => {
         Alert.alert("Error", response.data.message);
       }
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate('Login');
+      }
+      else{
       console.warn(error);
       Alert.alert("Error", "Failed to fetch guests.");
+      }
     } finally {
     }
   };
@@ -97,8 +103,13 @@ const DashboardContent = ({ navigation }) => {
         Alert.alert('Error', response.data.message);
       }
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate('Login');
+      }
+      else{
       console.warn(error);
-      Alert.alert('Error', 'Failed to fetch bookings.');
+      Alert.alert('Error', 'Failed to fetch bookings.');}
     } finally {
       setLoading(false);
     }

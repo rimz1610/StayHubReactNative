@@ -101,7 +101,12 @@ const AddEditGymContent = ({
             Alert.alert("Error", response.data.message);
           }
         } catch (error) {
-          Alert.alert("Error", "Failed to fetch gym data");
+          if (error.response && error.response.status === 401) {
+            // Redirect to login page
+            navigation.navigate('Login');
+          }
+          else{
+          Alert.alert("Error", "Failed to fetch gym data");}
         }
       }
     },
@@ -133,8 +138,13 @@ const AddEditGymContent = ({
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
         console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the gym.");
+        Alert.alert("Error", "An error occurred while saving the gym.");}
       } finally {
         setSubmitting(false);
       }

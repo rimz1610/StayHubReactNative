@@ -232,7 +232,12 @@ const AddEditEvent = ({
             Alert.alert("Error", response.data.message);
           }
         } catch (error) {
-          Alert.alert("Error", "Failed to fetch event  data");
+          if (error.response && error.response.status === 401) {
+            // Redirect to login page
+            navigation.navigate('Login');
+          }
+          else{
+          Alert.alert("Error", "Failed to fetch event  data");}
         }
       }
     },
@@ -298,8 +303,13 @@ const AddEditEvent = ({
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
         console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the event.");
+        Alert.alert("Error", "An error occurred while saving the event.");}
       } finally {
         setSubmitting(false);
       }

@@ -79,8 +79,13 @@ const StaffListContent = ({ navigation }) => {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
         console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the staff.");
+        Alert.alert("Error", "An error occurred while saving the staff.");}
       } finally {
 
         fetchData();
@@ -117,8 +122,13 @@ const StaffListContent = ({ navigation }) => {
         Alert.alert('Error', response.data.message);
       }
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate('Login');
+      }
+      else{
       console.warn(error);
-      Alert.alert('Error', 'Failed to fetch staffs.');
+      Alert.alert('Error', 'Failed to fetch staffs.');}
     } finally {
       setLoading(false);
     }

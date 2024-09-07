@@ -50,8 +50,13 @@ const SpaListContent = ({ route, navigation }) => {
         Alert.alert('Error', response.data.message);
       }
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate('Login');
+      }
+      else{
       console.warn(error);
-      Alert.alert('Error', 'Failed to fetch spas.');
+      Alert.alert('Error', 'Failed to fetch spas.');}
     } finally {
       setLoading(false);
     }
@@ -82,9 +87,14 @@ const SpaListContent = ({ route, navigation }) => {
             } else {
               Alert.alert('Error', response.data.message);
             }
-          } catch (error) {
+          } catch (error) {  
+             if (error.response && error.response.status === 401) {
+            // Redirect to login page
+            navigation.navigate('Login');
+          }
+          else{
             console.warn(error);
-            Alert.alert('Error', 'Failed to delete the spa.');
+            Alert.alert('Error', 'Failed to delete the spa.');}
           } finally {
             setLoading(false);
           }

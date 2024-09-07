@@ -93,7 +93,12 @@ const AddEditSpaContent = ({
             Alert.alert("Error", response.data.message);
           }
         } catch (error) {
-          Alert.alert("Error", "Failed to fetch spa data");
+          if (error.response && error.response.status === 401) {
+            // Redirect to login page
+            navigation.navigate('Login');
+          }
+          else{
+          Alert.alert("Error", "Failed to fetch spa data");}
         }
       }
     },
@@ -123,8 +128,13 @@ const AddEditSpaContent = ({
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
         console.warn(error);
-        Alert.alert("Error", "An error occurred while saving the spa.");
+        Alert.alert("Error", "An error occurred while saving the spa.");}
       } finally {
         setSubmitting(false);
       }

@@ -160,7 +160,12 @@ const AddEditRoom = ({
             Alert.alert("Error", response.data.message);
           }
         } catch (error) {
-          Alert.alert("Error", "Failed to fetch room data");
+          if (error.response && error.response.status === 401) {
+            // Redirect to login page
+            navigation.navigate('Login');
+          }
+          else{
+          Alert.alert("Error", "Failed to fetch room data");}
         }
       }
     },
@@ -193,7 +198,12 @@ const AddEditRoom = ({
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-        Alert.alert("Error", "An error occurred while saving the room.");
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
+        Alert.alert("Error", "An error occurred while saving the room.");}
       } finally {
         setSubmitting(false);
       }

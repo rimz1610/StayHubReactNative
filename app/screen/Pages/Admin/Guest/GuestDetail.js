@@ -94,8 +94,13 @@ const GuestDetailsContent = ({ route, navigation }) => {
           Alert.alert('Error', response.data.message);
         }
       } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
         console.warn(error);
-        Alert.alert('Error', 'Failed to fetch booking details.');
+        Alert.alert('Error', 'Failed to fetch booking details.');}
       } finally {
         setLoading(false);
       }
@@ -111,9 +116,14 @@ const GuestDetailsContent = ({ route, navigation }) => {
         } else {
           Alert.alert('Error', response2.data.message);
         }
-      } catch (error) {
+      } catch (error) { 
+        if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate('Login');
+      }
+      else{
         console.warn(error);
-        Alert.alert('Error', 'Failed to fetch guest details.');
+        Alert.alert('Error', 'Failed to fetch guest details.');}
       } finally {
         setLoading(false);
       }
@@ -140,8 +150,13 @@ const GuestDetailsContent = ({ route, navigation }) => {
           Alert.alert('Error', response.data.message);
         }
       } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate('Login');
+        }
+        else{
         console.warn(error);
-        Alert.alert('Error', 'Failed to fetch booking details.');
+        Alert.alert('Error', 'Failed to fetch booking details.');}
       } finally {
         setLoading(false);
       }

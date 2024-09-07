@@ -21,6 +21,8 @@ import { Calendar } from "react-native-calendars";
 import { differenceInDays, format } from "date-fns";
 import RNPickerSelect from "react-native-picker-select";
 
+
+
 const RoomBooking = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -30,6 +32,8 @@ const RoomBooking = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [additionalPerson, setAdditionalPerson] = useState(1);
   const [roomType, setRoomType] = useState("Single");
+
+
 
   const handleDateSelect = (date) => {
     if (!startDate || (startDate && endDate)) {
