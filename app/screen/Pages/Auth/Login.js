@@ -34,6 +34,12 @@ const Login = ({ navigation }) => {
     await AsyncStorage.setItem("name", loginModel.name);
     await AsyncStorage.setItem("loginId", loginModel.id);
     await AsyncStorage.setItem("generated", new Date().toISOString());
+    var role = loginModel.role;
+    if (role === "ADMIN") {
+      navigation.navigate("Dashboard");
+    } else if (role === "GUEST") {
+      navigation.navigate("GuestBottomNav");
+    }
   };
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -57,12 +63,7 @@ const Login = ({ navigation }) => {
           if (response.data.success) {
             SetToken(response.data.data);
             setSubmitting(false);
-            var role = response.data.data.role;
-            if (role === "ADMIN") {
-              navigation.navigate("Dashboard");
-            } else if (role === "GUEST") {
-              navigation.navigate("GuestBottomNav");
-            }
+           
           } else {
             setSubmitting(false);
             Alert.alert("Login Failed", "Invalid email or password", [
@@ -80,8 +81,19 @@ const Login = ({ navigation }) => {
     },
   });
 
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("expiry");
+    await AsyncStorage.removeItem("generated");
+    await AsyncStorage.removeItem("role");
+    await AsyncStorage.removeItem("email");
+    await AsyncStorage.removeItem("name");
+    await AsyncStorage.removeItem("loginId");
+  
+  };
   useEffect(() => {
     if (isFocused) {
+      handleLogout();
       formik.resetForm();
       
     }
@@ -104,7 +116,7 @@ const Login = ({ navigation }) => {
           <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <TouchableOpacity
               style={styles.skipbtn}
-              onPress={() => navigation.navigate("RoomBooking")}
+              onPress={() => navigation.navigate("GuestBottomNav")}
             >
               <Text style={styles.skipText}>Skip</Text>
             </TouchableOpacity>

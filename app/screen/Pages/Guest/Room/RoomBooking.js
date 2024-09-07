@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
-  Text,
+  Text, Alert,
   View,
   Image,
   TouchableOpacity,
   Modal,
-  ScrollView,
+  ScrollView, ActivityIndicator,
   Dimensions,
   Platform,
 } from "react-native";
@@ -20,55 +20,140 @@ const { width, height } = Dimensions.get("window");
 import { Calendar } from "react-native-calendars";
 import { differenceInDays, format } from "date-fns";
 import RNPickerSelect from "react-native-picker-select";
+import { useIsFocused } from "@react-navigation/native";
+import { Formik, useFormik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
+import moment from "moment";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveCartToSecureStore, getCartFromSecureStore } from '../../../../components/secureStore';
 
-
-
+const filterSchema = Yup.object().shape({
+  roomType: Yup.string().notRequired(),
+  checkInDate: Yup.date().required("Required"),
+  checkOutDate: Yup.date().required("Required"),
+  noOfAdditionalPerson: Yup.number().required("Required"),
+});
 const RoomBooking = () => {
+  const [data, setData] = useState([]);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
   const [nights, setNights] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [additionalPerson, setAdditionalPerson] = useState(1);
-  const [roomType, setRoomType] = useState("Single");
+  const isFocused = useIsFocused();
+  const [submitting, setSubmitting] = useState(false);
+  const [currentRoomId, setCurrentRoomId] = useState(0);
+  const [roomDetail, setRoomDetail] = useState({});
+  const formik = useFormik({
+    initialValues: {
+      roomType: "",
+      noOfAdditionalPerson: 0,
+      checkInDate: new Date(),
+      checkOutDate: new Date(),
+    },
+    validationSchema: filterSchema,
+    onSubmit: async (values, { resetForm }) => {
+
+      try {
+        setSubmitting(true);
+        const token = await AsyncStorage.getItem("token");
+        const response = await axios.post(
+          "http://majidalipl-001-site5.gtempurl.com/Room/GetRoomsByFilter",
+          values
+        );
+
+        if (response.data.success) {
+          setData(response.data.list);
+        } else {
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+
+        Alert.alert("Error", "An error occurred while rooms.");
+
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+  useEffect(() => {
+    if (isFocused) {
+      formik.resetForm();
+      setData([]);
+    }
+  }, [isFocused]);
+
+  handleShowRoomDetails = (roomId) => {
+    setCurrentRoomId(roomId);
+    fetchRoomData();
+  }
+
+  handleAddToBooking = async (item) => {
+
+    const token = await AsyncStorage.getItem("token");
+    if (token == null) {
+      navigation.navigate("Login");
+    }
+    else {
+
+    }
+  }
 
 
+  const fetchRoomData = async () => {
+    if (currentRoomId > 0) {
+      try {
+
+        const response = await axios.get(`http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=${currentRoomId}`
+        );
+        if (response.data.success) {
+          setRoomDetail(response.data.data);
+          console.warn(response.data.data);
+          setShowDetails(true);
+        } else {
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+        Alert.alert("Error", "Failed to fetch room details");
+      }
+
+    }
+  };
 
   const handleDateSelect = (date) => {
-    if (!startDate || (startDate && endDate)) {
-      setStartDate(date.dateString);
-      setEndDate(null);
+    if (!formik.values.checkInDate || (formik.values.checkInDate && formik.values.checkOutDate)) {
+      formik.setFieldValue("checkInDate", date.dateString);
+      formik.setFieldValue("checkOutDate", null);
     } else {
-      setEndDate(date.dateString);
+      formik.setFieldValue("checkOutDate", date.dateString);
       const nights = differenceInDays(
         new Date(date.dateString),
-        new Date(startDate)
+        new Date(formik.values.checkInDate)
       );
       setNights(nights);
     }
   };
 
   const getMarkedDates = () => {
-    if (!startDate) return {};
+    if (!formik.values.checkInDate) return {};
 
     const markedDates = {
-      [startDate]: { startingDay: true, color: "#180161", textColor: "white" },
+      [formik.values.checkInDate]: { startingDay: true, color: "#180161", textColor: "white" },
     };
 
-    if (endDate) {
-      markedDates[endDate] = {
+    if (formik.values.checkOutDate) {
+      markedDates[formik.values.checkOutDate] = {
         endingDay: true,
         color: "#180161",
         textColor: "white",
       };
 
-      let currentDate = new Date(startDate);
-      const end = new Date(endDate);
+      let currentDate = new Date(formik.values.checkInDate);
+      const end = new Date(formik.values.checkOutDate);
       while (currentDate < end) {
         currentDate.setDate(currentDate.getDate() + 1);
         const dateString = format(currentDate, "yyyy-MM-dd");
-        if (dateString !== endDate) {
+        if (dateString !== formik.values.checkOutDate) {
           markedDates[dateString] = { color: "#180161", textColor: "white" };
         }
       }
@@ -82,16 +167,18 @@ const RoomBooking = () => {
     require("../../../../../assets/images/room-three.jpg"),
   ];
 
-  const renderRoomItem = (name, type, price, image) => (
+  const renderRoomItem = (item) => (
     <View style={styles.roomItem}>
-      <Image source={image} style={styles.roomImage} />
+      <Image source={{ uri: item.roomImageUrl }} style={styles.roomImage} />
       <View style={styles.roomInfo}>
-        <Text style={styles.roomName}>{name}</Text>
-        <Text style={styles.roomType}>{type}</Text>
-        <Text style={styles.roomPrice}>${price}/night</Text>
+        <Text style={styles.roomName}>{item.roomName}</Text>
+        <Text style={styles.roomType}>{item.roomType}</Text>
+        <Text style={styles.roomPrice}>{item.price.toLocaleString("en-US", {
+          style: "currency", currency: "USD"
+        })}</Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            onPress={() => setShowDetails(true)}
+            onPress={() => handleShowRoomDetails(item.roomId)}
             style={styles.viewDetails}
           >
             <Text style={styles.viewDetailsText}>View Details</Text>
@@ -116,11 +203,12 @@ const RoomBooking = () => {
   };
 
   const additionalPersonOptions = Array.from({ length: 10 }, (_, i) => ({
-    label: (i + 1).toString(),
-    value: i + 1,
+    label: i.toString(),
+    value: i,
   }));
 
   const roomTypeOptions = [
+    "",
     "Single",
     "Double",
     "Triple",
@@ -129,7 +217,12 @@ const RoomBooking = () => {
     "Queen",
     "Suite",
     "Studio",
-  ].map((type) => ({ label: type, value: type }));
+  ].map((type) => {
+    return {
+      label: type === "" ? "All" : type,
+      value: type,
+    };
+  });
 
   return (
     <ScrollView style={styles.container}>
@@ -158,11 +251,11 @@ const RoomBooking = () => {
           onPress={() => setShowCalendar(true)}
         >
           <Text style={styles.datePickerButtonText}>
-            {startDate && endDate
-              ? `${format(new Date(startDate), "MMM dd, yyyy")} - ${format(
-                  new Date(endDate),
-                  "MMM dd, yyyy"
-                )}`
+            {formik.values.checkInDate && formik.values.checkOutDate
+              ? `${format(new Date(formik.values.checkInDate), "MMM dd, yyyy")} - ${format(
+                new Date(formik.values.checkOutDate),
+                "MMM dd, yyyy"
+              )}`
               : "Select dates"}
           </Text>
         </TouchableOpacity>
@@ -213,15 +306,21 @@ const RoomBooking = () => {
       <View style={styles.stayInfo}>
         <Text style={styles.stayInfoText}>
           Check-in:{" "}
-          {startDate
-            ? format(new Date(startDate), "MMM dd, yyyy")
+          {formik.values.checkInDate
+            ? format(new Date(formik.values.checkInDate), "MMM dd, yyyy")
             : "Not selected"}
         </Text>
         <Text style={styles.stayInfoText}>
           Check-out:{" "}
-          {endDate ? format(new Date(endDate), "MMM dd, yyyy") : "Not selected"}
+          {formik.values.checkOutDate ? format(new Date(formik.values.checkOutDate), "MMM dd, yyyy") : "Not selected"}
         </Text>
         <Text style={styles.stayInfoText}>Number of Nights: {nights}</Text>
+        {formik.touched.checkInDate && formik.errors.checkInDate && (
+          <Text style={styles.errorText}>{formik.errors.checkInDate}</Text>
+        )}
+        {formik.touched.checkOutDate && formik.errors.checkOutDate && (
+          <Text style={styles.errorText}>{formik.errors.checkOutDate}</Text>
+        )}
       </View>
 
       <View style={styles.filterSection}>
@@ -229,10 +328,10 @@ const RoomBooking = () => {
           <View style={styles.pickerWrapper}>
             <Text style={styles.pickerLabel}>Additional Person</Text>
             <RNPickerSelect
-              onValueChange={(value) => setAdditionalPerson(value)}
+              onValueChange={(value) => formik.setFieldValue("noOfAdditionalPerson", value)}
               items={additionalPersonOptions}
               style={pickerSelectStyles}
-              value={additionalPerson}
+              value={formik.values.noOfAdditionalPerson}
               placeholder={{}}
               useNativeAndroidPickerStyle={false}
               Icon={() => (
@@ -248,10 +347,10 @@ const RoomBooking = () => {
           <View style={styles.pickerWrapper}>
             <Text style={styles.pickerLabel}>Room Type</Text>
             <RNPickerSelect
-              onValueChange={(value) => setRoomType(value)}
+              onValueChange={(value) => formik.setFieldValue("roomType", value)}
               items={roomTypeOptions}
               style={pickerSelectStyles}
-              value={roomType}
+              value={formik.values.roomType}
               placeholder={{}}
               useNativeAndroidPickerStyle={false}
               Icon={() => (
@@ -265,18 +364,36 @@ const RoomBooking = () => {
             />
           </View>
         </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="filter" size={24} color="#fff" />
-          <Text style={styles.filterButtonText}>Filter</Text>
+        <TouchableOpacity style={styles.filterButton} onPress={formik.handleSubmit}
+          disabled={submitting} >
+
+          {submitting ? (
+            <ActivityIndicator size="small" color="#ffff" />
+          ) : (
+            <><Ionicons name="filter" size={24} color="#fff" /><Text style={styles.filterButtonText}>Filter</Text></>
+          )}
+
         </TouchableOpacity>
       </View>
 
       <Text style={styles.availableRoomsHeading}>Available Rooms</Text>
-
-      {renderRoomItem("Cozy Suite", "Deluxe", 150, RoomImage)}
+      {submitting ? (
+        <ActivityIndicator size="large" color="#180161"/>) : (
+        data.length === 0 ? (
+          <Text>No rooms are available.</Text>
+        ) : (
+          data != undefined && data.map((room, index) => {
+            return (
+              <View key={index}>
+                {renderRoomItem(room)}
+              </View>
+            );
+          })
+        ))}
+      {/* {renderRoomItem("Cozy Suite", "Deluxe", 150, RoomImage)}
       {renderRoomItem("Ocean View", "Suite", 250, RoomImage1)}
       {renderRoomItem("Standard Room", "Standard", 100, RoomImage2)}
-      {renderRoomItem("Family Room", "Deluxe", 200, RoomImage3)}
+      {renderRoomItem("Family Room", "Deluxe", 200, RoomImage3)} */}
 
       <Modal
         animationType="slide"
@@ -286,12 +403,16 @@ const RoomBooking = () => {
       >
         <View style={styles.modalView}>
           <Text style={styles.modalTitle}>Room Details</Text>
-          <Text style={styles.modalText}>The Standard Room comprises of:</Text>
+          <Text style={styles.modalText}>{roomDetail.name}</Text>
           <View style={styles.bulletPointContainer}>
             <Text style={styles.bulletPoint}>
-              • 1 Double Bed or 2 Twin Beds
+              {roomDetail.type}
             </Text>
-            <Text style={styles.bulletPoint}>• 2 Bedside Tables</Text>
+            <Text style={styles.bulletPoint}>
+              {roomDetail.shortDescription}
+            </Text>
+            <Text>{roomDetail.description}</Text>
+            {/* <Text style={styles.bulletPoint}>• 2 Bedside Tables</Text>
             <Text style={styles.bulletPoint}>• A Desk & Chair</Text>
             <Text style={styles.bulletPoint}>• Wall-to-wall carpeting</Text>
             <Text style={styles.bulletPoint}>• Trendy furnishings</Text>
@@ -305,11 +426,22 @@ const RoomBooking = () => {
             </Text>
             <Text style={styles.bulletSubPoint}>
               - All the amenities you could possibly need during your stay
-            </Text>
+            </Text> */}
           </View>
 
           <View style={styles.imageGrid}>
-            {[RoomImage1, RoomImage2, RoomImage3].map((image, index) => (
+            {
+              roomDetail.imagesUrl != undefined && roomDetail.imagesUrl.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleImagePress(image.imageUrl)}
+                  style={styles.imageContainer}
+                >
+                  <Image source={{ uri: image.imageUrl }} style={styles.gridImage} />
+                </TouchableOpacity>
+              ))
+            }
+            {/* {[RoomImage1, RoomImage2, RoomImage3].map((image, index) => (
               <TouchableOpacity
                 key={index}
                 onPress={() => handleImagePress(image)}
@@ -317,7 +449,7 @@ const RoomBooking = () => {
               >
                 <Image source={image} style={styles.gridImage} />
               </TouchableOpacity>
-            ))}
+            ))} */}
           </View>
 
           <TouchableOpacity
@@ -336,7 +468,7 @@ const RoomBooking = () => {
         onRequestClose={() => setSelectedImage(null)}
       >
         <View style={styles.fullScreenImageContainer}>
-          <Image source={selectedImage} style={styles.fullScreenImage} />
+          <Image source={{ uri: selectedImage }} style={styles.fullScreenImage} />
           <TouchableOpacity
             style={styles.closeFullScreenButton}
             onPress={() => setSelectedImage(null)}
@@ -676,6 +808,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     marginLeft: 5,
+  },
+  errorText: {
+    color: "#FF3B30",
+    fontSize: 12,
+    marginTop: 5,
   },
 });
 

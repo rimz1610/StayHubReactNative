@@ -60,7 +60,7 @@ const DashboardContent = ({ navigation }) => {
     } catch (error) {
       if (error.response && error.response.status === 401) {
         // Redirect to login page
-        navigation.navigate('Login');
+       
       }
       else{
       console.warn(error);
@@ -105,7 +105,7 @@ const DashboardContent = ({ navigation }) => {
     } catch (error) {
       if (error.response && error.response.status === 401) {
         // Redirect to login page
-        navigation.navigate('Login');
+       navigation.navigate('Login');
       }
       else{
       console.warn(error);

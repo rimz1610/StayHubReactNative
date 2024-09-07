@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import RNPickerSelect from "react-native-picker-select";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import DrawerContent from "../../../../components/DrawerContent"; // Adjust the path as needed
-
+import {ROOM_TYPES} from "../../../constant";
 const Drawer = createDrawerNavigator();
 
 const addEditSchema = Yup.object().shape({
@@ -286,16 +286,7 @@ const AddEditRoom = ({
                   <RNPickerSelect
                     onValueChange={(value) => setFieldValue("type", value)}
                     value={values.type}
-                    items={[
-                      { label: "Single", value: "Single" },
-                      { label: "Double", value: "Double" },
-                      { label: "Triple", value: "Triple" },
-                      { label: "Twin", value: "Twin" },
-                      { label: "King", value: "King" },
-                      { label: "Queen", value: "Queen" },
-                      { label: "Suite", value: "Suite" },
-                      { label: "Studio", value: "Studio" },
-                    ]}
+                    items={ROOM_TYPES}
                     style={pickerSelectStyles}
                   />
                   {touched.type && errors.type && (

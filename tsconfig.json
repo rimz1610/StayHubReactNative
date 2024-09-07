@@ -14,5 +14,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/index.tsx"
-  ]
+, "app/components/secureStore.jsx"  ]
 }
