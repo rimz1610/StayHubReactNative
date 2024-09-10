@@ -9,10 +9,15 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
-// import { RichEditor, RichToolbar, actions } from "react-native-rich-editor";
+// import { Feather } from "@expo/vector-icons";
+import {
+  RichEditor,
+  RichToolbar,
+  actions,
+} from "react-native-pell-rich-editor";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import RichTextEditor from "../../../../components/RichTextEditor";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -47,12 +52,14 @@ const AddEditRoom = ({
   touched = {},
   errors = {},
 }) => {
-  const [isBold, setIsBold] = useState(false);
-  const [isItalic, setIsItalic] = useState(false);
-  const [textAlign, setTextAlign] = useState("left");
-  const [listType, setListType] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // Ref for RichEditor
+  // const [isBold, setIsBold] = useState(false);
+  // const [isItalic, setIsItalic] = useState(false);
+  // const [textAlign, setTextAlign] = useState("left");
+  // const [listType, setListType] = useState(null);
+  // const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef(null);
+  const richEditorRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
   const id = route.params?.id || 0;
   const initialValues = {
@@ -73,74 +80,6 @@ const AddEditRoom = ({
       },
     ],
   };
-  const handleTextChange = (text) => {
-    if (handleChange && typeof handleChange === "function") {
-      handleChange("description")(text);
-    }
-  };
-
-  const getTextStyle = () => ({
-    fontWeight: isBold ? "bold" : "normal",
-    fontStyle: isItalic ? "italic" : "normal",
-    textAlign: textAlign,
-  });
-
-  const applyListFormat = (type) => {
-    const currentText = values.description || "";
-
-    // Check if the current text is a valid string
-    if (typeof currentText !== "string") {
-      console.warn("Description is not a string:", currentText);
-      return;
-    }
-
-    // Split the text by new lines
-    const lines = currentText.split("\n");
-    const lastLine = lines[lines.length - 1];
-
-    // Determine if we are adding or removing the list format
-    const isAddingList = listType !== type;
-
-    // Add or remove the appropriate list format for bullets or numbers
-    if (isAddingList) {
-      if (type === "bullet") {
-        // Add bullet points
-        lines[lines.length - 1] = lastLine ? `• ${lastLine}` : "• ";
-      } else if (type === "numbered") {
-        // Add numbered list
-        const numberedPrefix = `${lines.length}. `;
-        lines[lines.length - 1] = lastLine
-          ? `${numberedPrefix}${lastLine}`
-          : numberedPrefix;
-      }
-    } else {
-      // Remove the existing list format
-      lines[lines.length - 1] = lastLine.replace(/^[•\d]+\.\s/, "");
-    }
-
-    // Update the state with the newly formatted text
-    handleTextChange(lines.join("\n"));
-
-    // Update the list type state
-    setListType(isAddingList ? type : null);
-
-    // Re-focus the input field to maintain user interaction
-    inputRef.current?.focus();
-  };
-
-  const renderToolbarButton = (icon, action, isActive, style = {}) => (
-    <TouchableOpacity
-      onPress={action}
-      style={[styles.toolbarButton, isActive && styles.activeButton]}
-    >
-      <Feather
-        name={icon}
-        size={20}
-        color={isActive ? "#ffffff" : "#333333"}
-        style={style}
-      />
-    </TouchableOpacity>
-  );
 
   const fetchRoomData = useCallback(
     async (formikSetValues) => {
@@ -209,7 +148,9 @@ const AddEditRoom = ({
       } finally {
         setSubmitting(false);
       }
+      console.log("value", values);
     },
+
     [navigation]
   );
 
@@ -227,6 +168,7 @@ const AddEditRoom = ({
         errors,
         touched,
         setFieldValue,
+        setFieldTouched,
         isSubmitting,
         setValues,
       }) => {
@@ -296,7 +238,6 @@ const AddEditRoom = ({
                   )}
                 </View>
               </View>
-
               <View style={styles.row}>
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Max Additional Person</Text>
@@ -341,69 +282,14 @@ const AddEditRoom = ({
                   </Text>
                 )}
               </View>
-
-              <View style={styles.singleRow}>
-                <Text style={styles.dlabel}>Description</Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.toolbar}
-                >
-                  {renderToolbarButton(
-                    "bold",
-                    () => setIsBold(!isBold),
-                    isBold
-                  )}
-                  {renderToolbarButton(
-                    "italic",
-                    () => setIsItalic(!isItalic),
-                    isItalic
-                  )}
-                  {renderToolbarButton(
-                    "align-left",
-                    () => setTextAlign("left"),
-                    textAlign === "left"
-                  )}
-                  {renderToolbarButton(
-                    "align-center",
-                    () => setTextAlign("center"),
-                    textAlign === "center"
-                  )}
-                  {renderToolbarButton(
-                    "align-right",
-                    () => setTextAlign("right"),
-                    textAlign === "right"
-                  )}
-                  {renderToolbarButton(
-                    "list",
-                    () => applyListFormat("bullet"),
-                    listType === "bullet"
-                  )}
-                  {renderToolbarButton(
-                    "list",
-                    () => applyListFormat("numbered"),
-                    listType === "numbered",
-                    { transform: [{ rotate: "90deg" }] }
-                  )}
-                  {renderToolbarButton("type")}
-                </ScrollView>
-                <TextInput
-                  ref={inputRef}
-                  onChangeText={handleChange("description")}
-                  value={
-                    typeof values.description === "string"
-                      ? values.description
-                      : ""
-                  }
-                  style={[styles.dinput, styles.dtextArea, getTextStyle()]}
-                  placeholder="Description"
-                  placeholderTextColor="#999"
-                  multiline
-                />
-                {touched.description && errors.description && (
-                  <Text style={styles.errorText}>{errors.description}</Text>
-                )}
-              </View>
+              <Text style={styles.label}>Description</Text>
+              <RichTextEditor
+                initialValue={values.description}
+                onChange={(content) => {
+                  setFieldValue("description", content);
+                  setFieldTouched("description", true);
+                }}
+              />
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={addImageField}
@@ -525,11 +411,39 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     position: "absolute",
-    top: 20,
+    top: 34,
     left: 20,
     zIndex: 1,
   },
+  editorContainer: {
+    marginHorizontal: 10,
+    minHeight: 200,
+    maxHeight: 400,
+    backgroundColor: "white",
+    borderRadius: 10,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  toolbar: {
+    backgroundColor: "#f7f7f7",
+  },
+  editor: {
+    flex: 1,
+    // padding: 10,
+    paddingHorizontal: 5,
+    backgroundColor: "white",
+  },
   roomheading: {
+    marginTop: 32,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,

@@ -107,10 +107,10 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          Alert.alert("Error", "An error occurred while fetching data.");
         }
-        else{
-        Alert.alert("Error", "An error occurred while fetching data.");}
       } finally {
         setSubmitting(false);
         setLoading(false);
@@ -152,10 +152,10 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          Alert.alert("Error", "An error occurred while fetching data.");
         }
-        else{
-        Alert.alert("Error", "An error occurred while fetching data.");}
       } finally {
         setSubmitting(false);
         resetForm();
@@ -194,11 +194,11 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
     } catch (error) {
       if (error.response && error.response.status === 401) {
         // Redirect to login page
-        navigation.navigate('Login');
+        navigation.navigate("Login");
+      } else {
+        console.warn(error);
+        Alert.alert("Error", "Failed to fetch rooms.");
       }
-      else{
-      console.warn(error);
-      Alert.alert("Error", "Failed to fetch rooms.");}
     } finally {
     }
   };
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     position: "absolute",
-    top: 30,
+    top: 20,
     left: 10,
     zIndex: 1,
   },
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     color: "#180161",
     width: "80%",
     fontWeight: "bold",
-    fontSize: 20,
+    fontSize: 19,
     textAlign: "center",
     left: 40,
     marginVertical: 20,
@@ -747,14 +747,14 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     backgroundColor: "#180161",
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 13,
     borderRadius: 8,
     marginBottom: 20,
     marginTop: 10,
   },
   addButtonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "bold",
   },
   row: {
