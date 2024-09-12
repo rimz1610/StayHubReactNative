@@ -337,7 +337,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
                       </View>
                       {bookingDetail.bookingType.length > 0 &&
                         bookingDetail.bookingType.map((ele, index) => (
-                          <View style={styles.tableRow}>
+                          <View key={index} style={styles.tableRow}>
                             <View style={styles.tableCell}>
                               {getIconForType(ele.typeName)}
                             </View>
@@ -411,9 +411,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   scrollContent: {
-    padding: 20,
+    padding: 10,
   },
   bookingtxt: {
+    marginTop: 30,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,
@@ -534,11 +535,11 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: "100%",
+    overflow: "hidden",
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: "black",
     borderRadius: 4,
-    overflow: "hidden",
-    marginBottom: 10,
   },
   tableHeader: {
     flexDirection: "row",

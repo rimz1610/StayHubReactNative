@@ -84,11 +84,11 @@ const AdminChangePasswordContent = ({ navigation }) => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "An error occurred while changing password.");
         }
-        else{
-        console.warn(error);
-        Alert.alert("Error", "An error occurred while changing password.");}
       } finally {
         setSubmitting(false);
       }
@@ -258,11 +258,12 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     position: "absolute",
-    top: 20,
+    top: 23,
     left: 20,
     zIndex: 1,
   },
   roomheading: {
+    marginTop: 20,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,

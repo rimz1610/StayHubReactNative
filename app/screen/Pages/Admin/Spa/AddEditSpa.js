@@ -12,6 +12,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
+import RichTextEditor from "../../../../components/RichTextEditor";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform } from "react-native";
@@ -142,66 +143,6 @@ const AddEditSpaContent = ({
     },
     [navigation]
   );
-  const handleTextChange = (text) => {
-    if (handleChange && typeof handleChange === "function") {
-      handleChange("description")(text);
-    }
-  };
-
-  const getTextStyle = () => ({
-    fontWeight: isBold ? "bold" : "normal",
-    fontStyle: isItalic ? "italic" : "normal",
-    textAlign: textAlign,
-  });
-
-  const applyListFormat = (type) => {
-    const currentText = values.description || "";
-    if (typeof currentText !== "string") {
-      console.warn("Description is not a string:", currentText);
-      return;
-    }
-
-    const lines = currentText.split("\n");
-    const newLines = lines.map((line, index) => {
-      // Remove existing list formatting
-      line = line.replace(/^[•\d]+\.\s/, "");
-
-      if (listType !== type) {
-        // Add new list formatting
-        const prefix = type === "bullet" ? "• " : `${index + 1}. `;
-        return `${prefix}${line}`;
-      }
-      return line;
-    });
-
-    setListType(listType === type ? null : type);
-    handleTextChange(newLines.join("\n"));
-    inputRef.current?.focus();
-  };
-
-  const addParagraph = () => {
-    const currentText = values.description || "";
-    if (typeof currentText !== "string") {
-      console.warn("Description is not a string:", currentText);
-      return;
-    }
-    handleTextChange(currentText + "\n\n");
-    inputRef.current?.focus();
-  };
-
-  const renderToolbarButton = (icon, action, isActive, style = {}) => (
-    <TouchableOpacity
-      onPress={action}
-      style={[styles.toolbarButton, isActive && styles.activeButton]}
-    >
-      <Feather
-        name={icon}
-        size={20}
-        color={isActive ? "#ffffff" : "#333333"}
-        style={style}
-      />
-    </TouchableOpacity>
-  );
 
   return (
     <Formik
@@ -217,6 +158,7 @@ const AddEditSpaContent = ({
         errors,
         touched,
         setFieldValue,
+        setFieldTouched,
         isSubmitting,
         setValues,
       }) => {
@@ -357,66 +299,14 @@ const AddEditSpaContent = ({
                 </View>
 
                 <View style={styles.fullWidthContainer}>
-                  <Text style={styles.dlabel}>Description</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.toolbar}
-                  >
-                    {renderToolbarButton(
-                      "bold",
-                      () => setIsBold(!isBold),
-                      isBold
-                    )}
-                    {renderToolbarButton(
-                      "italic",
-                      () => setIsItalic(!isItalic),
-                      isItalic
-                    )}
-                    {renderToolbarButton(
-                      "align-left",
-                      () => setTextAlign("left"),
-                      textAlign === "left"
-                    )}
-                    {renderToolbarButton(
-                      "align-center",
-                      () => setTextAlign("center"),
-                      textAlign === "center"
-                    )}
-                    {renderToolbarButton(
-                      "align-right",
-                      () => setTextAlign("right"),
-                      textAlign === "right"
-                    )}
-                    {renderToolbarButton(
-                      "list",
-                      () => applyListFormat("bullet"),
-                      listType === "bullet"
-                    )}
-                    {renderToolbarButton(
-                      "list",
-                      () => applyListFormat("numbered"),
-                      listType === "numbered",
-                      { transform: [{ rotate: "90deg" }] }
-                    )}
-                    {renderToolbarButton("type", addParagraph)}
-                  </ScrollView>
-                  <TextInput
-                    ref={inputRef}
-                    onChangeText={handleChange("description")}
-                    value={
-                      typeof values.description === "string"
-                        ? values.description
-                        : ""
-                    }
-                    style={[styles.dinput, styles.dtextArea, getTextStyle()]}
-                    placeholder="Description"
-                    placeholderTextColor="#999"
-                    multiline
+                  <Text style={styles.heading}>Description</Text>
+                  <RichTextEditor
+                    initialValue={values.description}
+                    onChange={(content) => {
+                      setFieldValue("description", content);
+                      setFieldTouched("description", true);
+                    }}
                   />
-                  {touched.description && errors.description && (
-                    <Text style={styles.errorText}>{errors.description}</Text>
-                  )}
                 </View>
 
                 <TouchableOpacity
@@ -466,6 +356,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   roomheading: {
+    marginTop: 35,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,
@@ -532,7 +423,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "70%",
     alignSelf: "center",
-    marginTop: 80,
+    marginTop: 50,
   },
   saveButtonText: {
     color: "white",

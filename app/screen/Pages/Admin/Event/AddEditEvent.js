@@ -12,6 +12,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
+import RichTextEditor from "../../../../components/RichTextEditor";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform } from "react-native";
@@ -93,90 +94,6 @@ const AddEditEvent = ({
     date.setHours(hours, minutes, seconds, 0);
     return date;
   };
-  const handleTextChange = (text) => {
-    if (handleChange && typeof handleChange === "function") {
-      handleChange("description")(text);
-    }
-  };
-
-  const getTextStyle = () => ({
-    fontWeight: isBold ? "bold" : "normal",
-    fontStyle: isItalic ? "italic" : "normal",
-    textAlign: textAlign,
-  });
-
-  const applyListFormat = (type) => {
-    setListType(listType === type ? null : type);
-    const currentText = values.description || "";
-    if (typeof currentText !== "string") {
-      console.warn("Description is not a string:", currentText);
-      return;
-    }
-    const lines = currentText.split("\n");
-    const lastLine = lines[lines.length - 1];
-
-    if (listType === type) {
-      // Remove list formatting
-      lines[lines.length - 1] = lastLine.replace(/^[•\d]+\.\s/, "");
-    } else {
-      // Add list formatting
-      const prefix = type === "bullet" ? "• " : `${lines.length}. `;
-      lines[lines.length - 1] = lastLine ? `${prefix}${lastLine}` : prefix;
-    }
-
-    handleTextChange(lines.join("\n"));
-    inputRef.current?.focus();
-  };
-
-  const addParagraph = () => {
-    const currentText = values.description || "";
-    if (typeof currentText !== "string") {
-      console.warn("Description is not a string:", currentText);
-      return;
-    }
-    handleTextChange(currentText + "\n\n");
-    inputRef.current?.focus();
-  };
-
-  const renderToolbarButton = (icon, action, isActive, style = {}) => (
-    <TouchableOpacity
-      onPress={action}
-      style={[styles.toolbarButton, isActive && styles.activeButton]}
-    >
-      <Feather
-        name={icon}
-        size={20}
-        color={isActive ? "#ffffff" : "#333333"}
-        style={style}
-      />
-    </TouchableOpacity>
-  );
-  // const handleChoosePhoto = async () => {
-  //     // No permissions request is necessary for launching the image library
-  //     let result = await ImagePicker.launchImageLibraryAsync({
-  //       mediaTypes: ImagePicker.MediaTypeOptions.All,
-  //       allowsEditing: true,
-  //       aspect: [4, 3],
-  //       quality: 1,
-  //     });
-
-  //     console.log(result);
-
-  //     if (!result.canceled) {
-  //       setImage(result.assets[0]);
-  //     }
-  //   };
-  // const handleChoosePhoto4 = () => {
-  //     console.warn("clicked")
-  // const options = {
-  //   noData: true,
-  // }
-  // ImagePicker.launchImageLibrary(options, response => {
-  //   if (response.uri) {
-  //     setPhoto(response);
-  //   }
-  // })
-  //   }
 
   const id = route.params?.id || 0;
   const initialValues = {
@@ -331,6 +248,7 @@ const AddEditEvent = ({
         errors,
         touched,
         setFieldValue,
+        setFieldTouched,
         isSubmitting,
         setValues,
       }) => {
@@ -421,7 +339,7 @@ const AddEditEvent = ({
                       </Text>
                     )}
                   </View>
-                  <View style={styles.bookinginputContainer}>
+                  <View style={styles.inputContainer}>
                     <Text style={styles.heading}>Booking End Date</Text>
                     <TouchableOpacity
                       onPress={() => setShowEndDate(true)}
@@ -474,7 +392,7 @@ const AddEditEvent = ({
                       <Text style={styles.errorText}>{errors.eventDate}</Text>
                     )}
                   </View>
-                  <View style={styles.inputContainer}>
+                  <View style={styles.inputContainerTime}>
                     <Text style={styles.heading}>Start Time</Text>
                     <TouchableOpacity
                       onPress={() => setShowStartTime(true)}
@@ -505,7 +423,7 @@ const AddEditEvent = ({
                       <Text style={styles.errorText}>{errors.startTime}</Text>
                     )}
                   </View>
-                  <View style={styles.inputContainer}>
+                  <View style={styles.inputContainerTime}>
                     <Text style={styles.heading}>End Time</Text>
                     <TouchableOpacity
                       onPress={() => setShowEndTime(true)}
@@ -547,66 +465,14 @@ const AddEditEvent = ({
                 </View>
 
                 <View style={styles.fullWidthContainer}>
-                  <Text style={styles.dlabel}>Description</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.toolbar}
-                  >
-                    {renderToolbarButton(
-                      "bold",
-                      () => setIsBold(!isBold),
-                      isBold
-                    )}
-                    {renderToolbarButton(
-                      "italic",
-                      () => setIsItalic(!isItalic),
-                      isItalic
-                    )}
-                    {renderToolbarButton(
-                      "align-left",
-                      () => setTextAlign("left"),
-                      textAlign === "left"
-                    )}
-                    {renderToolbarButton(
-                      "align-center",
-                      () => setTextAlign("center"),
-                      textAlign === "center"
-                    )}
-                    {renderToolbarButton(
-                      "align-right",
-                      () => setTextAlign("right"),
-                      textAlign === "right"
-                    )}
-                    {renderToolbarButton(
-                      "list",
-                      () => applyListFormat("bullet"),
-                      listType === "bullet"
-                    )}
-                    {renderToolbarButton(
-                      "list",
-                      () => applyListFormat("numbered"),
-                      listType === "numbered",
-                      { transform: [{ rotate: "90deg" }] }
-                    )}
-                    {renderToolbarButton("type", addParagraph)}
-                  </ScrollView>
-                  <TextInput
-                    ref={inputRef}
-                    onChangeText={handleChange("description")}
-                    value={
-                      typeof values.description === "string"
-                        ? values.description
-                        : ""
-                    }
-                    style={[styles.dinput, styles.dtextArea, getTextStyle()]}
-                    placeholder="Description"
-                    placeholderTextColor="#999"
-                    multiline
+                  <Text style={styles.heading}>Description</Text>
+                  <RichTextEditor
+                    initialValue={values.description}
+                    onChange={(content) => {
+                      setFieldValue("description", content);
+                      setFieldTouched("description", true);
+                    }}
                   />
-                  {touched.description && errors.description && (
-                    <Text style={styles.errorText}>{errors.description}</Text>
-                  )}
                 </View>
 
                 <View style={styles.row}>
@@ -733,7 +599,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   scrollViewContent: {
-    padding: 10,
+    // padding: 5,
   },
   addButton: {
     alignSelf: "flex-end",
@@ -747,6 +613,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   roomheading: {
+    marginTop: 15,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,
@@ -758,7 +625,7 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     position: "absolute",
-    top: 40,
+    top: 20,
     left: 20,
     zIndex: 1,
   },
@@ -785,6 +652,13 @@ const styles = StyleSheet.create({
   inputContainer: {
     flex: 1,
     marginRight: 10,
+  },
+  inputContainerTime: {
+    // width: "20%",
+    // justifyContent: "space-between",
+    flex: 1,
+    marginRight: 10,
+    // paddingHorizontal: 15,
   },
   maxinputContainer: {
     flex: 1,

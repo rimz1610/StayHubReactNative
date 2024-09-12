@@ -528,11 +528,18 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   roomheading: {
+    marginTop: 23,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,
     textAlign: "center",
     marginVertical: 20,
+  },
+  menuButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 1,
   },
   addButton: {
     marginTop: 30,

@@ -99,10 +99,10 @@ const RoomPriceSettingContent = ({ navigation }) => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
+          navigation.navigate("Login");
+        } else {
+          Alert.alert("Error", "An error occurred while saving the enteries.");
         }
-        else{
-        Alert.alert("Error", "An error occurred while saving the enteries.");}
       } finally {
         setSubmitting(false);
       }
@@ -133,11 +133,11 @@ const RoomPriceSettingContent = ({ navigation }) => {
     } catch (error) {
       if (error.response && error.response.status === 401) {
         // Redirect to login page
-        navigation.navigate('Login');
+        navigation.navigate("Login");
+      } else {
+        console.warn(error);
+        Alert.alert("Error", "Failed to fetch rooms.");
       }
-      else{
-      console.warn(error);
-      Alert.alert("Error", "Failed to fetch rooms.");}
     } finally {
     }
   };
@@ -167,7 +167,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
         <Text style={styles.backbtnText}>Back</Text>
       </TouchableOpacity>
       <View style={styles.row}>
-        <View style={styles.inputContainer}>
+        <View style={styles.inputContainerDate}>
           <Text style={styles.heading}>Start Date</Text>
           {Platform.OS === "android" && (
             <>
@@ -207,7 +207,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
             <Text style={styles.errorText}>{formik.errors.startDate}</Text>
           )}
         </View>
-        <View style={styles.inputContainer}>
+        <View style={styles.inputContainerDate}>
           <Text style={styles.heading}>End Date</Text>
           {Platform.OS === "android" && (
             <>
@@ -382,6 +382,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
     >
       <FlatList
         data={roomlist}
@@ -418,28 +419,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
-  loaderContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 10,
-  },
+  // loaderContainer: {
+  //   position: "absolute",
+  //   top: 0,
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   backgroundColor: "rgba(0, 0, 0, 0.5)",
+  //   zIndex: 10,
+  // },
   scrollViewContent: {
     padding: 20,
   },
   menuButton: {
-    marginBottom: 20,
+    position: "absolute",
+    top: 20,
+    left: 10,
+    zIndex: 1,
   },
   roomheading: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 25,
+    marginTop: 15,
     color: "#180161",
   },
   backbtn: {
@@ -454,39 +459,55 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
   },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
+  // row: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   marginBottom: 20,
+  // },
   inputContainer: {
     flex: 1,
     marginHorizontal: 5,
   },
-  labeldate: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-    color: "#333",
-    marginLeft: 30,
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
   },
-  datePickerTouchable: {
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
+  inputContainerDate: {
+    flex: 1,
     borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: "white",
+    marginHorizontal: 20,
   },
-  dateText: {
+  heading: {
     fontSize: 16,
+    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  label: {
+    fontSize: 13,
+    marginBottom: 8,
+    fontWeight: "bold",
     color: "#333",
   },
   datePicker: {
-    width: "100%",
-    justifyContent: "space-between",
-    backgroundColor: "transparent",
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 7,
+    borderColor: "#ccc",
+    borderWidth: 2,
+    height: 42,
+    justifyContent: "center",
+    paddingHorizontal: 12, // Ensure consistent padding
+  },
+  dateText: {
+    fontSize: 16,
+    color: "#555",
+  },
+  errorText: {
+    color: "#FF3B30",
+    fontSize: 12,
+    marginTop: 5,
   },
   multiSelectContainer: {
     flex: 1,

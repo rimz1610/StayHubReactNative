@@ -3,20 +3,21 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView, FlatList,Alert
+  ScrollView,
+  FlatList,
+  Alert,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import DrawerContent from "../../../../components/DrawerContent";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from "@react-navigation/native";
 import moment from "moment";
 import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Drawer = createDrawerNavigator();
 
 const BookingDetailsContent = ({ route, navigation }) => {
-
   const [loading, setLoading] = useState(false);
   const bookingId = route.params?.id || 0;
   const isFocused = useIsFocused();
@@ -38,18 +39,16 @@ const BookingDetailsContent = ({ route, navigation }) => {
       status: "",
       creditCard: "",
       guestId: 0,
-      txnRef: ""
+      txnRef: "",
     },
-    bookingType:[
+    bookingType: [
       {
-        typeId:0,
-        typeName:"",
-        description:"",
-        amount:""
-      }
-    ]
-
-
+        typeId: 0,
+        typeName: "",
+        description: "",
+        amount: "",
+      },
+    ],
   });
   useEffect(() => {
     if (isFocused) {
@@ -60,29 +59,32 @@ const BookingDetailsContent = ({ route, navigation }) => {
   // Function to refetch the updated room list
   const fetchData = async () => {
     if (bookingId > 0) {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
 
       setLoading(true);
       try {
-        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId="+bookingId, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
+        const response = await axios.get(
+          "http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId=" +
+            bookingId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.data.success) {
           setData(response.data.data);
         } else {
-          Alert.alert('Error', response.data.message);
+          Alert.alert("Error", response.data.message);
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // Redirect to login page
-          navigation.navigate('Login');
-        }
-        else{
-        console.warn(error);
-        Alert.alert('Error', 'Failed to fetch booking details.');
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch booking details.");
         }
       } finally {
         setLoading(false);
@@ -93,15 +95,50 @@ const BookingDetailsContent = ({ route, navigation }) => {
   const getIconForType = (type) => {
     switch (type) {
       case "Room":
-        return <Ionicons name="bed-outline" size={18} color="#180161" />;
+        return (
+          <Ionicons
+            name="bed-outline"
+            size={18}
+            color="#180161"
+            marginHorizontal={29}
+          />
+        );
       case "Event":
-        return <Ionicons name="restaurant-outline" size={18} color="#180161" />;
+        return (
+          <Ionicons
+            name="restaurant-outline"
+            size={18}
+            color="#180161"
+            marginHorizontal={29}
+          />
+        );
       case "RoomService":
-        return <Ionicons name="car-outline" size={18} color="#180161" />;
+        return (
+          <Ionicons
+            name="car-outline"
+            size={18}
+            color="#180161"
+            marginHorizontal={29}
+          />
+        );
       case "Gym":
-        return <Ionicons name="fitness" size={18} color="#180161" />;
+        return (
+          <Ionicons
+            name="fitness"
+            size={18}
+            color="#180161"
+            marginHorizontal={29}
+          />
+        );
       case "Spa":
-        return <Ionicons name="water" size={18} color="#180161" />;
+        return (
+          <Ionicons
+            name="water"
+            size={18}
+            color="#180161"
+            marginHorizontal={29}
+          />
+        );
       default:
         return null;
     }
@@ -134,15 +171,23 @@ const BookingDetailsContent = ({ route, navigation }) => {
         <View style={styles.infoContainer}>
           <View style={styles.infoRow}>
             <View style={styles.infoColumn}>
-              <Text style={styles.infoText}>Guest No: {data.booking.guestNumber}</Text>
+              <Text style={styles.infoText}>
+                Guest No: {data.booking.guestNumber}
+              </Text>
               <Text style={styles.infoText}>Email: {data.booking.email}</Text>
 
-              <Text style={styles.infoText}>Booking Ref no: {data.booking.referenceNumber}</Text>
+              <Text style={styles.infoText}>
+                Booking Ref no: {data.booking.referenceNumber}
+              </Text>
             </View>
             <View style={styles.infoColumn}>
-              <Text style={styles.infoText}>Name: {data.booking.firstName} {data.booking.lastName}</Text>
+              <Text style={styles.infoText}>
+                Name: {data.booking.firstName} {data.booking.lastName}
+              </Text>
               <Text style={styles.infoText}>Phone: {data.booking.phone}</Text>
-              <Text style={styles.infoText}>Booking Date: {data.booking.bookingDate}</Text>
+              <Text style={styles.infoText}>
+                Booking Date: {data.booking.bookingDate}
+              </Text>
             </View>
           </View>
         </View>
@@ -161,32 +206,34 @@ const BookingDetailsContent = ({ route, navigation }) => {
               <Text style={styles.tableHeaderText}>Details</Text>
               <Text style={styles.tableHeaderText}>Price</Text>
             </View>
-            {data.bookingType.length > 0 && data.bookingType.map((item, index) => (
-              <View style={styles.tableRow}>
-              <View style={styles.tableCell}>
-                {getIconForType(item.typeName)}
-        
-              </View>
-              <Text style={[styles.tableCell, styles.tableDetailCell]}>
-                {item.description}
-              </Text>
-              <Text style={styles.tableCell}>{item.amount}</Text>
-            </View>
-             ))
-            }
-           
+            {data.bookingType.length > 0 &&
+              data.bookingType.map((item, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <View style={styles.tableCell}>
+                    {getIconForType(item.typeName)}
+                  </View>
+                  <Text style={[styles.tableCell, styles.tableDetailCell]}>
+                    {item.description}
+                  </Text>
+                  <Text style={styles.tableCell}>{item.amount}</Text>
+                </View>
+              ))}
           </View>
 
           {/* Small Table */}
           <View style={styles.smallTableContainer}>
             <View style={styles.smallTableRow}>
               <Text style={styles.smallTableHeader}>Booking Amount:</Text>
-              <Text style={styles.smallTableAmount}>{data.booking.bookingAmount}</Text>
+              <Text style={styles.smallTableAmount}>
+                {data.booking.bookingAmount}
+              </Text>
             </View>
 
             <View style={styles.smallTableRow}>
               <Text style={styles.smallTableHeader}>Paid Amount:</Text>
-              <Text style={styles.smallTableAmount}>{data.booking.paidAmount}</Text>
+              <Text style={styles.smallTableAmount}>
+                {data.booking.paidAmount}
+              </Text>
             </View>
           </View>
         </View>
@@ -196,7 +243,6 @@ const BookingDetailsContent = ({ route, navigation }) => {
 };
 
 const BookingDetails = ({ route }) => {
-
   const { id } = route.params || {};
   return (
     <Drawer.Navigator
@@ -229,6 +275,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bookingtxt: {
+    marginTop: 35,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,
@@ -236,6 +283,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   backbtn: {
+    marginTop: 10,
     alignSelf: "flex-end",
     backgroundColor: "#180161",
     padding: 10,
@@ -255,7 +303,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   linedown: {
-    marginTop: 10,
+    marginTop: 5,
     height: 1,
     backgroundColor: "black",
     width: "100%",
@@ -281,7 +329,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   infoText: {
-    fontSize: 16,
+    fontSize: 15,
     marginBottom: 8,
   },
   tableHeading: {
@@ -297,6 +345,7 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: "100%",
+    height: "58%",
     borderWidth: 1,
     borderColor: "black",
     borderRadius: 4,
@@ -309,12 +358,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "black",
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 2,
     justifyContent: "space-between",
   },
   tableHeaderText: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14,
     flex: 1,
     textAlign: "center",
   },
@@ -327,7 +376,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   tableCell: {
-    fontSize: 16,
+    fontSize: 13,
     flex: 1,
     textAlign: "center",
     flexDirection: "row",
@@ -354,11 +403,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   smallTableHeader: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
   },
   smallTableAmount: {
-    fontSize: 16,
+    fontSize: 15,
   },
   menuButton: {
     position: "absolute",
@@ -368,12 +417,12 @@ const styles = StyleSheet.create({
   },
   emptyTableContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 20,
   },
   emptyTableText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
 });
