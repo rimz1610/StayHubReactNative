@@ -294,7 +294,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.row}>
-        <View style={styles.inputContainer}>
+        <View style={styles.inputContainerDate}>
           <Text style={styles.heading}>Start Date</Text>
           {Platform.OS === "android" && (
             <>
@@ -334,7 +334,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
             <Text style={styles.errorText}>{formik.errors.startDate}</Text>
           )}
         </View>
-        <View style={styles.inputContainer}>
+        <View style={styles.inputContainerDate}>
           <Text style={styles.heading}>End Date</Text>
           {Platform.OS === "android" && (
             <>
@@ -560,6 +560,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
     >
       <FlatList
         data={data.slice(
@@ -773,14 +774,35 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: "#333",
   },
+  heading: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+  },
+  inputContainerDate: {
+    flex: 1,
+    borderRadius: 5,
+    marginHorizontal: 20,
+  },
   datePicker: {
-    width: "100%",
+    width: "80%",
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: 7,
     borderColor: "#ccc",
-    borderWidth: 1,
-    padding: 0,
-    height: 40,
+    borderWidth: 2,
+    height: 42,
+    justifyContent: "center",
+    paddingHorizontal: 12, // Ensure consistent padding
+  },
+  dateText: {
+    fontSize: 16,
+    color: "#555",
   },
   multiSelectContainer: {
     flex: 1,

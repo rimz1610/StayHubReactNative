@@ -402,6 +402,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   roomheading: {
+    marginTop: 35,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,

@@ -356,6 +356,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   roomheading: {
+    marginTop: 35,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,

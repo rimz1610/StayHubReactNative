@@ -308,15 +308,22 @@ const AddEditRoom = ({
                         newImages[index].imageUrl = url;
                         setFieldValue("imagesUrl", newImages);
                       }}
+                      required={false}
                       style={styles.input}
                       placeholder="Image URL"
                       placeholderTextColor="#555"
+                      onBlur={() =>
+                        setFieldTouched(`imagesUrl.${index}.imageUrl`, true)
+                      }
                     />
-                    {errors.imagesUrl && errors.imagesUrl[index]?.imageUrl && (
-                      <Text style={styles.errorText}>
-                        {errors.imagesUrl[index].imageUrl}
-                      </Text>
-                    )}
+                    {touched.imagesUrl &&
+                      touched.imagesUrl[index]?.imageUrl &&
+                      errors.imagesUrl &&
+                      errors.imagesUrl[index]?.imageUrl && (
+                        <Text style={styles.errorText}>
+                          {errors.imagesUrl[index].imageUrl}
+                        </Text>
+                      )}
                   </View>
                   <View style={styles.inputContainer}>
                     <Text style={styles.label}>Sort Order</Text>
@@ -395,7 +402,7 @@ const AddEditRoomContent = ({ route }) => {
       }}
     >
       <Drawer.Screen
-        name="AddEditRoom"
+        name="Add/EditRooms"
         component={AddEditRoom}
         initialParams={{ id: id }}
       />
@@ -569,7 +576,7 @@ const styles = StyleSheet.create({
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     fontSize: 14,
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: "#ccc",

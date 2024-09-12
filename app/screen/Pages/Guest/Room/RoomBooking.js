@@ -4,7 +4,6 @@ import {
   Text,
   Alert,
   View,
-  Image,
   TouchableOpacity,
   Modal,
   ScrollView,
@@ -12,11 +11,8 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import RoomImage from "../../../../../assets/images/room.jpg";
-import RoomImage1 from "../../../../../assets/images/room-one.jpg";
-import RoomImage2 from "../../../../../assets/images/room-two.jpg";
-import RoomImage3 from "../../../../../assets/images/room-three.jpg";
 import Carousel from "react-native-reanimated-carousel";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 const { width, height } = Dimensions.get("window");
 import { Calendar } from "react-native-calendars";
@@ -170,10 +166,25 @@ const RoomBooking = () => {
     require("../../../../../assets/images/room-two.jpg"), // Add more images as needed
     require("../../../../../assets/images/room-three.jpg"),
   ];
-
+  const placeholderImage = { uri: "https://via.placeholder.com/300x150" };
+  const renderCarouselItem = ({ item }) => (
+    <Image
+      style={styles.carouselImage}
+      source={item}
+      placeholder={placeholderImage}
+      contentFit="cover"
+      transition={1000}
+    />
+  );
   const renderRoomItem = (item) => (
     <View style={styles.roomItem}>
-      <Image source={{ uri: item.roomImageUrl }} style={styles.roomImage} />
+      <Image
+        source={{ uri: item.roomImageUrl }}
+        style={styles.roomImage}
+        placeholder={placeholderImage}
+        contentFit="cover"
+        transition={1000}
+      />
       <View style={styles.roomInfo}>
         <Text style={styles.roomName}>{item.roomName}</Text>
         <Text style={styles.roomType}>{item.roomType}</Text>
@@ -204,6 +215,17 @@ const RoomBooking = () => {
     </View>
   );
 
+  const ImageGridItem = ({ image, onPress }) => (
+    <TouchableOpacity onPress={onPress} style={styles.imageContainer}>
+      <Image
+        source={{ uri: image.imageUrl }}
+        style={styles.gridImage}
+        placeholder={placeholderImage}
+        contentFit="cover"
+        transition={1000}
+      />
+    </TouchableOpacity>
+  );
   const handleImagePress = (image) => {
     setSelectedImage(image);
     setShowDetails(false);
@@ -447,16 +469,11 @@ const RoomBooking = () => {
           <View style={styles.imageGrid}>
             {roomDetail.imagesUrl != undefined &&
               roomDetail.imagesUrl.map((image, index) => (
-                <TouchableOpacity
+                <ImageGridItem
                   key={index}
+                  image={image}
                   onPress={() => handleImagePress(image.imageUrl)}
-                  style={styles.imageContainer}
-                >
-                  <Image
-                    source={{ uri: image.imageUrl }}
-                    style={styles.gridImage}
-                  />
-                </TouchableOpacity>
+                />
               ))}
             {/* {[RoomImage1, RoomImage2, RoomImage3].map((image, index) => (
               <TouchableOpacity
@@ -488,6 +505,8 @@ const RoomBooking = () => {
           <Image
             source={{ uri: selectedImage }}
             style={styles.fullScreenImage}
+            placeholder={placeholderImage}
+            resizeMode="contain"
           />
           <TouchableOpacity
             style={styles.closeFullScreenButton}
@@ -517,6 +536,19 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     resizeMode: "cover",
+  },
+  hiddenImage: {
+    opacity: 0,
+  },
+  placeholderImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  imageContainer: {
+    position: "relative",
   },
   tagContainerWrapper: {
     alignItems: "center",
@@ -782,7 +814,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   closeFullScreenButton: {
-    marginTop: 20,
+    marginBottom: 50,
     backgroundColor: "#180161",
     padding: 10,
     borderRadius: 5,

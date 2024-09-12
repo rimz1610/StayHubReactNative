@@ -6,16 +6,17 @@ import {
   FlatList,
   Pressable,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import RNPickerSelect from "react-native-picker-select";
 import DrawerContent from "../../../../components/DrawerContent";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-import moment from "moment";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
+import moment from "moment";
 
 const Drawer = createDrawerNavigator();
 const DashboardContent = ({ navigation }) => {
@@ -141,7 +142,11 @@ const DashboardContent = ({ navigation }) => {
           onPress={() => navigation.navigate("BookingDetails", { id: item.id })}
           style={styles.detailButton}
         >
-          <Text style={styles.detailButtonText}>Details</Text>
+          <Ionicons
+            name="information-circle-outline"
+            size={25}
+            color="#180161"
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -199,7 +204,15 @@ const DashboardContent = ({ navigation }) => {
           <Text style={styles.headerCell}>Status</Text>
           <Text style={styles.headerCell}>Action</Text>
         </View>
-        {data.length > 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator
+              size="large"
+              color="#180161"
+              style={styles.activityIndicator}
+            />
+          </View>
+        ) : data.length > 0 ? (
           <FlatList
             data={data.slice(
               currentPage * itemsPerPage,
@@ -295,6 +308,15 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#F5F5F5",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  activityIndicator: {
+    padding: 20,
+  },
   bookingtxt: {
     marginTop: 17,
     color: "#180161",
@@ -324,36 +346,51 @@ const styles = StyleSheet.create({
     marginTop: 30,
     height: "50%",
     width: "100%",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 4,
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#ddd",
-    paddingTop: 10,
+    backgroundColor: "#f0f0f0",
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
   headerCell: {
     fontWeight: "bold",
-    fontSize: 10,
+    fontSize: 12,
     flex: 1,
     textAlign: "center",
     color: "#333",
-    numberOfLines: 1, // Ensure text is limited to a single line
-    overflow: "hidden", // Hide any overflow text
-    textOverflow: "ellipsis", // Add ellipsis if text overflows
   },
   tableRow: {
     flexDirection: "row",
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+    alignItems: "center",
   },
   tableCell: {
-    fontSize: 10,
+    fontSize: 11,
     flex: 1,
     textAlign: "center",
-    borderRightWidth: 1,
-    borderRightColor: "#ccc",
+    paddingHorizontal: 5,
+  },
+  tableActions: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: "#666",
   },
   paginationContainer: {
     flexDirection: "row",
@@ -405,29 +442,29 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 1,
   },
-  tableActions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  detailButton: {
-    backgroundColor: "#180161",
-    borderRadius: 4,
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-  },
-  detailButtonText: {
-    color: "white",
-    fontSize: 12,
-  },
-  emptyTableContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  emptyTableText: {
-    fontSize: 16,
-    color: "#666",
-  },
+  // tableActions: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-around",
+  //   alignItems: "center",
+  // },
+  // detailButton: {
+  //   backgroundColor: "#180161",
+  //   borderRadius: 4,
+  //   paddingVertical: 5,
+  //   paddingHorizontal: 8,
+  // },
+  // detailButtonText: {
+  //   color: "white",
+  //   fontSize: 12,
+  // },
+  // emptyTableContainer: {
+  //   flex: 1,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   paddingVertical: 20,
+  // },
+  // emptyTableText: {
+  //   fontSize: 16,
+  //   color: "#666",
+  // },
 });

@@ -270,6 +270,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   roomheading: {
+    marginTop: 25,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,

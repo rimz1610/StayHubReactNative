@@ -392,7 +392,7 @@ const AddEditEvent = ({
                       <Text style={styles.errorText}>{errors.eventDate}</Text>
                     )}
                   </View>
-                  <View style={styles.inputContainer}>
+                  <View style={styles.inputContainerTime}>
                     <Text style={styles.heading}>Start Time</Text>
                     <TouchableOpacity
                       onPress={() => setShowStartTime(true)}
@@ -423,7 +423,7 @@ const AddEditEvent = ({
                       <Text style={styles.errorText}>{errors.startTime}</Text>
                     )}
                   </View>
-                  <View style={styles.inputContainer}>
+                  <View style={styles.inputContainerTime}>
                     <Text style={styles.heading}>End Time</Text>
                     <TouchableOpacity
                       onPress={() => setShowEndTime(true)}
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   scrollViewContent: {
-    padding: 10,
+    // padding: 5,
   },
   addButton: {
     alignSelf: "flex-end",
@@ -613,6 +613,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   roomheading: {
+    marginTop: 15,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,
@@ -624,7 +625,7 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     position: "absolute",
-    top: 40,
+    top: 20,
     left: 20,
     zIndex: 1,
   },
@@ -651,6 +652,13 @@ const styles = StyleSheet.create({
   inputContainer: {
     flex: 1,
     marginRight: 10,
+  },
+  inputContainerTime: {
+    // width: "20%",
+    // justifyContent: "space-between",
+    flex: 1,
+    marginRight: 10,
+    // paddingHorizontal: 15,
   },
   maxinputContainer: {
     flex: 1,

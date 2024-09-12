@@ -208,7 +208,7 @@ const BookingDetailsContent = ({ route, navigation }) => {
             </View>
             {data.bookingType.length > 0 &&
               data.bookingType.map((item, index) => (
-                <View style={styles.tableRow}>
+                <View key={index} style={styles.tableRow}>
                   <View style={styles.tableCell}>
                     {getIconForType(item.typeName)}
                   </View>
@@ -345,6 +345,7 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: "100%",
+    height: "58%",
     borderWidth: 1,
     borderColor: "black",
     borderRadius: 4,
