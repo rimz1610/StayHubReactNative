@@ -31,63 +31,63 @@ export const CARTMODEL = {
         transactionId: ""
     },
     lstEvent: [
-        {
-            id: 0,
-            eventId: 0,
-            adultTickets: 0,
-            childTickets: 0,
-            itemTotalPrice: 0,
-            strItemTotalPrice: "",
-            index: 0,
-            name: "",
-            description: "",
-            shortDescription: "",
-            eventBookingDate: ""
-        }
+        // {
+        //     id: 0,
+        //     eventId: 0,
+        //     adultTickets: 0,
+        //     childTickets: 0,
+        //     itemTotalPrice: 0,
+        //     strItemTotalPrice: "",
+        //     index: 0,
+        //     name: "",
+        //     description: "",
+        //     shortDescription: "",
+        //     eventBookingDate: ""
+        // }
     ],
     lstRoom: [
-        {
-            id: 0,
-            roomId: 0,
-            CheckInDate: new Date(0),
-            CheckOutDate: 0,
-            itemTotalPrice: 0,
-            details: "",    
-            roomName: "",
-            maxPerson: 0,
-            noofNightStay: 0,
-            index: 0
-        }
+        // {
+        //     id: 0,
+        //     roomId: 0,
+        //     checkInDate: new Date(0),
+        //     checkOutDate: 0,
+        //     itemTotalPrice: 0,
+        //     details: "",    
+        //     roomName: "",
+        //     maxPerson: 0,
+        //     noofNightStay: 0,
+        //     index: 0
+        // }
     ],
     lstRoomService: [
-        {
-            roomId: 0,
-            price: 0,
-            description: "",    
-            serviceName: "",
-            requestDate: new Date(),
-            index: 0
-        }
+        // {
+        //     roomId: 0,
+        //     price: 0,
+        //     description: "",    
+        //     serviceName: "",
+        //     requestDate: new Date(),
+        //     index: 0
+        // }
     ],
     lstGym: [
-        {
-            gymId: 0,
-            price: 0,
-            monthRange: 1,    
-            name: "",
-            index: 0
-        }
+        // {
+        //     gymId: 0,
+        //     price: 0,
+        //     monthRange: 1,    
+        //     name: "",
+        //     index: 0
+        // }
     ],
     lstSpa: [
-        {
-            spaId: 0,
-            itemTotalPrice: 0,
-            price:0,
-            noOfPersons: "",    
-            name: "",
-            spaDate: new Date(),
-            index: 0
-        }
+        // {
+        //     spaId: 0,
+        //     itemTotalPrice: 0,
+        //     price:0,
+        //     noOfPersons: "",    
+        //     name: "",
+        //     spaDate: new Date(),
+        //     index: 0
+        // }
     ],
 
 };

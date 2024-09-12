@@ -1,122 +1,290 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
+  Alert,
+  Button,
+  Modal,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View, ScrollView,
+  FlatList, Image,
+  ActivityIndicator,
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 import Icon from "react-native-vector-icons/FontAwesome";
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
+import { CARTMODEL } from "../../../constant";
+import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, deleteCartFromSecureStore } from "../../../../components/secureStore";
+const EventBooking = ({ route, navigation }) => {
+  const [eventSelectList, setEventSelectList] = useState([]);
+  const [selectEventId, setSelectEventId] = useState(0);
+  const [selectedEventDetail, setSelectedEventDetail] = useState({});
+  const [errorMessages, setErrorMessages] = useState("");
+  const [isValid, setIsValid] = useState(true);
+  const [cartModel, setCartModel] = useState(CARTMODEL)
+  const [bookEventModel, setBookEventModel] = useState({
+    eventId: 0, adultTickets: 0, childTickets: 0,
+    itemTotalPrice: 0, index: 0, name: ""
+  });
+  const [loading, setLoading] = useState(false);
 
-const EventBooking = () => {
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [adultTickets, setAdultTickets] = useState(0);
-  const [childTickets, setChildTickets] = useState(0);
+  const isFocused = useIsFocused();
 
-  const adultTicketPrice = 50;
-  const childTicketPrice = 30;
+  useEffect(() => {
+    if (isFocused) {
+      setSelectEventId(0);
+      setEventSelectList([]);
+      fetchEventDDData();
+    }
+  }, [isFocused]);
 
-  const options = [
-    { label: "Event 1 - 01/09/2024", value: "event1-2024-09-01" },
-    { label: "Event 2 - 05/09/2024", value: "event2-2024-09-05" },
-    { label: "Event 3 - 10/09/2024", value: "event3-2024-09-10" },
-  ];
 
-  const handleSelectionChange = (value) => {
-    if (value) {
-      const [event, year, month, day] = value.split("-");
-      setSelectedEvent(event);
-      setSelectedDate(`${day}/${month}/${year}`);
-    } else {
-      setSelectedEvent(null);
-      setSelectedDate(null);
+
+  const fetchEventDDData = async () => {
+
+    setLoading(true);
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Event/GetEventsForBooking"
+      );
+
+      if (response.data.success) {
+        setEventSelectList(response.data.list);
+        // var firstEvent = response.data.list[0].value;
+        // handleSelectionChange(firstEvent);
+      } else {
+        console.warn("select list");
+        Alert.alert("Error", response.data.message);
+      }
+    } catch (error) {
+      console.warn("select list");
+      console.warn(error);
+      Alert.alert("Error", "Failed to fetch events.");
+
+    } finally {
+      setLoading(false);
     }
   };
 
-  const formatDate = (dateString) => {
-    const [year, month, day] = dateString.split("-");
-    console.log("Formatted Date:", `${day}/${month}/${year}`); // Debugging line
-    return `${day}/${month}/${year}`;
+
+  const fetchEventDetail = async (id) => {
+    if (id > 0) {
+      setLoading(true);
+      try {
+        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Event/GetEventDetail?id=" + id
+        );
+
+        if (response.data.success) {
+          setSelectedEventDetail(response.data.data);
+          console.warn(response.data.data)
+          setBookEventModel({
+            itemTotalPrice: 0, adultTickets: 0,
+            childTickets: 0, eventId: id, name: response.data.data.name, index: 0
+          });
+
+        } else {
+          console.warn("event detail");
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+        console.warn("event detail");
+        console.warn(error);
+        Alert.alert("Error", "Failed to fetch event detail.");
+
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
-  const renderEventDetails = () => {
-    if (!selectedEvent || !selectedDate) return null;
+  const handleSelectionChange = (value) => {
+    setSelectEventId(value);
+    fetchEventDetail(value);
+  };
 
-    const finalAmount =
-      adultTickets * adultTicketPrice + childTickets * childTicketPrice;
 
-    return (
+
+  const calculateTotalPrice = () => {
+
+
+    const totalPrice = (bookEventModel.adultTickets * selectedEventDetail.adultTicketPrice) +
+      (bookEventModel.childTickets * selectedEventDetail.childTicketPrice);
+    setBookEventModel({ ...bookEventModel, itemTotalPrice: totalPrice });
+  };
+
+  const addToBookingCart = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (token == null) {
+      navigation.navigate("Login")
+    }
+    if (bookEventModel.itemTotalPrice == 0) {
+      Alert.alert("Oops", "Please select a ticket.");
+    }
+    try {
+
+      const response = await axios.post(
+        "http://majidalipl-001-site5.gtempurl.com/Event/ValidateBookingEvent",
+        bookEventModel
+      );
+      if (response.data.success) {
+        setIsValid(true);
+        setErrorMessages("");
+        Alert.alert(
+          'Confirm',
+          'Are you sure you want to continue?',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+
+              },
+              style: 'cancel',
+            },
+            {
+              text: 'Yes', onPress: async () => {
+               
+                const cart = await getCartFromSecureStore();
+
+                if (cart == null) {
+                  var guestId = await AsyncStorage.getItem('loginId');
+                  await putDataIntoCartAndSaveSecureStore(
+                    {
+                      id: 0,
+                      referenceNumber: " ",
+                      bookingAMount: 0,
+                      bookingDate: new Date(),
+                      paidAmount: 0,
+                      status: "UnPaid",
+                      notes: "",
+                      guestId: guestId,
+                  }, 'B');
+                  
+                }
+                const index = (cart.lstEvent != null && cart.lstEvent.length > 0) ? cart.lstEvent.length + 1 : 1;
+                console.warn(index);
+                setBookEventModel({ ...bookEventModel, index: index });
+                await putDataIntoCartAndSaveSecureStore(bookEventModel, 'E');
+                //save in secure store
+                console.warn(await getCartFromSecureStore());
+
+              }
+            },
+          ],
+          { cancelable: false },
+        );
+
+      } else {
+        setIsValid(false);
+        setErrorMessages(response.data.message);
+      }
+    } catch (error) {
+      console.warn(error)
+      Alert.alert("Error", "An error occurred while validating tickets.");
+    }
+    finally {
+    }
+  };
+
+
+
+
+return (
+  <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.pickerContainer}>
+      <Text style={styles.label}>Select Event and Date</Text>
+      <RNPickerSelect
+
+        onValueChange={handleSelectionChange}
+        items={eventSelectList}
+        value={selectEventId}
+        placeholder={{ label: "Select Event and Date", value: 0 }}
+        style={pickerSelectStyles}
+      />
+    </View>
+    {selectEventId > 0 &&
       <View style={styles.eventContainer}>
-        <Text style={styles.eventTitle}>Event: {selectedEvent}</Text>
-        <Text style={styles.eventDate}>Date: {selectedDate}</Text>
+        <Text style={styles.eventTitle}>Event: {selectedEventDetail.name}</Text>
+        <Text style={styles.eventDate}>Date: {moment(selectedEventDetail.eventDate).format("dd MMM, YYYY")}</Text>
         <Image
           style={styles.eventImage}
-          source={{ uri: "https://via.placeholder.com/300x150" }}
+          source={{
+            uri: "http://majidalipl-001-site5.gtempurl.com/eventimages/" +
+              selectedEventDetail.eventImage,
+          }}
         />
         <View style={styles.detailsContainer}>
           <Text style={styles.heading}>Details</Text>
+
           <Text style={styles.description}>
-            This is a dummy description of the selected event. It provides a
-            brief overview of what the event is about.
+            {/* This is a dummy description of the selected event. It provides a
+            brief overview of what the event is about. */}
+            {selectedEventDetail.shortDescription}
           </Text>
         </View>
         <View style={styles.termsContainer}>
           <Text style={styles.heading}>Terms and Conditions</Text>
-          <Text style={styles.bullet}>• No refunds available.</Text>
+          {/* <Text style={styles.bullet}>• No refunds available.</Text>
           <Text style={styles.bullet}>• Must present a valid ID.</Text>
           <Text style={styles.bullet}>
             • Event starts at the specified time.
-          </Text>
+          </Text>  */}
+          <Text>{selectedEventDetail.description}</Text>
         </View>
         <View style={styles.ticketContainer}>
           <Text style={styles.ticketLabel}>No of Adult Tickets:</Text>
           <TextInput
             style={styles.ticketInput}
             keyboardType="numeric"
-            value={String(adultTickets)}
-            onChangeText={(value) => setAdultTickets(parseInt(value) || 0)}
+            value={String(bookEventModel.adultTickets)}
+            onChangeText={(value) => {
+              const totalPrice = (value * selectedEventDetail.adultTicketPrice) +
+                (bookEventModel.childTickets * selectedEventDetail.childTicketPrice);
+              setBookEventModel({
+                ...bookEventModel, adultTickets: parseInt(value) || 0,
+                itemTotalPrice: totalPrice
+              },
+              );
+
+            }}
           />
-          <Text style={styles.ticketPrice}>${adultTicketPrice} per adult</Text>
+
+          <Text style={styles.ticketPrice}>${selectedEventDetail.adultTicketPrice} per adult</Text>
         </View>
         <View style={styles.ticketContainer}>
           <Text style={styles.ticketLabel}>No of Child Tickets:</Text>
           <TextInput
             style={styles.ticketInput}
             keyboardType="numeric"
-            value={String(childTickets)}
-            onChangeText={(value) => setChildTickets(parseInt(value) || 0)}
+            value={String(bookEventModel.childTickets)}
+            onChangeText={(value) => {
+              const totalPrice = (bookEventModel.adultTickets * selectedEventDetail.adultTicketPrice) +
+                (value * selectedEventDetail.childTicketPrice);
+              setBookEventModel({
+                ...bookEventModel, childTickets: parseInt(value) || 0,
+                itemTotalPrice: totalPrice
+              },
+              );
+
+            }}
           />
-          <Text style={styles.ticketPrice}>${childTicketPrice} per child</Text>
+
+          <Text style={styles.ticketPrice}>${selectedEventDetail.childTicketPrice} per child</Text>
         </View>
-        <Text style={styles.finalAmount}>Final Amount: ${finalAmount}</Text>
-        <TouchableOpacity style={styles.button}>
+        <Text style={styles.finalAmount}>Final Amount: ${bookEventModel.itemTotalPrice}</Text>
+        <TouchableOpacity style={styles.button} onPress={addToBookingCart}>
           <Icon name="check" size={16} color="#fff" />
           <Text style={styles.buttonText}>Add To Booking</Text>
         </TouchableOpacity>
-      </View>
-    );
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Select Event and Date</Text>
-        <RNPickerSelect
-          onValueChange={handleSelectionChange}
-          items={options}
-          placeholder={{ label: "Select Event and Date", value: null }}
-          style={pickerSelectStyles}
-        />
-      </View>
-      {renderEventDetails()}
-    </ScrollView>
-  );
-};
-
+        {isValid == false ? (
+          <Text style={styles.errorText}>{errorMessages}</Text>
+        ) : null}
+      </View>}
+  </ScrollView>
+);
+}
 const styles = StyleSheet.create({
   container: {
     padding: 20,
