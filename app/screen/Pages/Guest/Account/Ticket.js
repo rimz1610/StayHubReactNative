@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,8 +6,13 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import ViewShot from "react-native-view-shot";
+import * as MediaLibrary from "expo-media-library";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 const TicketDetail = ({ label, value }) => (
   <View style={styles.detailRow}>
@@ -17,6 +22,8 @@ const TicketDetail = ({ label, value }) => (
 );
 
 const Ticket = () => {
+  const viewShotRef = useRef();
+
   // Sample data - replace with actual data in a real app
   const ticketData = {
     invoiceDate: "17 Aug 2024",
@@ -37,52 +44,71 @@ const Ticket = () => {
     city: "Albama, 23456, United States",
   };
 
+  const downloadTicket = async () => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission needed",
+          "Please allow access to save the ticket."
+        );
+        return;
+      }
+
+      const uri = await viewShotRef.current.capture();
+      const asset = await MediaLibrary.createAssetAsync(uri);
+      await MediaLibrary.createAlbumAsync("Tickets", asset, false);
+
+      Alert.alert("Success", "Ticket saved to gallery!");
+
+      // Optionally, you can also share the ticket
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri);
+      }
+    } catch (error) {
+      console.error("Failed to save image:", error);
+      Alert.alert("Error", "Failed to save ticket image.");
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Ticket Booking Details</Text>
       </View>
-      <TouchableOpacity
-        style={styles.downloadButton}
-        onPress={() => navigation.navigate("Ticket")}
-      >
+      <TouchableOpacity style={styles.downloadButton} onPress={downloadTicket}>
         <Icon name="file-download" size={20} color="white" />
-        <Text style={styles.downloadButtonText}>Download Receipt</Text>
+        <Text style={styles.downloadButtonText}>Download Ticket</Text>
       </TouchableOpacity>
-      {/* Ticket Section */}
-      <View style={styles.ticketContainer}>
-        {/* Logo Section */}
-        <Image
-          source={{ uri: "https://via.placeholder.com/100" }} // Replace with actual logo URL
-          style={styles.logo}
-          resizeMode="contain"
-        />
-
-        {/* Ticket Details */}
-        <View style={styles.detailsContainer}>
-          <TicketDetail label="Invoice Date" value={ticketData.invoiceDate} />
-          <TicketDetail
-            label="Booking Person"
-            value={ticketData.bookingPerson}
+      <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 0.9 }}>
+        <View style={styles.ticketContainer}>
+          <Image
+            source={{ uri: "https://via.placeholder.com/100" }}
+            style={styles.logo}
+            resizeMode="contain"
           />
-          <TicketDetail label="Booking Ref #" value={ticketData.bookingRef} />
-          <TicketDetail label="Event" value={ticketData.eventName} />
-          <TicketDetail label="Date" value={ticketData.eventDate} />
-          <TicketDetail label="Time" value={ticketData.timings} />
-          <TicketDetail label="Ticket" value={ticketData.ticketType} />
-          <TicketDetail label="Serial #" value={ticketData.serialNo} />
+          <View style={styles.detailsContainer}>
+            <TicketDetail label="Invoice Date" value={ticketData.invoiceDate} />
+            <TicketDetail
+              label="Booking Person"
+              value={ticketData.bookingPerson}
+            />
+            <TicketDetail label="Booking Ref #" value={ticketData.bookingRef} />
+            <TicketDetail label="Event" value={ticketData.eventName} />
+            <TicketDetail label="Date" value={ticketData.eventDate} />
+            <TicketDetail label="Time" value={ticketData.timings} />
+            <TicketDetail label="Ticket" value={ticketData.ticketType} />
+            <TicketDetail label="Serial #" value={ticketData.serialNo} />
+          </View>
         </View>
-      </View>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>{hotelData.phone}</Text>
-        <Text style={styles.footerText}>{hotelData.email}</Text>
-        <Text style={styles.footerText}>{hotelData.name}</Text>
-        <Text style={styles.footerText}>{hotelData.address}</Text>
-        <Text style={styles.footerText}>{hotelData.city}</Text>
-      </View>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>{hotelData.phone}</Text>
+          <Text style={styles.footerText}>{hotelData.email}</Text>
+          <Text style={styles.footerText}>{hotelData.name}</Text>
+          <Text style={styles.footerText}>{hotelData.address}</Text>
+          <Text style={styles.footerText}>{hotelData.city}</Text>
+        </View>
+      </ViewShot>
     </ScrollView>
   );
 };
