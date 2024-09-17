@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,24 +8,81 @@ import {
   Dimensions,
   Modal,
   FlatList,
-  Platform,
-  Image,
+  Platform, ActivityIndicator,
+  Image, Alert
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Carousel from "react-native-reanimated-carousel";
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
+import { CARTMODEL } from "../../../constant";
+import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, deleteCartFromSecureStore } from "../../../../components/secureStore";
+
 
 const { width, height } = Dimensions.get("window");
 
 const GymBooking = ({ navigation }) => {
-  const [selectedGender, setSelectedGender] = useState("");
-  const [selectedMonths, setSelectedMonths] = useState({});
+  const [gymList, setGymList] = useState([]);
+  const [selectedGender, setSelectedGender] = useState("All");
+  const [selectedMonths, setSelectedMonths] = useState("Jan-Mar");
   const [modalVisible, setModalVisible] = useState(false);
   const [currentDropdown, setCurrentDropdown] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [currentGymDetails, setCurrentGymDetails] = useState({});
+  const [errorMessages, setErrorMessages] = useState("");
+  const [isValid, setIsValid] = useState(true);
 
-  const genderOptions = ["Male", "Female"];
-  const monthOptions = ["1 Month", "3 Months", "6 Months"];
+  const [bookGymModel, setBookGymModel] = useState({
+    gymId: 0, monthRange: 0,
+    price: 0, index: 0, name: ""
+  });
+  const [loading, setLoading] = useState(false);
+
+  const isFocused = useIsFocused();
+  const genderOptions = ["All", "Male", "Female"];
+  const monthOptions = ["Jan-Mar", "Apr-Jun", "Jul-Sep", "Oct-Dec"];
+
+
+  useEffect(() => {
+    if (isFocused) {
+
+      setGymList([]);
+      fetchGyms();
+    }
+  }, [isFocused]);
+
+
+
+  const fetchGyms = async () => {
+
+    setLoading(true);
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" + selectedGender
+      );
+
+      if (response.data.success) {
+        console.warn(response.data.list)
+        setGymList(response.data.list);
+
+      } else {
+        console.warn("select list");
+        Alert.alert("Error", response.data.message);
+      }
+    } catch (error) {
+
+      console.warn(error);
+      Alert.alert("Error", "Failed to fetch gyms.");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+
 
   const openDropdown = (type) => {
     setCurrentDropdown(type);
@@ -41,7 +98,7 @@ const GymBooking = ({ navigation }) => {
     if (currentDropdown === "gender") {
       setSelectedGender(option);
     } else {
-      setSelectedMonths({ ...selectedMonths, [currentDropdown]: option });
+      setSelectedMonths(option);
     }
     closeDropdown();
   };
@@ -52,14 +109,7 @@ const GymBooking = ({ navigation }) => {
     require("../../../../../assets/images/gym-two.jpg"),
   ];
 
-  const gymDetails = {
-    title: "GymKhana",
-    description:
-      "GymKhana offers state-of-the-art equipment, a variety of fitness classes, and professional trainers to help you achieve your fitness goals. Follow our gym rules to ensure a safe and enjoyable environment for everyone.",
-    equipment: "Treadmills, Dumbbells, Squat Racks, Ellipticals, and more.",
-    rules:
-      "Please wipe down equipment after use. No dropping weights. Respect fellow gym members.",
-  };
+
   const openDetailModal = (gym) => {
     setCurrentGymDetails(gym);
     setDetailModalVisible(true);
@@ -67,6 +117,79 @@ const GymBooking = ({ navigation }) => {
 
   const closeDetailModal = () => {
     setDetailModalVisible(false);
+  };
+
+  const addToBookingCart = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (token == null) {
+      navigation.navigate("Login")
+    }
+    if (gymEventModel.price == 0) {
+      Alert.alert("Oops", "Please select gym");
+    }
+    try {
+
+      const response = await axios.post(
+        "http://majidalipl-001-site5.gtempurl.com/Gym/ValidateGymCapacity",
+        bookGymModel
+      );
+      if (response.data.success) {
+        setIsValid(true);
+        setErrorMessages("");
+        Alert.alert(
+          'Confirm',
+          'Are you sure you want to continue?',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+
+              },
+              style: 'cancel',
+            },
+            {
+              text: 'Yes', onPress: async () => {
+
+                const cart = await getCartFromSecureStore();
+
+                if (cart == null) {
+                  var guestId = await AsyncStorage.getItem('loginId');
+                  await putDataIntoCartAndSaveSecureStore(
+                    {
+                      id: 0,
+                      referenceNumber: " ",
+                      bookingAMount: 0,
+                      bookingDate: new Date(),
+                      paidAmount: 0,
+                      status: "UnPaid",
+                      notes: "",
+                      guestId: guestId,
+                    }, 'B');
+
+                }
+                const index = (cart.lstGym != null && cart.lstGym.length > 0) ? cart.lstGym.length + 1 : 1;
+                console.warn(index);
+                setBookGymModel({ ...bookGymModel, index: index });
+                await putDataIntoCartAndSaveSecureStore(gymEventModel, 'G');
+                //save in secure store
+                console.warn(await getCartFromSecureStore());
+
+              }
+            },
+          ],
+          { cancelable: false },
+        );
+
+      } else {
+        setIsValid(false);
+        setErrorMessages(response.data.message);
+      }
+    } catch (error) {
+      console.warn(error)
+      Alert.alert("Error", "An error occurred while validating capacity.");
+    }
+    finally {
+    }
   };
 
   const renderDropdown = (type, selectedValue, customStyle = {}) => (
@@ -81,42 +204,7 @@ const GymBooking = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  const renderGymBox = (id, title, timing, fee) => {
-    return (
-      <View style={styles.boxcontainer}>
-        <View style={styles.box}>
-          <Text
-            style={styles.title}
-            onPress={() => openDetailModal(gymDetails)}
-          >
-            {title}
-          </Text>
-          <Text style={styles.timing}>Timing: {timing}</Text>
-          <Text style={styles.fee}>Fee: ${fee}</Text>
-          {/* <TouchableOpacity
-            style={styles.viewDetailsButton}
-            onPress={() => openDetailModal(gymDetails)}
-          > */}
-          {/* <Text
-            style={styles.viewDetailsButtonText}
-            onPress={() => openDetailModal(gymDetails)}
-          >
-            View Details
-          </Text> */}
-          {/* </TouchableOpacity> */}
-          <Text style={styles.sessionLabel}>Monthly Session</Text>
-          {renderDropdown(id, selectedMonths[id])}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate("BookingItems")}
-          >
-            <Icon name="calendar" size={16} color="#fff" />
-            <Text style={styles.buttonText}>Booking Now</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -144,13 +232,32 @@ const GymBooking = ({ navigation }) => {
       </View>
 
       <View style={styles.row}>
-        {renderGymBox("gym1", "GymKhana", "6am - 11am", 150)}
-        {renderGymBox("gym2", "GymKhana", "12pm - 5pm", 150)}
-      </View>
-      <View style={styles.row}>
-        {renderGymBox("gym3", "GymKhana", "6pm - 11pm", 180)}
-        {renderGymBox("gym4", "GymKhana", "12am - 5am", 130)}
-      </View>
+      {gymList != undefined &&
+        gymList.map((gym, index) => {
+          return <View style={styles.boxcontainer} key={index}>
+            <View style={styles.box}>
+              <Text
+                style={styles.title}
+                onPress={() => openDetailModal(gym)}
+              >
+                {gym.name}
+              </Text>
+              <Text style={styles.timing}>Timing: {gym.openingTime} - {gym.closingTime}</Text>
+              <Text style={styles.fee}>Fee: ${gym.fee}</Text>
+
+              <Text style={styles.sessionLabel}>Monthly Session</Text>
+              {renderDropdown("Month", selectedMonths)}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={addToBookingCart}
+              >
+                <Icon name="calendar" size={16} color="#fff" />
+                <Text style={styles.buttonText}>Book Now</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        })}
+</View>
 
       <Modal
         animationType="slide"
@@ -187,9 +294,9 @@ const GymBooking = ({ navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.detailModalContent}>
-            <Text style={styles.modalTitle}>{currentGymDetails.title}</Text>
+            <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
             <Text style={styles.modalDescription}>
-              {currentGymDetails.description}
+
             </Text>
             <Text style={styles.modalSubtitle}>Equipment Available:</Text>
             <Text style={styles.modalText}>{currentGymDetails.equipment}</Text>
