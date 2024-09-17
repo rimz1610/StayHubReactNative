@@ -18,14 +18,13 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
-import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, deleteCartFromSecureStore } from "../../../../components/secureStore";
+import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, deleteCartFromSecureStore,saveCartToSecureStore } from "../../../../components/secureStore";
 const EventBooking = ({ route, navigation }) => {
   const [eventSelectList, setEventSelectList] = useState([]);
   const [selectEventId, setSelectEventId] = useState(0);
   const [selectedEventDetail, setSelectedEventDetail] = useState({});
   const [errorMessages, setErrorMessages] = useState("");
   const [isValid, setIsValid] = useState(true);
-  const [cartModel, setCartModel] = useState(CARTMODEL)
   const [bookEventModel, setBookEventModel] = useState({
     eventId: 0, adultTickets: 0, childTickets: 0,
     itemTotalPrice: 0, index: 0, name: ""
@@ -53,15 +52,15 @@ const EventBooking = ({ route, navigation }) => {
 
       if (response.data.success) {
         setEventSelectList(response.data.list);
-        // var firstEvent = response.data.list[0].value;
-        // handleSelectionChange(firstEvent);
+       
+        var firstEvent = response.data.list[0].value;
+       handleSelectionChange(firstEvent);
       } else {
-        console.warn("select list");
+       
         Alert.alert("Error", response.data.message);
       }
     } catch (error) {
-      console.warn("select list");
-      console.warn(error);
+     
       Alert.alert("Error", "Failed to fetch events.");
 
     } finally {
@@ -79,19 +78,18 @@ const EventBooking = ({ route, navigation }) => {
 
         if (response.data.success) {
           setSelectedEventDetail(response.data.data);
-          console.warn(response.data.data)
+          
           setBookEventModel({
             itemTotalPrice: 0, adultTickets: 0,
             childTickets: 0, eventId: id, name: response.data.data.name, index: 0
           });
 
         } else {
-          console.warn("event detail");
+          
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-        console.warn("event detail");
-        console.warn(error);
+       
         Alert.alert("Error", "Failed to fetch event detail.");
 
       } finally {
@@ -146,30 +144,41 @@ const EventBooking = ({ route, navigation }) => {
             {
               text: 'Yes', onPress: async () => {
                
-                const cart = await getCartFromSecureStore();
-
-                if (cart == null) {
-                  var guestId = await AsyncStorage.getItem('loginId');
-                  await putDataIntoCartAndSaveSecureStore(
+                if (await getCartFromSecureStore() == null) {
+                  console.log("Cart was empty");
+                  const guestId = await AsyncStorage.getItem('loginId');
+                  console.warn(guestId);
+                  await saveCartToSecureStore(
                     {
-                      id: 0,
-                      referenceNumber: " ",
-                      bookingAMount: 0,
-                      bookingDate: new Date(),
-                      paidAmount: 0,
-                      status: "UnPaid",
-                      notes: "",
-                      guestId: guestId,
-                  }, 'B');
-                  
+                      bookingModel: {
+                        id: 0, referenceNumber: " ", bookingAMount: 0,
+                        bookingDate: new Date(),
+                        paidAmount: 0, status: "UnPaid",
+                        notes: "", guestId: guestId,
+                      },
+                      paymentDetail: {
+                        paidAmount: 0, bookingId: 0,
+                        cardNumber: "", nameOnCard: "", expiryYear: "",
+                        expiryMonth: "", cVV: "", transactionId: ""
+                      },
+                      lstRoom: [], lstRoomService: [],
+                      lstGym: [], lstSpa: [], lstEvent: []
+                    }
+                  );
+                 
                 }
+                const cart=await getCartFromSecureStore();
                 const index = (cart.lstEvent != null && cart.lstEvent.length > 0) ? cart.lstEvent.length + 1 : 1;
-                console.warn(index);
+                console.warn(cart.lstEvent)
                 setBookEventModel({ ...bookEventModel, index: index });
-                await putDataIntoCartAndSaveSecureStore(bookEventModel, 'E');
-                //save in secure store
+                const updatedCart = { ...cart };
+                if (updatedCart.lstEvent ==undefined || updatedCart.lstEvent == null || updatedCart.lstEvent.length == 0) {
+                  updatedCart.lstEvent = [];
+                }
+                updatedCart.lstEvent.push({ ...bookEventModel, index: index });
+                await saveCartToSecureStore(updatedCart);
                 console.warn(await getCartFromSecureStore());
-
+                navigation.navigate("Cart");
               }
             },
           ],

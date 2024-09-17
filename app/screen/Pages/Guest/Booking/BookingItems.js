@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,22 +10,28 @@ import {
   StatusBar,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, removeDataFromCartAndSaveLocalStorage, deleteCartFromSecureStore, saveCartToSecureStore } from "../../../../components/secureStore";
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 
-const BookingItem = ({ item, onDelete }) => (
+const BookingItem = ({ type, item, onDelete }) => (
+
+
   <View style={styles.bookingItem}>
     <View style={styles.bookingMain}>
       <View style={styles.bookingIcon}>
-        <Icon name={getIconName(item.type)} size={24} color="#180161" />
+        <Icon name={getIconName(type)} size={24} color="#180161" />
       </View>
       <View style={styles.bookingInfo}>
-        <Text style={styles.bookingName}>{item.name}</Text>
-        <Text style={styles.bookingDetails}>{item.details}</Text>
+        <Text style={styles.bookingDetails}>{getDetails(type, item)}</Text>
       </View>
     </View>
     <View style={styles.bookingActions}>
       <Text style={styles.bookingTotal}>${item.total.toFixed(2)}</Text>
       <TouchableOpacity
-        onPress={() => onDelete(item.id)}
+        onPress={() => onDelete(item.index, type)}
         style={styles.deleteButton}
       >
         <Icon name="delete-outline" size={24} color="#FF6B6B" />
@@ -35,23 +41,88 @@ const BookingItem = ({ item, onDelete }) => (
 );
 
 const getIconName = (type) => {
-  switch (type.toLowerCase()) {
-    case "room":
+  switch (type) {
+    case "R":
       return "hotel";
-    case "event":
+    case "E":
       return "event";
-    case "gym":
+    case "G":
       return "fitness-center";
-    case "spa":
+    case "S":
       return "spa";
-    case "room service":
+    case "RS":
       return "room-service";
     default:
       return "star";
   }
 };
 
+const getDetails = (type, item) => {
+
+  switch (type) {
+    case "R":
+      const additional = item.maxPerson > 0 ? ` with ${item.maxPerson} additional person(s).` : ".";
+      return `${item.roomName} - Check-in: ${item.checkInDate.toLocaleString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' })}, Check-out: ${item.checkOutDate.toLocaleString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' })}, Total ${item.noofNightStay} night(s)${additional}`;
+
+    case "E":
+      const aTicket = item.adultTickets > 0 ? ` Adult Ticket(s): ${item.adultTickets}` : ".";
+      const cTicket = item.childTickets > 0 ? item.adultTickets > 0 ? `, ` : "" +
+        ` Child Ticket(s): ${item.childTickets}` : "";
+      return `${item.name} - ${aTicket}${cTicket}`;
+    case "G":
+      return `${item.name}, Month: ${item.monthRange}`;
+    case "S":
+      return `${item.name}, Total Persons:  ${item.noOfPersons}, Date ${moment(item.spaDate).format("MM/DD/YYYY")}, Timing ${item.time}`;
+    case "RS":
+      return `${item.roomName}, Service Request:  ${item.serviceName}, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY")}`;
+    default:
+      return "";
+  }
+};
+
 const BookingItems = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
+  const [cart, setCartModel] = useState({
+    bookingModel: {
+      id: 0, referenceNumber: " ", bookingAMount: 0,
+      bookingDate: new Date(),
+      paidAmount: 0, status: "UnPaid",
+      notes: "", guestId: 0,
+    },
+    paymentDetail: {
+      paidAmount: 0, bookingId: 0,
+      cardNumber: "", nameOnCard: "", expiryYear: "",
+      expiryMonth: "", cVV: "", transactionId: ""
+    },
+    lstRoom: [], lstRoomService: [],
+    lstGym: [], lstSpa: [], lstEvent: []
+  });
+  const isFocused = useIsFocused();
+
+
+  useEffect(() => {
+    if (isFocused) {
+      FillItems();
+    }
+  }, [isFocused]);
+  const FillItems = async () => {
+
+    setLoading(true);
+    try {
+      const response = await getCartFromSecureStore();
+      setCartModel(await getCartFromSecureStore())
+      console.warn(response);
+    } catch (error) {
+
+      Alert.alert("Error", "Failed to fetch cart.");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   const [bookings, setBookings] = useState([
     {
       id: "1",
@@ -91,83 +162,160 @@ const BookingItems = ({ navigation }) => {
   ]);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(0);
+  const [itemType, setItemType] = useState("");
+  const calculateTotal = async () => {
+    const total = 0;
+    if (cart != null)
+      try {
 
-  const calculateTotal = () => {
-    return bookings.reduce((sum, item) => sum + item.total, 0);
-  };
+        const response = await axios.post(
+          "http://majidalipl-001-site5.gtempurl.com/Cart/CalculateCartItems",
+          cart
+        );
+        if (response.data.success) {
+           total=response.data.data.totalPrice;
+        } else {
+          Alert.alert("Error", "Unable");
+          setErrorMessages(response.data.message);
+        }
+      } catch (error) {
+        console.warn(error)
+        Alert.alert("Error", error);
+      }
+      finally {
+      }
+  
+  // if (cart.lstRoom != null) {
+  //   total += cart.lstRoom.reduce((sum, item) => sum + item.itemTotalPrice, 0);
+  // }
+  // if (cart.lstRoom != null) {
+  //   total += cart.lstRoom.reduce((sum, item) => sum + item.itemTotalPrice, 0);
+  // }
+  // const roomServiceTotal = cart.lstRoomService.reduce((sum, item) => sum + item.price, 0);
+  // const eventTotal = cart.lstEvent.reduce((sum, item) => sum + item.itemTotalPrice, 0);
+  // const gymTotal = cart.lstGym.reduce((sum, item) => sum + item.price, 0);
+  // const spaTotal = cart.lstEvent.reduce((sum, item) => sum + item.itemTotalPrice, 0);
 
-  const handleDelete = (id) => {
-    setItemToDelete(id);
-    setModalVisible(true);
-  };
+  return total;
+  // return bookings.reduce((sum, item) => sum + item.total, 0);
+};
 
-  const confirmDelete = () => {
-    setBookings(bookings.filter((item) => item.id !== itemToDelete));
-    setModalVisible(false);
-  };
+const handleDelete = (id, type) => {
+  setItemToDelete(id);
+  setItemType(type);
+  setModalVisible(true);
+};
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.bookingSection}>
-            <View style={styles.bookingList}>
-              {bookings.map((item) => (
+const confirmDelete = () => {
+  removeDataFromCartAndSaveLocalStorage(itemToDelete, itemType);
+  FillItems();
+  //  setBookings(bookings.filter((item) => item.id !== itemToDelete));
+  setModalVisible(false);
+};
+
+return (
+  <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.bookingSection}>
+          <View style={styles.bookingList}>
+            {/* {bookings.map((item) => (
                 <BookingItem
                   key={item.id}
                   item={item}
                   onDelete={handleDelete}
                 />
-              ))}
-            </View>
-            <View style={styles.totalSection}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <Text style={styles.totalAmount}>
-                ${calculateTotal().toFixed(2)}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={styles.proceedButton}
-            onPress={() => navigation.navigate("ConfirmBooking")}
-          >
-            <Icon name="credit-card" size={24} color="white" />
-            <Text style={styles.proceedButtonText}>Proceed To Pay</Text>
-          </TouchableOpacity>
-        </ScrollView>
+              ))} */}
 
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
+            {cart.lstRoom != null && cart.lstRoom.map((item, index) => (
+              <BookingItem
+                key={item.roomId + "room" + index}
+                type={"R"}
+                item={item}
+                onDelete={handleDelete}
+              />
+            ))}
+            {cart.lstRoomService != null && cart.lstRoomService.map((item, index) => (
+              <BookingItem
+                key={item.roomId + "room service" + index}
+                type={"RS"}
+                item={item}
+                onDelete={handleDelete}
+              />
+            ))}
+            {cart.lstEvent != null && cart.lstEvent.map((item, index) => (
+              <BookingItem
+                key={item.eventId + "event" + index}
+                type={"E"}
+                item={item}
+                onDelete={handleDelete}
+              />
+            ))}
+            {cart.lstGym != null && cart.lstGym.map((item, index) => (
+              <BookingItem
+                key={item.gymId + "gym" + index}
+                type={"G"}
+                item={item}
+                onDelete={handleDelete}
+              />
+            ))}
+            {cart.lstRoom != null && cart.lstRoom.map((item, index) => (
+              <BookingItem
+                key={item.spaId + "spa" + index}
+                type={"S"}
+                item={item}
+                onDelete={handleDelete}
+              />
+            ))}
+          </View>
+          <View style={styles.totalSection}>
+            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalAmount}>
+              ${calculateTotal().toFixed(2)}
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.proceedButton}
+          onPress={() => navigation.navigate("ConfirmBooking")}
         >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalText}>
-                Remove this item from your booking?
-              </Text>
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.confirmButton]}
-                  onPress={confirmDelete}
-                >
-                  <Text style={styles.buttonText}>Remove</Text>
-                </TouchableOpacity>
-              </View>
+          <Icon name="credit-card" size={24} color="white" />
+          <Text style={styles.proceedButtonText}>Proceed To Pay</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Remove this item from your booking?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={confirmDelete}
+              >
+                <Text style={styles.buttonText}>Remove</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      </View>
-    </SafeAreaView>
-  );
+        </View>
+      </Modal>
+    </View>
+  </SafeAreaView>
+);
 };
 
 const styles = StyleSheet.create({

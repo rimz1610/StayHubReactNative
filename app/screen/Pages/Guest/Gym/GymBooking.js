@@ -18,15 +18,17 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
-import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, deleteCartFromSecureStore } from "../../../../components/secureStore";
+import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore,saveCartToSecureStore, deleteCartFromSecureStore } from "../../../../components/secureStore";
 
 
 const { width, height } = Dimensions.get("window");
 
+
+
 const GymBooking = ({ navigation }) => {
   const [gymList, setGymList] = useState([]);
   const [selectedGender, setSelectedGender] = useState("All");
-  const [selectedMonths, setSelectedMonths] = useState("Jan-Mar");
+  const [selectedMonths, setSelectedMonths] = useState({}); // Initialize as an object
   const [modalVisible, setModalVisible] = useState(false);
   const [currentDropdown, setCurrentDropdown] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
@@ -44,7 +46,7 @@ const GymBooking = ({ navigation }) => {
   const genderOptions = ["All", "Male", "Female"];
   const monthOptions = ["Jan-Mar", "Apr-Jun", "Jul-Sep", "Oct-Dec"];
 
-
+  
   useEffect(() => {
     if (isFocused) {
 
@@ -63,26 +65,21 @@ const GymBooking = ({ navigation }) => {
       );
 
       if (response.data.success) {
-        console.warn(response.data.list)
+
         setGymList(response.data.list);
 
       } else {
-        console.warn("select list");
+
         Alert.alert("Error", response.data.message);
       }
     } catch (error) {
 
-      console.warn(error);
       Alert.alert("Error", "Failed to fetch gyms.");
 
     } finally {
       setLoading(false);
     }
   };
-
-
-
-
 
   const openDropdown = (type) => {
     setCurrentDropdown(type);
@@ -97,8 +94,11 @@ const GymBooking = ({ navigation }) => {
   const selectOption = (option) => {
     if (currentDropdown === "gender") {
       setSelectedGender(option);
+      fetchGyms();
     } else {
-      setSelectedMonths(option);
+
+      setSelectedMonths({ ...selectedMonths, [currentDropdown]: option });
+
     }
     closeDropdown();
   };
@@ -119,16 +119,21 @@ const GymBooking = ({ navigation }) => {
     setDetailModalVisible(false);
   };
 
-  const addToBookingCart = async () => {
+  const addToBookingCart = async (gym) => {
+   // const selectedMonth = selectedMonths[gym.id];
+   const selectedMonth = selectedMonths[gym.id];
+  const monthRange = Object.values(selectedMonth)[0];
+  console.log(gym.price);
+    setBookGymModel({
+      ...bookGymModel, price: gym.price, name: gym.name+", For "+gym.gender, gymId: gym.id,
+      monthRange:monthRange
+    });
     const token = await AsyncStorage.getItem('token');
     if (token == null) {
       navigation.navigate("Login")
     }
-    if (gymEventModel.price == 0) {
-      Alert.alert("Oops", "Please select gym");
-    }
     try {
-
+      console.warn(bookGymModel);
       const response = await axios.post(
         "http://majidalipl-001-site5.gtempurl.com/Gym/ValidateGymCapacity",
         bookGymModel
@@ -149,30 +154,41 @@ const GymBooking = ({ navigation }) => {
             },
             {
               text: 'Yes', onPress: async () => {
-
-                const cart = await getCartFromSecureStore();
-
-                if (cart == null) {
-                  var guestId = await AsyncStorage.getItem('loginId');
-                  await putDataIntoCartAndSaveSecureStore(
+                if (await getCartFromSecureStore() == null) {
+                  console.log("Cart was empty");
+                  const guestId = await AsyncStorage.getItem('loginId');
+                  console.warn(guestId);
+                  await saveCartToSecureStore(
                     {
-                      id: 0,
-                      referenceNumber: " ",
-                      bookingAMount: 0,
-                      bookingDate: new Date(),
-                      paidAmount: 0,
-                      status: "UnPaid",
-                      notes: "",
-                      guestId: guestId,
-                    }, 'B');
-
+                      bookingModel: {
+                        id: 0, referenceNumber: " ", bookingAMount: 0,
+                        bookingDate: new Date(),
+                        paidAmount: 0, status: "UnPaid",
+                        notes: "", guestId: guestId,
+                      },
+                      paymentDetail: {
+                        paidAmount: 0, bookingId: 0,
+                        cardNumber: "", nameOnCard: "", expiryYear: "",
+                        expiryMonth: "", cVV: "", transactionId: ""
+                      },
+                      lstRoom: [], lstRoomService: [],
+                      lstGym: [], lstSpa: [], lstEvent: []
+                    }
+                  );
+                 
                 }
+                const cart=await getCartFromSecureStore();
                 const index = (cart.lstGym != null && cart.lstGym.length > 0) ? cart.lstGym.length + 1 : 1;
-                console.warn(index);
+                console.warn(cart.lstGym)
                 setBookGymModel({ ...bookGymModel, index: index });
-                await putDataIntoCartAndSaveSecureStore(gymEventModel, 'G');
-                //save in secure store
+                const updatedCart = { ...cart };
+                if (updatedCart.lstGym ==undefined || updatedCart.lstGym == null || updatedCart.lstGym.length == 0) {
+                  updatedCart.lstGym = [];
+                }
+                updatedCart.lstGym.push({ ...bookGymModel, index: index });
+                await saveCartToSecureStore(updatedCart);
                 console.warn(await getCartFromSecureStore());
+                navigation.navigate("Cart");
 
               }
             },
@@ -181,8 +197,10 @@ const GymBooking = ({ navigation }) => {
         );
 
       } else {
+        console.warn(response.data.message);
+        Alert.alert("Error", response.data.message);
         setIsValid(false);
-        setErrorMessages(response.data.message);
+   
       }
     } catch (error) {
       console.warn(error)
@@ -232,32 +250,33 @@ const GymBooking = ({ navigation }) => {
       </View>
 
       <View style={styles.row}>
-      {gymList != undefined &&
-        gymList.map((gym, index) => {
-          return <View style={styles.boxcontainer} key={index}>
-            <View style={styles.box}>
-              <Text
-                style={styles.title}
-                onPress={() => openDetailModal(gym)}
-              >
-                {gym.name}
-              </Text>
-              <Text style={styles.timing}>Timing: {gym.openingTime} - {gym.closingTime}</Text>
-              <Text style={styles.fee}>Fee: ${gym.fee}</Text>
+        {gymList != undefined &&
+          gymList.map((gym, index) => {
+            return <View style={styles.boxcontainer} key={index}>
+              <View style={styles.box}>
+                <Text
+                  style={styles.title}
+                  onPress={() => openDetailModal(gym)}
+                >
+                  {gym.name}
+                </Text>
+                <Text style={styles.timing}>Timing: {gym.openingTime} - {gym.closingTime}</Text>
+                <Text style={styles.fee}>Fee: ${gym.fee}</Text>
 
-              <Text style={styles.sessionLabel}>Monthly Session</Text>
-              {renderDropdown("Month", selectedMonths)}
-              <TouchableOpacity
-                style={styles.button}
-                onPress={addToBookingCart}
-              >
-                <Icon name="calendar" size={16} color="#fff" />
-                <Text style={styles.buttonText}>Book Now</Text>
-              </TouchableOpacity>
+                <Text style={styles.sessionLabel}>Monthly Session</Text>
+
+                {renderDropdown(gym.id, selectedMonths[gym.id])}
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={async () => await addToBookingCart(gym)}
+                >
+                  <Icon name="calendar" size={16} color="#fff" />
+                  <Text style={styles.buttonText}>Book Now</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        })}
-</View>
+          })}
+      </View>
 
       <Modal
         animationType="slide"
@@ -296,7 +315,7 @@ const GymBooking = ({ navigation }) => {
           <View style={styles.detailModalContent}>
             <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
             <Text style={styles.modalDescription}>
-
+              {currentGymDetails.description}
             </Text>
             <Text style={styles.modalSubtitle}>Equipment Available:</Text>
             <Text style={styles.modalText}>{currentGymDetails.equipment}</Text>

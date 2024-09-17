@@ -20,6 +20,7 @@ import * as Yup from "yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
+import { deleteCartFromSecureStore } from "../../../components/secureStore";
 const Login = ({ navigation }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [submitting, setSubmitting] = React.useState(false);
@@ -89,7 +90,8 @@ const Login = ({ navigation }) => {
     await AsyncStorage.removeItem("email");
     await AsyncStorage.removeItem("name");
     await AsyncStorage.removeItem("loginId");
-  
+    //Temporary deleting store 
+    await deleteCartFromSecureStore();
   };
   useEffect(() => {
     if (isFocused) {

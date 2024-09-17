@@ -15,7 +15,7 @@ const saveLoginDataToSecureStore = async (loginModel) => {
 
 const saveCartToSecureStore = async (cartModel) => {
   try {
-    await SecureStore.setItemAsync(CART_KEY, JSON.stringify(cartModel));
+    await SecureStore.setItemAsync('stayhubcart', JSON.stringify(cartModel));
   } catch (error) {
     console.error('Error saving cart to secure store:', error);
   }
@@ -23,7 +23,7 @@ const saveCartToSecureStore = async (cartModel) => {
 
 const getCartFromSecureStore = async () => {
   try {
-    const cartJson = await SecureStore.getItemAsync(CART_KEY);
+    const cartJson = await SecureStore.getItemAsync('stayhubcart');
     if (cartJson) {
       return JSON.parse(cartJson);
     } else {
@@ -77,38 +77,54 @@ const getCartDataFromSecureStore = async (type) => {
 
 const putDataIntoCartAndSaveSecureStore = async (obj, type) => {
   try {
-    const cart = await getCartDataFromSecureStore();
-    // Create a new cart object with updated data
-     // Initialize cart if it is null or undefined
-     if (!cart) {
-      cart = {
-        lstRoom: [],
-        lstRoomService: [],
-        lstGym: [],
-        bookingModel: {},
-        paymentDetail: {},
-        lstSpa: [],
-        lstEvent: []
-      };
+    const cart = await getCartFromSecureStore();
+    
+    const updatedCart = { ...cart }; // Create a new copy of the cart object
+    switch (type) {
+      case 'R':
+        if (updatedCart.lstRoom==undefined || updatedCart.lstRoom == null || updatedCart.lstRoom.length == 0) {
+          updatedCart.lstRoom = [];
+        }
+        updatedCart.lstRoom.push(obj);
+        break;
+      case 'RS':
+        if (updatedCart.lstRoomService==undefined || updatedCart.lstRoomService == null || updatedCart.lstRoomService.length == 0) {
+          updatedCart.lstRoomService = [];
+        }
+        updatedCart.lstRoomService.push(obj);
+        break;
+      case 'G':
+        if (updatedCart.lstEvent==undefined || updatedCart.lstEvent == null || updatedCart.lstEvent.length == 0) {
+          updatedCart.lstEvent = [];
+        }
+        updatedCart.lstEvent.push(obj);
+        break;
+      case 'B':
+        updatedCart.bookingModel = obj;
+        break;
+      case 'p':
+        updatedCart.paymentDetail = obj;
+        break;
+      case 'S':
+        if (updatedCart.lstSpa==undefined || updatedCart.lstSpa == null || updatedCart.lstSpa.length == 0) {
+          updatedCart.lstSpa = [];
+        }
+        updatedCart.lstSpa.push(obj);
+        break;
+      case 'E':
+        if (updatedCart.lstEvent==undefined || updatedCart.lstEvent == null || updatedCart.lstEvent.length == 0) {
+          updatedCart.lstEvent = [];
+        }
+        updatedCart.lstEvent.push(obj);
+        break;
+      default:
+        break;
     }
-    const updatedCart = {
-      ...cart,
-      lstRoom: type === 'R' ? [...cart.lstRoom, obj] : cart.lstRoom,
-      lstRoomService: type === 'RS' ? [...cart.lstRoomService, obj] : cart.lstRoomService,
-      lstGym: type === 'G' ? [...cart.lstGym, obj] : cart.lstGym,
-      bookingModel: type === 'B' ? obj : cart.bookingModel,
-      paymentDetail: type === 'p' ? obj : cart.paymentDetail,
-      lstSpa: type === 's' ? [...cart.lstSpa, obj] : cart.lstSpa,
-      lstEvent: type === 'E' ? [...cart.lstEvent, obj] : cart.lstEvent
-      //lstEvent: type === 'E' ? reIndexing([...cart.lstEvent, obj]) : cart.lstEvent,
-    };
     await saveCartToSecureStore(updatedCart);
   } catch (error) {
     console.error('Error putting data into cart and saving secure store:', error);
   }
 };
-
-
 
 
 

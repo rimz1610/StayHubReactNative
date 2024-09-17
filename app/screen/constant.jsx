@@ -51,9 +51,8 @@ export const CARTMODEL = {
         //     roomId: 0,
         //     checkInDate: new Date(0),
         //     checkOutDate: 0,
-        //     itemTotalPrice: 0,
-        //     details: "",    
-        //     roomName: "",
+        //     itemTotalPrice: 0,  
+        //     name: "",
         //     maxPerson: 0,
         //     noofNightStay: 0,
         //     index: 0

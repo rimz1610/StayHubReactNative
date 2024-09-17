@@ -1,46 +1,162 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  StyleSheet,
-  Text,
   View,
-  ScrollView,
+  Text,
+  StyleSheet,
   TouchableOpacity,
-  Image,
+  ScrollView,
   Dimensions,
+  Modal,
+  FlatList,
+  Platform, ActivityIndicator,
+  Image, Alert
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Carousel from "react-native-reanimated-carousel";
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
+import { CARTMODEL } from "../../../constant";
+import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, deleteCartFromSecureStore, saveCartToSecureStore } from "../../../../components/secureStore";
+
+
+
+
 const { width } = Dimensions.get("window");
-const ServiceCard = ({ title, description, price }) => {
-  const [date, setDate] = useState(new Date());
+const ServiceCard = ({ spa, navigation }) => {
+
+  const [errorMessages, setErrorMessages] = useState("");
+  const [isValid, setIsValid] = useState(true);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [persons, setPersons] = useState(1);
+  const [bookSpaModel, setBookSpaModel] = useState({
+    spaId: spa.id, noOfPersons: 1, spaDate: new Date(),
+    itemTotalPrice: spa.price, index: 0, name: spa.name, price: spa.price,
+    time: spa.openingTime+" - "+spa.closingTime
+  });
+
 
   const showDatePicker = () => setDatePickerVisibility(true);
   const hideDatePicker = () => setDatePickerVisibility(false);
 
   const handleConfirm = (selectedDate) => {
-    setDate(selectedDate);
+    setBookSpaModel({ ...bookSpaModel, spaDate: selectedDate });
     hideDatePicker();
   };
 
   const adjustPersons = (increment) => {
-    setPersons((prevPersons) => {
-      const newValue = prevPersons + increment;
-      return newValue >= 1 && newValue <= 10 ? newValue : prevPersons;
-    });
+    const newValue = bookSpaModel.noOfPersons + increment;
+    if (newValue >= 1 && newValue <= 10) {
+      setBookSpaModel({ ...bookSpaModel, noOfPersons: newValue, itemTotalPrice: spa.price * newValue });
+    }
+    else {
+      setBookSpaModel({
+        ...bookSpaModel, noOfPersons: bookSpaModel.noOfPersons,
+        itemTotalPrice: spa.price * bookSpaModel.noOfPersons
+      });
+    }
+    // setPersons((prevPersons) => {
+    //   const newValue = prevPersons + increment;
+    //   return newValue >= 1 && newValue <= 10 ? newValue : prevPersons;
+    // });
+
+  };
+
+  const addToBookingCart = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (token == null) {
+      navigation.navigate("Login")
+    }
+    if (bookSpaModel.price == 0) {
+      Alert.alert("Oops", "Please select spa");
+    }
+    try {
+
+      const response = await axios.post(
+        "http://majidalipl-001-site5.gtempurl.com/Spa/ValidateSpaCapacity",
+        bookSpaModel
+      );
+      if (response.data.success) {
+        setIsValid(true);
+        setErrorMessages("");
+        Alert.alert(
+          'Confirm',
+          'Are you sure you want to continue?',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+
+              },
+              style: 'cancel',
+            },
+            {
+              text: 'Yes', onPress: async () => {
+                if (await getCartFromSecureStore() == null) {
+                  console.log("Cart was empty");
+                  const guestId = await AsyncStorage.getItem('loginId');
+                  console.warn(guestId);
+                  await saveCartToSecureStore(
+                    {
+                      bookingModel: {
+                        id: 0, referenceNumber: " ", bookingAMount: 0,
+                        bookingDate: new Date(),
+                        paidAmount: 0, status: "UnPaid",
+                        notes: "", guestId: guestId,
+                      },
+                      paymentDetail: {
+                        paidAmount: 0, bookingId: 0,
+                        cardNumber: "", nameOnCard: "", expiryYear: "",
+                        expiryMonth: "", cVV: "", transactionId: ""
+                      },
+                      lstRoom: [], lstRoomService: [],
+                      lstGym: [], lstSpa: [], lstEvent: []
+                    }
+                  );
+                 
+                }
+                const cart=await getCartFromSecureStore();
+                const index = (cart.lstSpa != null && cart.lstSpa.length > 0) ? cart.lstSpa.length + 1 : 1;
+                console.warn(cart.lstSpa)
+                setBookSpaModel({ ...bookSpaModel, index: index });
+                const updatedCart = { ...cart };
+                if (updatedCart.lstSpa==undefined || updatedCart.lstSpa == null || updatedCart.lstSpa.length == 0) {
+                  updatedCart.lstSpa = [];
+                }
+                updatedCart.lstSpa.push({ ...bookSpaModel, index: index });
+                await saveCartToSecureStore(updatedCart);
+                console.warn(await getCartFromSecureStore());
+                navigation.navigate("Cart");
+              }
+            },
+          ],
+          { cancelable: false },
+        );
+
+      } else {
+        Alert.alert("Error", response.data.message);
+        setIsValid(false);
+        setErrorMessages(response.data.message);
+      }
+    } catch (error) {
+      console.warn(error)
+      Alert.alert("Error", "An error occurred while validating capacity.");
+    }
+    finally {
+    }
   };
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.price}>${price}</Text>
+        <Text style={styles.title}>{spa.name}</Text>
+        <Text style={styles.price}>{spa.price}</Text>
       </View>
       <View style={styles.cardContent}>
-        <Text style={styles.description}>{description}</Text>
-
+        <Text style={styles.description}>{spa.description}</Text>
+        <Text style={styles.label}>Timing</Text>
+        <Text style={styles.dateText}>{spa.openingTime} {spa.closingTime}</Text>
         <Text style={styles.label}>Service Date and Time</Text>
         <TouchableOpacity onPress={showDatePicker} style={styles.dateButton}>
           <Icon
@@ -49,11 +165,11 @@ const ServiceCard = ({ title, description, price }) => {
             color="#180161"
             style={styles.dateIcon}
           />
-          <Text style={styles.dateText}>{date.toLocaleString()}</Text>
+          <Text style={styles.dateText}>{bookSpaModel.spaDate.toLocaleString()}</Text>
         </TouchableOpacity>
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
-          mode="datetime"
+          mode="date"
           onConfirm={handleConfirm}
           onCancel={hideDatePicker}
         />
@@ -66,7 +182,7 @@ const ServiceCard = ({ title, description, price }) => {
           >
             <Icon name="remove" size={24} color="#180161" />
           </TouchableOpacity>
-          <Text style={styles.personCount}>{persons}</Text>
+          <Text style={styles.personCount}>{bookSpaModel.noOfPersons}</Text>
           <TouchableOpacity
             onPress={() => adjustPersons(1)}
             style={styles.personButton}
@@ -75,7 +191,7 @@ const ServiceCard = ({ title, description, price }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.bookButton}>
+        <TouchableOpacity style={styles.bookButton} onPress={addToBookingCart}>
           <Icon name="spa" size={24} color="white" />
           <Text style={styles.bookButtonText}>Book Now</Text>
         </TouchableOpacity>
@@ -85,6 +201,10 @@ const ServiceCard = ({ title, description, price }) => {
 };
 
 const SpaBooking = ({ navigation }) => {
+  const [spaList, setSpaList] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const isFocused = useIsFocused();
   const services = [
     {
       title: "Hydrant Facial",
@@ -123,6 +243,37 @@ const SpaBooking = ({ navigation }) => {
     require("../../../../../assets/images/spa2.jpg"),
   ];
 
+  useEffect(() => {
+    if (isFocused) {
+      setSpaList([]);
+      fetchSpas();
+    }
+  }, [isFocused]);
+
+  const fetchSpas = async () => {
+
+    setLoading(true);
+    try {
+      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Spa/GetSpas"
+      );
+      if (response.data.success) {
+
+        setSpaList(response.data.list);
+
+      } else {
+        Alert.alert("Error", response.data.message);
+      }
+    } catch (error) {
+
+      Alert.alert("Error", "Failed to fetch spas.");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.carouselContainer}>
@@ -143,8 +294,9 @@ const SpaBooking = ({ navigation }) => {
           <Text style={styles.tagText}>Luxurious Spa Services</Text>
         </View>
       </View>
-      {services.map((service, index) => (
-        <ServiceCard key={index} {...service} />
+
+      {spaList != undefined && spaList.length > 0 && spaList.map((service, index) => (
+        <ServiceCard key={index} spa={service} navigation={navigation} />
       ))}
     </ScrollView>
   );

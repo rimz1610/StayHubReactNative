@@ -26,8 +26,9 @@ import moment from "moment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   saveCartToSecureStore,
-  getCartFromSecureStore,
+  getCartFromSecureStore, validateDatesFromSecureStore
 } from "../../../../components/secureStore";
+import { CARTMODEL } from "../../../constant";
 
 const filterSchema = Yup.object().shape({
   roomType: Yup.string().notRequired(),
@@ -45,6 +46,15 @@ const RoomBooking = () => {
   const [submitting, setSubmitting] = useState(false);
   const [currentRoomId, setCurrentRoomId] = useState(0);
   const [roomDetail, setRoomDetail] = useState({});
+  const [errorMessages, setErrorMessages] = useState("");
+  const [isValid, setIsValid] = useState(true);
+
+  const [bookRoomModel, setBookRoomModel] = useState({
+    roomId: 0, checkInDate: new Date(), checkOutDate: new Date(),
+    itemTotalPrice: 0, index: 0, name: "", maxPerson: 0,
+    noofNightStay: 0,
+  });
+
   const formik = useFormik({
     initialValues: {
       roomType: "",
@@ -87,10 +97,89 @@ const RoomBooking = () => {
   };
 
   handleAddToBooking = async (item) => {
-    const token = await AsyncStorage.getItem("token");
+    
+    setBookRoomModel({
+      roomId: item.id, checkInDate: formik.values.checkInDate, checkOutDate: formik.values.checkOutDate,
+      itemTotalPrice: item.price, index: 0, name: item.name, maxPerson: formik.values.noOfAdditionalPerson,
+      noofNightStay: nights,
+    })
+    const token = await AsyncStorage.getItem('token');
     if (token == null) {
-      navigation.navigate("Login");
-    } else {
+      navigation.navigate("Login")
+    }
+    if (bookSpaModel.price == 0) {
+      Alert.alert("Oops", "Please select spa");
+    }
+    try {
+
+      const response = await validateDatesFromSecureStore(item.id, formik.values.checkInDate, formik.values.checkOutDate)
+      if (!response) {
+        setIsValid(true);
+        setErrorMessages("");
+        Alert.alert(
+          'Confirm',
+          'Are you sure you want to continue?',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+
+              },
+              style: 'cancel',
+            },
+            {
+              text: 'Yes', onPress: async () => {
+
+                if (await getCartFromSecureStore() == null) {
+                  console.log("Cart was empty");
+                  const guestId = await AsyncStorage.getItem('loginId');
+                  console.warn(guestId);
+                  await saveCartToSecureStore(
+                    {
+                      bookingModel: {
+                        id: 0, referenceNumber: " ", bookingAMount: 0,
+                        bookingDate: new Date(),
+                        paidAmount: 0, status: "UnPaid",
+                        notes: "", guestId: guestId,
+                      },
+                      paymentDetail: {
+                        paidAmount: 0, bookingId: 0,
+                        cardNumber: "", nameOnCard: "", expiryYear: "",
+                        expiryMonth: "", cVV: "", transactionId: ""
+                      },
+                      lstRoom: [], lstRoomService: [],
+                      lstGym: [], lstSpa: [], lstEvent: []
+                    }
+                  );
+                 
+                }
+                const cart=await getCartFromSecureStore();
+                const index = (cart.lstRoom != null && cart.lstRoom.length > 0) ? cart.lstRoom.length + 1 : 1;
+                console.warn(cart.lstRoom)
+                setBookRoomModel({ ...bookRoomModel, index: index });
+                const updatedCart = { ...cart };
+                if (updatedCart.lstRoom ==undefined || updatedCart.lstRoom == null || updatedCart.lstRoom.length == 0) {
+                  updatedCart.lstRoom = [];
+                }
+                updatedCart.lstRoom.push({ ...bookRoomModel, index: index });
+                await saveCartToSecureStore(updatedCart);
+                console.warn(await getCartFromSecureStore());
+                navigation.navigate("Cart");
+              }
+            },
+          ],
+          { cancelable: false },
+        );
+
+      } else {
+        setIsValid(false);
+        setErrorMessages(response.data.message);
+      }
+    } catch (error) {
+      console.warn(error)
+      Alert.alert("Error", "An error occurred while validating capacity.");
+    }
+    finally {
     }
   };
 
@@ -282,12 +371,12 @@ const RoomBooking = () => {
           <Text style={styles.datePickerButtonText}>
             {formik.values.checkInDate && formik.values.checkOutDate
               ? `${format(
-                  new Date(formik.values.checkInDate),
-                  "MMM dd, yyyy"
-                )} - ${format(
-                  new Date(formik.values.checkOutDate),
-                  "MMM dd, yyyy"
-                )}`
+                new Date(formik.values.checkInDate),
+                "MMM dd, yyyy"
+              )} - ${format(
+                new Date(formik.values.checkOutDate),
+                "MMM dd, yyyy"
+              )}`
               : "Select dates"}
           </Text>
         </TouchableOpacity>
