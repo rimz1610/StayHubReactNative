@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
+  Text,Alert,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -16,7 +16,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 
-const BookingItem = ({ type, item, onDelete }) => (
+const BookingItem = ({ type, item, total, onDelete }) => (
 
 
   <View style={styles.bookingItem}>
@@ -29,7 +29,7 @@ const BookingItem = ({ type, item, onDelete }) => (
       </View>
     </View>
     <View style={styles.bookingActions}>
-      <Text style={styles.bookingTotal}>${item.total.toFixed(2)}</Text>
+      <Text style={styles.bookingTotal}>${total}</Text>
       <TouchableOpacity
         onPress={() => onDelete(item.index, type)}
         style={styles.deleteButton}
@@ -84,15 +84,15 @@ const BookingItems = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [cart, setCartModel] = useState({
     bookingModel: {
-      id: 0, referenceNumber: " ", bookingAMount: 0,
+      id: 0, referenceNumber: " ", bookingAmount: 0,
       bookingDate: new Date(),
       paidAmount: 0, status: "UnPaid",
-      notes: "", guestId: 0,
+      notes: " ", guestId: 0,
     },
     paymentDetail: {
       paidAmount: 0, bookingId: 0,
-      cardNumber: "", nameOnCard: "", expiryYear: "",
-      expiryMonth: "", cVV: "", transactionId: ""
+      cardNumber: "4242424242424242", nameOnCard: "Test", expiryYear: "2025",
+      expiryMonth: "01", cVV: "123", transactionId: " "
     },
     lstRoom: [], lstRoomService: [],
     lstGym: [], lstSpa: [], lstEvent: []
@@ -109,12 +109,14 @@ const BookingItems = ({ navigation }) => {
 
     setLoading(true);
     try {
-      const response = await getCartFromSecureStore();
-      setCartModel(await getCartFromSecureStore())
-      console.warn(response);
+      
+      setCartModel(await getCartFromSecureStore());
+      console.warn(await getCartFromSecureStore())
+      calculateTotal();
+     
     } catch (error) {
-
-      Alert.alert("Error", "Failed to fetch cart.");
+        
+      Alert.alert("Error", error);
 
     } finally {
       setLoading(false);
@@ -123,82 +125,76 @@ const BookingItems = ({ navigation }) => {
 
 
 
-  const [bookings, setBookings] = useState([
-    {
-      id: "1",
-      type: "Room",
-      name: "Deluxe Ocean View",
-      details: "2 nights, King bed, Balcony",
-      total: 700,
-    },
-    {
-      id: "2",
-      type: "Event",
-      name: "Beach Wedding Package",
-      details: "Ceremony setup, 50 guests",
-      total: 3000,
-    },
-    {
-      id: "3",
-      type: "Gym",
-      name: "Fitness Center Access",
-      details: "Unlimited access, 7 days",
-      total: 100,
-    },
-    {
-      id: "4",
-      type: "Spa",
-      name: "Body Massage",
-      details: "90 minutes, Aromatherapy",
-      total: 250,
-    },
-    {
-      id: "5",
-      type: "Room Service",
-      name: "In-Room Dining",
-      details: "Breakfast for two, 2 days",
-      total: 120,
-    },
-  ]);
+  // const [bookings, setBookings] = useState([
+  //   {
+  //     id: "1",
+  //     type: "Room",
+  //     name: "Deluxe Ocean View",
+  //     details: "2 nights, King bed, Balcony",
+  //     total: 700,
+  //   },
+  //   {
+  //     id: "2",
+  //     type: "Event",
+  //     name: "Beach Wedding Package",
+  //     details: "Ceremony setup, 50 guests",
+  //     total: 3000,
+  //   },
+  //   {
+  //     id: "3",
+  //     type: "Gym",
+  //     name: "Fitness Center Access",
+  //     details: "Unlimited access, 7 days",
+  //     total: 100,
+  //   },
+  //   {
+  //     id: "4",
+  //     type: "Spa",
+  //     name: "Body Massage",
+  //     details: "90 minutes, Aromatherapy",
+  //     total: 250,
+  //   },
+  //   {
+  //     id: "5",
+  //     type: "Room Service",
+  //     name: "In-Room Dining",
+  //     details: "Breakfast for two, 2 days",
+  //     total: 120,
+  //   },
+  // ]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(0);
   const [itemType, setItemType] = useState("");
   const calculateTotal = async () => {
-    const total = 0;
-    if (cart != null)
+    console.warn("calling total")
+    const data=  await getCartFromSecureStore();
+    if (data != null)
       try {
-
+  
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Cart/CalculateCartItems",
-          cart
+        data
         );
+        console.warn(response.data);
         if (response.data.success) {
-           total=response.data.data.totalPrice;
+          console.warn(response.data.data.totalPrice)
+
+          const updatedCart = await getCartFromSecureStore();
+          updatedCart.bookingModel.bookingAmount= response.data.data.totalPrice;
+           setCartModel({...updatedCart})
+           await saveCartToSecureStore(updatedCart);
         } else {
           Alert.alert("Error", "Unable");
           setErrorMessages(response.data.message);
         }
       } catch (error) {
         console.warn(error)
-        Alert.alert("Error", error);
+        const errorMessage = error.message || 'Unknown error';
+        Alert.alert("Error", errorMessage);
       }
       finally {
       }
-  
-  // if (cart.lstRoom != null) {
-  //   total += cart.lstRoom.reduce((sum, item) => sum + item.itemTotalPrice, 0);
-  // }
-  // if (cart.lstRoom != null) {
-  //   total += cart.lstRoom.reduce((sum, item) => sum + item.itemTotalPrice, 0);
-  // }
-  // const roomServiceTotal = cart.lstRoomService.reduce((sum, item) => sum + item.price, 0);
-  // const eventTotal = cart.lstEvent.reduce((sum, item) => sum + item.itemTotalPrice, 0);
-  // const gymTotal = cart.lstGym.reduce((sum, item) => sum + item.price, 0);
-  // const spaTotal = cart.lstEvent.reduce((sum, item) => sum + item.itemTotalPrice, 0);
-
-  return total;
-  // return bookings.reduce((sum, item) => sum + item.total, 0);
 };
 
 const handleDelete = (id, type) => {
@@ -228,18 +224,21 @@ return (
                 />
               ))} */}
 
-            {cart.lstRoom != null && cart.lstRoom.map((item, index) => (
+             {cart.lstRoom != null && cart.lstRoom.map((item, index) => (
               <BookingItem
                 key={item.roomId + "room" + index}
                 type={"R"}
+                total={item.itemTotalPrice}
                 item={item}
                 onDelete={handleDelete}
               />
             ))}
+            
             {cart.lstRoomService != null && cart.lstRoomService.map((item, index) => (
               <BookingItem
                 key={item.roomId + "room service" + index}
                 type={"RS"}
+                total={item.itemTotalPrice}
                 item={item}
                 onDelete={handleDelete}
               />
@@ -248,23 +247,26 @@ return (
               <BookingItem
                 key={item.eventId + "event" + index}
                 type={"E"}
+                total={item.itemTotalPrice}
                 item={item}
                 onDelete={handleDelete}
               />
-            ))}
+            ))} 
             {cart.lstGym != null && cart.lstGym.map((item, index) => (
               <BookingItem
                 key={item.gymId + "gym" + index}
                 type={"G"}
                 item={item}
+                total={item.price}
                 onDelete={handleDelete}
               />
             ))}
-            {cart.lstRoom != null && cart.lstRoom.map((item, index) => (
+            {cart.lstSpa != null && cart.lstSpa.map((item, index) => (
               <BookingItem
                 key={item.spaId + "spa" + index}
                 type={"S"}
                 item={item}
+                total={item.price}
                 onDelete={handleDelete}
               />
             ))}
@@ -272,7 +274,7 @@ return (
           <View style={styles.totalSection}>
             <Text style={styles.totalLabel}>Total Amount</Text>
             <Text style={styles.totalAmount}>
-              ${calculateTotal().toFixed(2)}
+              {cart.bookingModel.bookingAmount}
             </Text>
           </View>
         </View>

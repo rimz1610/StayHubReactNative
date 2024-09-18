@@ -161,15 +161,15 @@ const GymBooking = ({ navigation }) => {
                   await saveCartToSecureStore(
                     {
                       bookingModel: {
-                        id: 0, referenceNumber: " ", bookingAMount: 0,
+                        id: 0, referenceNumber: " ", bookingAmount: 0,
                         bookingDate: new Date(),
                         paidAmount: 0, status: "UnPaid",
-                        notes: "", guestId: guestId,
+                        notes: " ", guestId: guestId,
                       },
                       paymentDetail: {
                         paidAmount: 0, bookingId: 0,
-                        cardNumber: "", nameOnCard: "", expiryYear: "",
-                        expiryMonth: "", cVV: "", transactionId: ""
+                        cardNumber: "4242424242424242", nameOnCard: "Test", expiryYear: "2025",
+                        expiryMonth: "01", cVV: "123", transactionId: " "
                       },
                       lstRoom: [], lstRoomService: [],
                       lstGym: [], lstSpa: [], lstEvent: []
