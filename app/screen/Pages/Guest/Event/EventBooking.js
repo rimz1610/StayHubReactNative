@@ -7,8 +7,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View, ScrollView,
-  FlatList, Image,
+  View,
+  ScrollView,
+  FlatList,
+  Image,
   ActivityIndicator,
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
@@ -18,19 +20,31 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
-import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, deleteCartFromSecureStore,saveCartToSecureStore } from "../../../../components/secureStore";
+import {
+  getCartFromSecureStore,
+  putDataIntoCartAndSaveSecureStore,
+  deleteCartFromSecureStore,
+  saveCartToSecureStore,
+} from "../../../../components/secureStore";
 const EventBooking = ({ route, navigation }) => {
   const [eventSelectList, setEventSelectList] = useState([]);
   const [selectEventId, setSelectEventId] = useState(0);
   const [selectedEventDetail, setSelectedEventDetail] = useState({});
   const [errorMessages, setErrorMessages] = useState("");
   const [isValid, setIsValid] = useState(true);
+  // const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
   const [bookEventModel, setBookEventModel] = useState({
-    eventId: 0, adultTickets: 0, childTickets: 0,
-    itemTotalPrice: 0, index: 0, name: ""
+    eventId: 0,
+    adultTickets: 0,
+    childTickets: 0,
+    itemTotalPrice: 0,
+    index: 0,
+    name: "",
   });
   const [loading, setLoading] = useState(false);
-
+  const LOADING_TIMEOUT = 10000;
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -41,57 +55,53 @@ const EventBooking = ({ route, navigation }) => {
     }
   }, [isFocused]);
 
-
-
   const fetchEventDDData = async () => {
-
     setLoading(true);
     try {
-      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Event/GetEventsForBooking"
+      const response = await axios.get(
+        "http://majidalipl-001-site5.gtempurl.com/Event/GetEventsForBooking"
       );
 
       if (response.data.success) {
         setEventSelectList(response.data.list);
-       
+
         var firstEvent = response.data.list[0].value;
-       handleSelectionChange(firstEvent);
+        handleSelectionChange(firstEvent);
       } else {
-       
         Alert.alert("Error", response.data.message);
       }
     } catch (error) {
-     
       Alert.alert("Error", "Failed to fetch events.");
-
     } finally {
       setLoading(false);
     }
   };
 
-
   const fetchEventDetail = async (id) => {
     if (id > 0) {
       setLoading(true);
       try {
-        const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Event/GetEventDetail?id=" + id
+        const response = await axios.get(
+          "http://majidalipl-001-site5.gtempurl.com/Event/GetEventDetail?id=" +
+            id
         );
 
         if (response.data.success) {
           setSelectedEventDetail(response.data.data);
-          
-          setBookEventModel({
-            itemTotalPrice: 0, adultTickets: 0,
-            childTickets: 0, eventId: id, name: response.data.data.name, index: 0
-          });
 
+          setBookEventModel({
+            itemTotalPrice: 0,
+            adultTickets: 0,
+            childTickets: 0,
+            eventId: id,
+            name: response.data.data.name,
+            index: 0,
+          });
         } else {
-          
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-       
         Alert.alert("Error", "Failed to fetch event detail.");
-
       } finally {
         setLoading(false);
       }
@@ -103,26 +113,22 @@ const EventBooking = ({ route, navigation }) => {
     fetchEventDetail(value);
   };
 
-
-
   const calculateTotalPrice = () => {
-
-
-    const totalPrice = (bookEventModel.adultTickets * selectedEventDetail.adultTicketPrice) +
-      (bookEventModel.childTickets * selectedEventDetail.childTicketPrice);
+    const totalPrice =
+      bookEventModel.adultTickets * selectedEventDetail.adultTicketPrice +
+      bookEventModel.childTickets * selectedEventDetail.childTicketPrice;
     setBookEventModel({ ...bookEventModel, itemTotalPrice: totalPrice });
   };
 
   const addToBookingCart = async () => {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem("token");
     if (token == null) {
-      navigation.navigate("Login")
+      navigation.navigate("Login");
     }
     if (bookEventModel.itemTotalPrice == 0) {
       Alert.alert("Oops", "Please select a ticket.");
     }
     try {
-
       const response = await axios.post(
         "http://majidalipl-001-site5.gtempurl.com/Event/ValidateBookingEvent",
         bookEventModel
@@ -131,22 +137,20 @@ const EventBooking = ({ route, navigation }) => {
         setIsValid(true);
         setErrorMessages("");
         Alert.alert(
-          'Confirm',
-          'Are you sure you want to continue?',
+          "Confirm",
+          "Are you sure you want to continue?",
           [
             {
-              text: 'Cancel',
-              onPress: () => {
-
-              },
-              style: 'cancel',
+              text: "Cancel",
+              onPress: () => {},
+              style: "cancel",
             },
             {
-              text: 'Yes', onPress: async () => {
-               
-                if (await getCartFromSecureStore() == null) {
+              text: "Yes",
+              onPress: async () => {
+                if ((await getCartFromSecureStore()) == null) {
                   console.log("Cart was empty");
-                  const guestId = await AsyncStorage.getItem('loginId');
+                  const guestId = await AsyncStorage.getItem("loginId");
                   console.warn(guestId);
                   await saveCartToSecureStore(
                     {
@@ -167,138 +171,200 @@ const EventBooking = ({ route, navigation }) => {
                   );
                  
                 }
-                const cart=await getCartFromSecureStore();
-                const index = (cart.lstEvent != null && cart.lstEvent.length > 0) ? cart.lstEvent.length + 1 : 1;
-                console.warn(cart.lstEvent)
+                const cart = await getCartFromSecureStore();
+                const index =
+                  cart.lstEvent != null && cart.lstEvent.length > 0
+                    ? cart.lstEvent.length + 1
+                    : 1;
+                console.warn(cart.lstEvent);
                 setBookEventModel({ ...bookEventModel, index: index });
                 const updatedCart = { ...cart };
-                if (updatedCart.lstEvent ==undefined || updatedCart.lstEvent == null || updatedCart.lstEvent.length == 0) {
+                if (
+                  updatedCart.lstEvent == undefined ||
+                  updatedCart.lstEvent == null ||
+                  updatedCart.lstEvent.length == 0
+                ) {
                   updatedCart.lstEvent = [];
                 }
                 updatedCart.lstEvent.push({ ...bookEventModel, index: index });
                 await saveCartToSecureStore(updatedCart);
                 console.warn(await getCartFromSecureStore());
                 navigation.navigate("Cart");
-              }
+              },
             },
           ],
-          { cancelable: false },
+          { cancelable: false }
         );
-
       } else {
         setIsValid(false);
         setErrorMessages(response.data.message);
       }
     } catch (error) {
-      console.warn(error)
+      console.warn(error);
       Alert.alert("Error", "An error occurred while validating tickets.");
-    }
-    finally {
+    } finally {
     }
   };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (imageLoading) {
+        setImageError(true);
+        setImageLoading(false);
+      }
+    }, LOADING_TIMEOUT);
 
+    return () => clearTimeout(timer);
+  }, [imageLoading]);
 
-
-
-return (
-  <ScrollView contentContainerStyle={styles.container}>
-    <View style={styles.pickerContainer}>
-      <Text style={styles.label}>Select Event and Date</Text>
-      <RNPickerSelect
-
-        onValueChange={handleSelectionChange}
-        items={eventSelectList}
-        value={selectEventId}
-        placeholder={{ label: "Select Event and Date", value: 0 }}
-        style={pickerSelectStyles}
-      />
-    </View>
-    {selectEventId > 0 &&
-      <View style={styles.eventContainer}>
-        <Text style={styles.eventTitle}>Event: {selectedEventDetail.name}</Text>
-        <Text style={styles.eventDate}>Date: {moment(selectedEventDetail.eventDate).format("dd MMM, YYYY")}</Text>
-        <Image
-          style={styles.eventImage}
-          source={{
-            uri: "http://majidalipl-001-site5.gtempurl.com/eventimages/" +
-              selectedEventDetail.eventImage,
-          }}
+  const imageUrl = `http://majidalipl-001-site5.gtempurl.com/eventimages/${selectedEventDetail.eventImage}`;
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.pickerContainer}>
+        <Text style={styles.label}>Select Event and Date</Text>
+        <RNPickerSelect
+          onValueChange={handleSelectionChange}
+          items={eventSelectList}
+          value={selectEventId}
+          placeholder={{ label: "Select Event and Date", value: 0 }}
+          style={pickerSelectStyles}
         />
-        <View style={styles.detailsContainer}>
-          <Text style={styles.heading}>Details</Text>
-
-          <Text style={styles.description}>
-            {/* This is a dummy description of the selected event. It provides a
-            brief overview of what the event is about. */}
-            {selectedEventDetail.shortDescription}
+      </View>
+      {selectEventId > 0 && (
+        <View style={styles.eventContainer}>
+          <Text style={styles.eventTitle}>
+            Event: {selectedEventDetail.name}
           </Text>
-        </View>
-        <View style={styles.termsContainer}>
-          <Text style={styles.heading}>Terms and Conditions</Text>
-          {/* <Text style={styles.bullet}>• No refunds available.</Text>
+          <Text style={styles.eventDate}>
+            Date: {moment(selectedEventDetail.eventDate).format("dd MMM, YYYY")}
+          </Text>
+          <View style={styles.imageContainer}>
+            {imageLoading && (
+              <ActivityIndicator
+                size="large"
+                color="#0000ff"
+                style={styles.loader}
+              />
+            )}
+            <Image
+              style={[styles.eventImage, imageLoading && styles.hiddenImage]}
+              source={
+                imageError
+                  ? require("@/../../assets/images/placeholder.jpg")
+                  : { uri: imageUrl }
+              }
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+              onError={() => {
+                setImageError(true);
+                setImageLoading(false);
+              }}
+            />
+          </View>
+          <View style={styles.detailsContainer}>
+            <Text style={styles.heading}>Details</Text>
+
+            <Text style={styles.description}>
+              {/* This is a dummy description of the selected event. It provides a
+            brief overview of what the event is about. */}
+              {selectedEventDetail.shortDescription}
+            </Text>
+          </View>
+          <View style={styles.termsContainer}>
+            <Text style={styles.heading}>Terms and Conditions</Text>
+            {/* <Text style={styles.bullet}>• No refunds available.</Text>
           <Text style={styles.bullet}>• Must present a valid ID.</Text>
           <Text style={styles.bullet}>
             • Event starts at the specified time.
           </Text>  */}
-          <Text>{selectedEventDetail.description}</Text>
+            <Text>{selectedEventDetail.description}</Text>
+          </View>
+          <View style={styles.ticketContainer}>
+            <Text style={styles.ticketLabel}>No of Adult Tickets:</Text>
+            <TextInput
+              style={styles.ticketInput}
+              keyboardType="numeric"
+              value={String(bookEventModel.adultTickets)}
+              onChangeText={(value) => {
+                const totalPrice =
+                  value * selectedEventDetail.adultTicketPrice +
+                  bookEventModel.childTickets *
+                    selectedEventDetail.childTicketPrice;
+                setBookEventModel({
+                  ...bookEventModel,
+                  adultTickets: parseInt(value) || 0,
+                  itemTotalPrice: totalPrice,
+                });
+              }}
+            />
+
+            <Text style={styles.ticketPrice}>
+              ${selectedEventDetail.adultTicketPrice} per adult
+            </Text>
+          </View>
+          <View style={styles.ticketContainer}>
+            <Text style={styles.ticketLabel}>No of Child Tickets:</Text>
+            <TextInput
+              style={styles.ticketInput}
+              keyboardType="numeric"
+              value={String(bookEventModel.childTickets)}
+              onChangeText={(value) => {
+                const totalPrice =
+                  bookEventModel.adultTickets *
+                    selectedEventDetail.adultTicketPrice +
+                  value * selectedEventDetail.childTicketPrice;
+                setBookEventModel({
+                  ...bookEventModel,
+                  childTickets: parseInt(value) || 0,
+                  itemTotalPrice: totalPrice,
+                });
+              }}
+            />
+
+            <Text style={styles.ticketPrice}>
+              ${selectedEventDetail.childTicketPrice} per child
+            </Text>
+          </View>
+          <Text style={styles.finalAmount}>
+            Final Amount: ${bookEventModel.itemTotalPrice}
+          </Text>
+          <TouchableOpacity style={styles.button} onPress={addToBookingCart}>
+            <Icon name="check" size={16} color="#fff" />
+            <Text style={styles.buttonText}>Add To Booking</Text>
+          </TouchableOpacity>
+          {isValid === false ? (
+            <Text style={styles.errorText}>{errorMessages}</Text>
+          ) : null}
         </View>
-        <View style={styles.ticketContainer}>
-          <Text style={styles.ticketLabel}>No of Adult Tickets:</Text>
-          <TextInput
-            style={styles.ticketInput}
-            keyboardType="numeric"
-            value={String(bookEventModel.adultTickets)}
-            onChangeText={(value) => {
-              const totalPrice = (value * selectedEventDetail.adultTicketPrice) +
-                (bookEventModel.childTickets * selectedEventDetail.childTicketPrice);
-              setBookEventModel({
-                ...bookEventModel, adultTickets: parseInt(value) || 0,
-                itemTotalPrice: totalPrice
-              },
-              );
-
-            }}
-          />
-
-          <Text style={styles.ticketPrice}>${selectedEventDetail.adultTicketPrice} per adult</Text>
-        </View>
-        <View style={styles.ticketContainer}>
-          <Text style={styles.ticketLabel}>No of Child Tickets:</Text>
-          <TextInput
-            style={styles.ticketInput}
-            keyboardType="numeric"
-            value={String(bookEventModel.childTickets)}
-            onChangeText={(value) => {
-              const totalPrice = (bookEventModel.adultTickets * selectedEventDetail.adultTicketPrice) +
-                (value * selectedEventDetail.childTicketPrice);
-              setBookEventModel({
-                ...bookEventModel, childTickets: parseInt(value) || 0,
-                itemTotalPrice: totalPrice
-              },
-              );
-
-            }}
-          />
-
-          <Text style={styles.ticketPrice}>${selectedEventDetail.childTicketPrice} per child</Text>
-        </View>
-        <Text style={styles.finalAmount}>Final Amount: ${bookEventModel.itemTotalPrice}</Text>
-        <TouchableOpacity style={styles.button} onPress={addToBookingCart}>
-          <Icon name="check" size={16} color="#fff" />
-          <Text style={styles.buttonText}>Add To Booking</Text>
-        </TouchableOpacity>
-        {isValid == false ? (
-          <Text style={styles.errorText}>{errorMessages}</Text>
-        ) : null}
-      </View>}
-  </ScrollView>
-);
-}
+      )}
+    </ScrollView>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     padding: 20,
     backgroundColor: "#f5f5f5",
     flexGrow: 1,
+  },
+  imageContainer: {
+    position: "relative",
+    width: "100%",
+    height: 200, // Adjust as needed
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  eventImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  hiddenImage: {
+    opacity: 0,
+  },
+  loader: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: -25 }, { translateY: -25 }],
   },
   pickerContainer: {
     marginBottom: 20,
