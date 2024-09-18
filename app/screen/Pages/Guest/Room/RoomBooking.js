@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -26,7 +26,8 @@ import moment from "moment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   saveCartToSecureStore,
-  getCartFromSecureStore, validateDatesFromSecureStore
+  getCartFromSecureStore,
+  validateDatesFromSecureStore,
 } from "../../../../components/secureStore";
 import { CARTMODEL } from "../../../constant";
 
@@ -50,8 +51,13 @@ const RoomBooking = () => {
   const [isValid, setIsValid] = useState(true);
 
   const [bookRoomModel, setBookRoomModel] = useState({
-    roomId: 0, checkInDate: new Date(), checkOutDate: new Date(),
-    itemTotalPrice: 0, index: 0, name: "", maxPerson: 0,
+    roomId: 0,
+    checkInDate: new Date(),
+    checkOutDate: new Date(),
+    itemTotalPrice: 0,
+    index: 0,
+    name: "",
+    maxPerson: 0,
     noofNightStay: 0,
   });
 
@@ -97,89 +103,108 @@ const RoomBooking = () => {
   };
 
   handleAddToBooking = async (item) => {
-    
     setBookRoomModel({
-      roomId: item.id, checkInDate: formik.values.checkInDate, checkOutDate: formik.values.checkOutDate,
-      itemTotalPrice: item.price, index: 0, name: item.name, maxPerson: formik.values.noOfAdditionalPerson,
+      roomId: item.id,
+      checkInDate: formik.values.checkInDate,
+      checkOutDate: formik.values.checkOutDate,
+      itemTotalPrice: item.price,
+      index: 0,
+      name: item.name,
+      maxPerson: formik.values.noOfAdditionalPerson,
       noofNightStay: nights,
-    })
-    const token = await AsyncStorage.getItem('token');
+    });
+    const token = await AsyncStorage.getItem("token");
     if (token == null) {
-      navigation.navigate("Login")
+      navigation.navigate("Login");
     }
     if (bookSpaModel.price == 0) {
       Alert.alert("Oops", "Please select spa");
     }
     try {
-
-      const response = await validateDatesFromSecureStore(item.id, formik.values.checkInDate, formik.values.checkOutDate)
+      const response = await validateDatesFromSecureStore(
+        item.id,
+        formik.values.checkInDate,
+        formik.values.checkOutDate
+      );
       if (!response) {
         setIsValid(true);
         setErrorMessages("");
         Alert.alert(
-          'Confirm',
-          'Are you sure you want to continue?',
+          "Confirm",
+          "Are you sure you want to continue?",
           [
             {
-              text: 'Cancel',
-              onPress: () => {
-
-              },
-              style: 'cancel',
+              text: "Cancel",
+              onPress: () => {},
+              style: "cancel",
             },
             {
-              text: 'Yes', onPress: async () => {
-
-                if (await getCartFromSecureStore() == null) {
+              text: "Yes",
+              onPress: async () => {
+                if ((await getCartFromSecureStore()) == null) {
                   console.log("Cart was empty");
-                  const guestId = await AsyncStorage.getItem('loginId');
+                  const guestId = await AsyncStorage.getItem("loginId");
                   console.warn(guestId);
-                  await saveCartToSecureStore(
-                    {
-                      bookingModel: {
-                        id: 0, referenceNumber: " ", bookingAMount: 0,
-                        bookingDate: new Date(),
-                        paidAmount: 0, status: "UnPaid",
-                        notes: "", guestId: guestId,
-                      },
-                      paymentDetail: {
-                        paidAmount: 0, bookingId: 0,
-                        cardNumber: "", nameOnCard: "", expiryYear: "",
-                        expiryMonth: "", cVV: "", transactionId: ""
-                      },
-                      lstRoom: [], lstRoomService: [],
-                      lstGym: [], lstSpa: [], lstEvent: []
-                    }
-                  );
-                 
+                  await saveCartToSecureStore({
+                    bookingModel: {
+                      id: 0,
+                      referenceNumber: " ",
+                      bookingAMount: 0,
+                      bookingDate: new Date(),
+                      paidAmount: 0,
+                      status: "UnPaid",
+                      notes: "",
+                      guestId: guestId,
+                    },
+                    paymentDetail: {
+                      paidAmount: 0,
+                      bookingId: 0,
+                      cardNumber: "",
+                      nameOnCard: "",
+                      expiryYear: "",
+                      expiryMonth: "",
+                      cVV: "",
+                      transactionId: "",
+                    },
+                    lstRoom: [],
+                    lstRoomService: [],
+                    lstGym: [],
+                    lstSpa: [],
+                    lstEvent: [],
+                  });
                 }
-                const cart=await getCartFromSecureStore();
-                const index = (cart.lstRoom != null && cart.lstRoom.length > 0) ? cart.lstRoom.length + 1 : 1;
-                console.warn(cart.lstRoom)
+                const cart = await getCartFromSecureStore();
+                const index =
+                  cart.lstRoom != null && cart.lstRoom.length > 0
+                    ? cart.lstRoom.length + 1
+                    : 1;
+                console.warn(cart.lstRoom);
                 setBookRoomModel({ ...bookRoomModel, index: index });
                 const updatedCart = { ...cart };
-                if (updatedCart.lstRoom ==undefined || updatedCart.lstRoom == null || updatedCart.lstRoom.length == 0) {
+                if (
+                  updatedCart.lstRoom == undefined ||
+                  updatedCart.lstRoom == null ||
+                  updatedCart.lstRoom.length == 0
+                ) {
                   updatedCart.lstRoom = [];
                 }
                 updatedCart.lstRoom.push({ ...bookRoomModel, index: index });
                 await saveCartToSecureStore(updatedCart);
                 console.warn(await getCartFromSecureStore());
                 navigation.navigate("Cart");
-              }
+              },
             },
           ],
-          { cancelable: false },
+          { cancelable: false }
         );
-
       } else {
         setIsValid(false);
         setErrorMessages(response.data.message);
       }
     } catch (error) {
-      console.warn(error)
+      console.warn(error);
       Alert.alert("Error", "An error occurred while validating capacity.");
-    }
-    finally {
+    } finally {
     }
   };
 
@@ -250,21 +275,30 @@ const RoomBooking = () => {
 
     return markedDates;
   };
-  const carouselImages = [
-    require("../../../../../assets/images/room-one.jpg"),
-    require("../../../../../assets/images/room-two.jpg"), // Add more images as needed
-    require("../../../../../assets/images/room-three.jpg"),
-  ];
-  const placeholderImage = { uri: "https://via.placeholder.com/300x150" };
-  const renderCarouselItem = ({ item }) => (
-    <Image
-      style={styles.carouselImage}
-      source={item}
-      placeholder={placeholderImage}
-      contentFit="cover"
-      transition={1000}
-    />
-  );
+  const [carouselImages, setCarouselImages] = useState([
+    {
+      uri: require("../../../../../assets/images/room-one.jpg"),
+      loaded: false,
+    },
+    {
+      uri: require("../../../../../assets/images/room-two.jpg"),
+      loaded: false,
+    },
+    {
+      uri: require("../../../../../assets/images/room-three.jpg"),
+      loaded: false,
+    },
+  ]);
+  // const placeholderImage = { uri: "https://via.placeholder.com/300x150" };
+  // const renderCarouselItem = ({ item }) => (
+  //   <Image
+  //     style={styles.carouselImage}
+  //     source={item}
+  //     placeholder={placeholderImage}
+  //     contentFit="cover"
+  //     transition={1000}
+  //   />
+  // );
   const renderRoomItem = (item) => (
     <View style={styles.roomItem}>
       <Image
@@ -341,7 +375,33 @@ const RoomBooking = () => {
       value: type,
     };
   });
-
+  const placeholderImage = require("../../../../../assets/images/placeholder.jpg");
+  const onImageLoad = useCallback((index) => {
+    setCarouselImages((prevImages) =>
+      prevImages.map((img, i) => (i === index ? { ...img, loaded: true } : img))
+    );
+  }, []);
+  const renderCarouselItem = useCallback(
+    ({ item, index }) => (
+      <View style={styles.carouselImageContainer}>
+        <Image
+          source={item.loaded ? item.uri : placeholderImage}
+          style={styles.carouselImage}
+          contentFit="cover"
+          transition={300}
+          onLoad={() => onImageLoad(index)}
+        />
+        {!item.loaded && (
+          <ActivityIndicator
+            style={styles.imageLoader}
+            size="large"
+            color="#180161"
+          />
+        )}
+      </View>
+    ),
+    [onImageLoad]
+  );
   return (
     <ScrollView style={styles.container}>
       <View style={styles.carouselContainer}>
@@ -352,9 +412,7 @@ const RoomBooking = () => {
           autoPlay={true}
           data={carouselImages}
           scrollAnimationDuration={1000}
-          renderItem={({ item }) => (
-            <Image source={item} style={styles.carouselImage} />
-          )}
+          renderItem={renderCarouselItem}
         />
       </View>
       <View style={styles.tagContainerWrapper}>
@@ -371,12 +429,12 @@ const RoomBooking = () => {
           <Text style={styles.datePickerButtonText}>
             {formik.values.checkInDate && formik.values.checkOutDate
               ? `${format(
-                new Date(formik.values.checkInDate),
-                "MMM dd, yyyy"
-              )} - ${format(
-                new Date(formik.values.checkOutDate),
-                "MMM dd, yyyy"
-              )}`
+                  new Date(formik.values.checkInDate),
+                  "MMM dd, yyyy"
+                )} - ${format(
+                  new Date(formik.values.checkOutDate),
+                  "MMM dd, yyyy"
+                )}`
               : "Select dates"}
           </Text>
         </TouchableOpacity>

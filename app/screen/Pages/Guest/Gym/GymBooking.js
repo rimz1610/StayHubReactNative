@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
   Dimensions,
   Modal,
   FlatList,
-  Platform, ActivityIndicator,
-  Image, Alert
+  Platform,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
+import { Image } from "expo-image";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Carousel from "react-native-reanimated-carousel";
 import moment from "moment";
@@ -18,12 +20,14 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
-import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore,saveCartToSecureStore, deleteCartFromSecureStore } from "../../../../components/secureStore";
-
+import {
+  getCartFromSecureStore,
+  putDataIntoCartAndSaveSecureStore,
+  saveCartToSecureStore,
+  deleteCartFromSecureStore,
+} from "../../../../components/secureStore";
 
 const { width, height } = Dimensions.get("window");
-
-
 
 const GymBooking = ({ navigation }) => {
   const [gymList, setGymList] = useState([]);
@@ -35,10 +39,19 @@ const GymBooking = ({ navigation }) => {
   const [currentGymDetails, setCurrentGymDetails] = useState({});
   const [errorMessages, setErrorMessages] = useState("");
   const [isValid, setIsValid] = useState(true);
+  const [imageError, setImageError] = useState({});
 
+  const [carouselImages, setCarouselImages] = useState([
+    { uri: require("../../../../../assets/images/gym.jpg"), loaded: false },
+    { uri: require("../../../../../assets/images/gym-one.jpg"), loaded: false },
+    { uri: require("../../../../../assets/images/gym-two.jpg"), loaded: false },
+  ]);
   const [bookGymModel, setBookGymModel] = useState({
-    gymId: 0, monthRange: 0,
-    price: 0, index: 0, name: ""
+    gymId: 0,
+    monthRange: 0,
+    price: 0,
+    index: 0,
+    name: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -46,36 +59,28 @@ const GymBooking = ({ navigation }) => {
   const genderOptions = ["All", "Male", "Female"];
   const monthOptions = ["Jan-Mar", "Apr-Jun", "Jul-Sep", "Oct-Dec"];
 
-  
   useEffect(() => {
     if (isFocused) {
-
       setGymList([]);
       fetchGyms();
     }
   }, [isFocused]);
 
-
-
   const fetchGyms = async () => {
-
     setLoading(true);
     try {
-      const response = await axios.get("http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" + selectedGender
+      const response = await axios.get(
+        "http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" +
+          selectedGender
       );
 
       if (response.data.success) {
-
         setGymList(response.data.list);
-
       } else {
-
         Alert.alert("Error", response.data.message);
       }
     } catch (error) {
-
       Alert.alert("Error", "Failed to fetch gyms.");
-
     } finally {
       setLoading(false);
     }
@@ -96,19 +101,16 @@ const GymBooking = ({ navigation }) => {
       setSelectedGender(option);
       fetchGyms();
     } else {
-
       setSelectedMonths({ ...selectedMonths, [currentDropdown]: option });
-
     }
     closeDropdown();
   };
 
-  const carouselImages = [
-    require("../../../../../assets/images/gym.jpg"),
-    require("../../../../../assets/images/gym-one.jpg"), // Add more images as needed
-    require("../../../../../assets/images/gym-two.jpg"),
-  ];
-
+  // const carouselImages = [
+  //   require("../../../../../assets/images/gym.jpg"),
+  //   require("../../../../../assets/images/gym-one.jpg"), // Add more images as needed
+  //   require("../../../../../assets/images/gym-two.jpg"),
+  // ];
 
   const openDetailModal = (gym) => {
     setCurrentGymDetails(gym);
@@ -120,17 +122,20 @@ const GymBooking = ({ navigation }) => {
   };
 
   const addToBookingCart = async (gym) => {
-   // const selectedMonth = selectedMonths[gym.id];
-   const selectedMonth = selectedMonths[gym.id];
-  const monthRange = Object.values(selectedMonth)[0];
-  console.log(gym.price);
+    // const selectedMonth = selectedMonths[gym.id];
+    const selectedMonth = selectedMonths[gym.id];
+    const monthRange = Object.values(selectedMonth)[0];
+    console.log(gym.price);
     setBookGymModel({
-      ...bookGymModel, price: gym.price, name: gym.name+", For "+gym.gender, gymId: gym.id,
-      monthRange:monthRange
+      ...bookGymModel,
+      price: gym.price,
+      name: gym.name + ", For " + gym.gender,
+      gymId: gym.id,
+      monthRange: monthRange,
     });
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem("token");
     if (token == null) {
-      navigation.navigate("Login")
+      navigation.navigate("Login");
     }
     try {
       console.warn(bookGymModel);
@@ -142,71 +147,82 @@ const GymBooking = ({ navigation }) => {
         setIsValid(true);
         setErrorMessages("");
         Alert.alert(
-          'Confirm',
-          'Are you sure you want to continue?',
+          "Confirm",
+          "Are you sure you want to continue?",
           [
             {
-              text: 'Cancel',
-              onPress: () => {
-
-              },
-              style: 'cancel',
+              text: "Cancel",
+              onPress: () => {},
+              style: "cancel",
             },
             {
-              text: 'Yes', onPress: async () => {
-                if (await getCartFromSecureStore() == null) {
+              text: "Yes",
+              onPress: async () => {
+                if ((await getCartFromSecureStore()) == null) {
                   console.log("Cart was empty");
-                  const guestId = await AsyncStorage.getItem('loginId');
+                  const guestId = await AsyncStorage.getItem("loginId");
                   console.warn(guestId);
-                  await saveCartToSecureStore(
-                    {
-                      bookingModel: {
-                        id: 0, referenceNumber: " ", bookingAMount: 0,
-                        bookingDate: new Date(),
-                        paidAmount: 0, status: "UnPaid",
-                        notes: "", guestId: guestId,
-                      },
-                      paymentDetail: {
-                        paidAmount: 0, bookingId: 0,
-                        cardNumber: "", nameOnCard: "", expiryYear: "",
-                        expiryMonth: "", cVV: "", transactionId: ""
-                      },
-                      lstRoom: [], lstRoomService: [],
-                      lstGym: [], lstSpa: [], lstEvent: []
-                    }
-                  );
-                 
+                  await saveCartToSecureStore({
+                    bookingModel: {
+                      id: 0,
+                      referenceNumber: " ",
+                      bookingAMount: 0,
+                      bookingDate: new Date(),
+                      paidAmount: 0,
+                      status: "UnPaid",
+                      notes: "",
+                      guestId: guestId,
+                    },
+                    paymentDetail: {
+                      paidAmount: 0,
+                      bookingId: 0,
+                      cardNumber: "",
+                      nameOnCard: "",
+                      expiryYear: "",
+                      expiryMonth: "",
+                      cVV: "",
+                      transactionId: "",
+                    },
+                    lstRoom: [],
+                    lstRoomService: [],
+                    lstGym: [],
+                    lstSpa: [],
+                    lstEvent: [],
+                  });
                 }
-                const cart=await getCartFromSecureStore();
-                const index = (cart.lstGym != null && cart.lstGym.length > 0) ? cart.lstGym.length + 1 : 1;
-                console.warn(cart.lstGym)
+                const cart = await getCartFromSecureStore();
+                const index =
+                  cart.lstGym != null && cart.lstGym.length > 0
+                    ? cart.lstGym.length + 1
+                    : 1;
+                console.warn(cart.lstGym);
                 setBookGymModel({ ...bookGymModel, index: index });
                 const updatedCart = { ...cart };
-                if (updatedCart.lstGym ==undefined || updatedCart.lstGym == null || updatedCart.lstGym.length == 0) {
+                if (
+                  updatedCart.lstGym == undefined ||
+                  updatedCart.lstGym == null ||
+                  updatedCart.lstGym.length == 0
+                ) {
                   updatedCart.lstGym = [];
                 }
                 updatedCart.lstGym.push({ ...bookGymModel, index: index });
                 await saveCartToSecureStore(updatedCart);
                 console.warn(await getCartFromSecureStore());
                 navigation.navigate("Cart");
-
-              }
+              },
             },
           ],
-          { cancelable: false },
+          { cancelable: false }
         );
-
       } else {
         console.warn(response.data.message);
         Alert.alert("Error", response.data.message);
         setIsValid(false);
-   
       }
     } catch (error) {
-      console.warn(error)
+      console.warn(error);
       Alert.alert("Error", "An error occurred while validating capacity.");
-    }
-    finally {
+    } finally {
     }
   };
 
@@ -222,8 +238,33 @@ const GymBooking = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-
-
+  const placeholderImage = require("../../../../../assets/images/placeholder.jpg");
+  const onImageLoad = useCallback((index) => {
+    setCarouselImages((prevImages) =>
+      prevImages.map((img, i) => (i === index ? { ...img, loaded: true } : img))
+    );
+  }, []);
+  const renderCarouselItem = useCallback(
+    ({ item, index }) => (
+      <View style={styles.carouselImageContainer}>
+        <Image
+          source={item.loaded ? item.uri : placeholderImage}
+          style={styles.carouselImage}
+          contentFit="cover"
+          transition={300}
+          onLoad={() => onImageLoad(index)}
+        />
+        {!item.loaded && (
+          <ActivityIndicator
+            style={styles.imageLoader}
+            size="large"
+            color="#180161"
+          />
+        )}
+      </View>
+    ),
+    [onImageLoad]
+  );
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.carouselContainer}>
@@ -234,9 +275,7 @@ const GymBooking = ({ navigation }) => {
           autoPlay={true}
           data={carouselImages}
           scrollAnimationDuration={1000}
-          renderItem={({ item }) => (
-            <Image source={item} style={styles.carouselImage} />
-          )}
+          renderItem={renderCarouselItem}
         />
       </View>
       <View style={styles.tagContainerWrapper}>
@@ -252,29 +291,33 @@ const GymBooking = ({ navigation }) => {
       <View style={styles.row}>
         {gymList != undefined &&
           gymList.map((gym, index) => {
-            return <View style={styles.boxcontainer} key={index}>
-              <View style={styles.box}>
-                <Text
-                  style={styles.title}
-                  onPress={() => openDetailModal(gym)}
-                >
-                  {gym.name}
-                </Text>
-                <Text style={styles.timing}>Timing: {gym.openingTime} - {gym.closingTime}</Text>
-                <Text style={styles.fee}>Fee: ${gym.fee}</Text>
+            return (
+              <View style={styles.boxcontainer} key={index}>
+                <View style={styles.box}>
+                  <Text
+                    style={styles.title}
+                    onPress={() => openDetailModal(gym)}
+                  >
+                    {gym.name}
+                  </Text>
+                  <Text style={styles.timing}>
+                    Timing: {gym.openingTime} - {gym.closingTime}
+                  </Text>
+                  <Text style={styles.fee}>Fee: ${gym.fee}</Text>
 
-                <Text style={styles.sessionLabel}>Monthly Session</Text>
+                  <Text style={styles.sessionLabel}>Monthly Session</Text>
 
-                {renderDropdown(gym.id, selectedMonths[gym.id])}
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={async () => await addToBookingCart(gym)}
-                >
-                  <Icon name="calendar" size={16} color="#fff" />
-                  <Text style={styles.buttonText}>Book Now</Text>
-                </TouchableOpacity>
+                  {renderDropdown(gym.id, selectedMonths[gym.id])}
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={async () => await addToBookingCart(gym)}
+                  >
+                    <Icon name="calendar" size={16} color="#fff" />
+                    <Text style={styles.buttonText}>Book Now</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
+            );
           })}
       </View>
 
