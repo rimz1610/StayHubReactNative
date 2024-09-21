@@ -37,7 +37,7 @@ const filterSchema = Yup.object().shape({
   checkOutDate: Yup.date().required("Required"),
   noOfAdditionalPerson: Yup.number().required("Required"),
 });
-const RoomBooking = () => {
+const RoomBooking = ({ navigation }) => {
   const [data, setData] = useState([]);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -102,7 +102,115 @@ const RoomBooking = () => {
     fetchRoomData();
   };
 
-  handleAddToBooking = async (item) => {
+  // handleAddToBooking = async (item) => {
+  //   console.log("Inside Handle Booking");
+  //   setBookRoomModel({
+  //     roomId: item.id,
+  //     checkInDate: formik.values.checkInDate,
+  //     checkOutDate: formik.values.checkOutDate,
+  //     itemTotalPrice: item.price,
+  //     index: 0,
+  //     name: item.name,
+  //     maxPerson: formik.values.noOfAdditionalPerson,
+  //     noofNightStay: nights,
+  //   });
+  //   const token = await AsyncStorage.getItem("token");
+  //   if (token == null) {
+  //     navigation.navigate("Login");
+  //   }
+  //   if (bookSpaModel.price == 0) {
+  //     Alert.alert("Oops", "Please select spa");
+  //   }
+  //   try {
+  //     const response = await validateDatesFromSecureStore(
+  //       item.id,
+  //       formik.values.checkInDate,
+  //       formik.values.checkOutDate
+  //     );
+  //     if (!response) {
+  //       setIsValid(true);
+  //       setErrorMessages("");
+  //       Alert.alert(
+  //         "Confirm",
+  //         "Are you sure you want to continue?",
+  //         [
+  //           {
+  //             text: "Cancel",
+  //             onPress: () => {},
+  //             style: "cancel",
+  //           },
+  //           {
+  //             text: "Yes",
+  //             onPress: async () => {
+  //               if ((await getCartFromSecureStore()) == null) {
+  //                 console.log("Cart was empty");
+  //                 const guestId = await AsyncStorage.getItem("loginId");
+  //                 console.warn(guestId);
+  //                 await saveCartToSecureStore({
+  //                   bookingModel: {
+  //                     id: 0,
+  //                     referenceNumber: " ",
+  //                     bookingAmount: 0,
+  //                     bookingDate: new Date(),
+  //                     paidAmount: 0,
+  //                     status: "UnPaid",
+  //                     notes: " ",
+  //                     guestId: guestId,
+  //                   },
+  //                   paymentDetail: {
+  //                     paidAmount: 0,
+  //                     bookingId: 0,
+  //                     cardNumber: "4242424242424242",
+  //                     nameOnCard: "Test",
+  //                     expiryYear: "2025",
+  //                     expiryMonth: "01",
+  //                     cVV: "123",
+  //                     transactionId: " ",
+  //                   },
+  //                   lstRoom: [],
+  //                   lstRoomService: [],
+  //                   lstGym: [],
+  //                   lstSpa: [],
+  //                   lstEvent: [],
+  //                 });
+  //               }
+  //               const cart = await getCartFromSecureStore();
+  //               const index =
+  //                 cart.lstRoom != null && cart.lstRoom.length > 0
+  //                   ? cart.lstRoom.length + 1
+  //                   : 1;
+  //               console.warn(cart.lstRoom);
+  //               setBookRoomModel({ ...bookRoomModel, index: index });
+  //               const updatedCart = { ...cart };
+  //               if (
+  //                 updatedCart.lstRoom == undefined ||
+  //                 updatedCart.lstRoom == null ||
+  //                 updatedCart.lstRoom.length == 0
+  //               ) {
+  //                 updatedCart.lstRoom = [];
+  //               }
+  //               updatedCart.lstRoom.push({ ...bookRoomModel, index: index });
+  //               await saveCartToSecureStore(updatedCart);
+  //               console.warn(await getCartFromSecureStore());
+  //               navigation.navigate("Cart");
+  //             },
+  //           },
+  //         ],
+  //         { cancelable: false }
+  //       );
+  //     } else {
+  //       setIsValid(false);
+  //       setErrorMessages(response.data.message);
+  //     }
+  //   } catch (error) {
+  //     console.warn(error);
+  //     Alert.alert("Error", "An error occurred while validating capacity.");
+  //   } finally {
+  //   }
+  // };
+
+  const handleAddToBooking = async (item) => {
+    console.log("Inside Handle Booking");
     setBookRoomModel({
       roomId: item.id,
       checkInDate: formik.values.checkInDate,
@@ -113,92 +221,107 @@ const RoomBooking = () => {
       maxPerson: formik.values.noOfAdditionalPerson,
       noofNightStay: nights,
     });
+
     const token = await AsyncStorage.getItem("token");
     if (token == null) {
       navigation.navigate("Login");
+      return;
     }
-    if (bookSpaModel.price == 0) {
-      Alert.alert("Oops", "Please select spa");
-    }
+
+    // if (bookSpaModel.price == 0) {
+    //   Alert.alert("Oops", "Please select spa");
+    //   return;
+    // }
+
     try {
-      const response = await validateDatesFromSecureStore(
+      const datesAreValid = await validateDatesFromSecureStore(
         item.id,
         formik.values.checkInDate,
         formik.values.checkOutDate
       );
-      if (!response) {
-        setIsValid(true);
-        setErrorMessages("");
-        Alert.alert(
-          "Confirm",
-          "Are you sure you want to continue?",
-          [
-            {
-              text: "Cancel",
-              onPress: () => {},
-              style: "cancel",
-            },
-            {
-              text: "Yes",
-              onPress: async () => {
-                if ((await getCartFromSecureStore()) == null) {
-                  console.log("Cart was empty");
-                  const guestId = await AsyncStorage.getItem("loginId");
-                  console.warn(guestId);
-                  await saveCartToSecureStore(
-                    {
-                      bookingModel: {
-                        id: 0, referenceNumber: " ", bookingAmount: 0,
-                        bookingDate: new Date(),
-                        paidAmount: 0, status: "UnPaid",
-                        notes: " ", guestId: guestId,
-                      },
-                      paymentDetail: {
-                        paidAmount: 0, bookingId: 0,
-                        cardNumber: "4242424242424242", nameOnCard: "Test", expiryYear: "2025",
-                        expiryMonth: "01", cVV: "123", transactionId: " "
-                      },
-                      lstRoom: [], lstRoomService: [],
-                      lstGym: [], lstSpa: [], lstEvent: []
-                    }
-                  );
-                 
-                }
-                const cart = await getCartFromSecureStore();
-                const index =
-                  cart.lstRoom != null && cart.lstRoom.length > 0
-                    ? cart.lstRoom.length + 1
-                    : 1;
-                console.warn(cart.lstRoom);
-                setBookRoomModel({ ...bookRoomModel, index: index });
-                const updatedCart = { ...cart };
-                if (
-                  updatedCart.lstRoom == undefined ||
-                  updatedCart.lstRoom == null ||
-                  updatedCart.lstRoom.length == 0
-                ) {
-                  updatedCart.lstRoom = [];
-                }
-                updatedCart.lstRoom.push({ ...bookRoomModel, index: index });
-                await saveCartToSecureStore(updatedCart);
-                console.warn(await getCartFromSecureStore());
-                navigation.navigate("Cart");
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-      } else {
+
+      if (!datesAreValid) {
         setIsValid(false);
-        setErrorMessages(response.data.message);
+        setErrorMessages(
+          "The selected dates conflict with an existing booking for this room."
+        );
+        Alert.alert(
+          "Error",
+          "The selected dates are not available for this room."
+        );
+        return;
       }
+
+      setIsValid(true);
+      setErrorMessages("");
+
+      Alert.alert(
+        "Confirm",
+        "Are you sure you want to continue?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Yes",
+            onPress: async () => {
+              let cart = await getCartFromSecureStore();
+              if (!cart) {
+                console.log("Cart was empty");
+                const guestId = await AsyncStorage.getItem("loginId");
+                console.warn(guestId);
+                cart = {
+                  bookingModel: {
+                    id: 0,
+                    referenceNumber: " ",
+                    bookingAmount: 0,
+                    bookingDate: new Date(),
+                    paidAmount: 0,
+                    status: "UnPaid",
+                    notes: " ",
+                    guestId: guestId,
+                  },
+                  paymentDetail: {
+                    paidAmount: 0,
+                    bookingId: 0,
+                    cardNumber: "4242424242424242",
+                    nameOnCard: "Test",
+                    expiryYear: "2025",
+                    expiryMonth: "01",
+                    cVV: "123",
+                    transactionId: " ",
+                  },
+                  lstRoom: [],
+                  lstRoomService: [],
+                  lstGym: [],
+                  lstSpa: [],
+                  lstEvent: [],
+                };
+              }
+
+              const index = cart.lstRoom ? cart.lstRoom.length + 1 : 1;
+              const updatedBookRoomModel = { ...bookRoomModel, index: index };
+
+              cart.lstRoom = cart.lstRoom || [];
+              cart.lstRoom.push(updatedBookRoomModel);
+
+              await saveCartToSecureStore(cart);
+              console.warn(await getCartFromSecureStore());
+              navigation.navigate("Cart");
+            },
+          },
+        ],
+        { cancelable: false }
+      );
     } catch (error) {
-      console.warn(error);
-      Alert.alert("Error", "An error occurred while validating capacity.");
-    } finally {
+      console.error("Error in handleAddToBooking:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred. Please try again later."
+      );
     }
   };
-
   const fetchRoomData = async () => {
     if (currentRoomId > 0) {
       try {
@@ -316,9 +439,7 @@ const RoomBooking = () => {
             <Text style={styles.viewDetailsText}>View Details</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => {
-              /* Handle booking */
-            }}
+            onPress={() => handleAddToBooking(item)}
             style={styles.bookingButton}
           >
             <Ionicons name="calendar" size={17} color="#fff" />

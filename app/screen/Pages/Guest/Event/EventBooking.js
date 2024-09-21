@@ -152,24 +152,33 @@ const EventBooking = ({ route, navigation }) => {
                   console.log("Cart was empty");
                   const guestId = await AsyncStorage.getItem("loginId");
                   console.warn(guestId);
-                  await saveCartToSecureStore(
-                    {
-                      bookingModel: {
-                        id: 0, referenceNumber: " ", bookingAmount: 0,
-                        bookingDate: new Date(),
-                        paidAmount: 0, status: "UnPaid",
-                        notes: " ", guestId: guestId,
-                      },
-                      paymentDetail: {
-                        paidAmount: 0, bookingId: 0,
-                        cardNumber: "4242424242424242", nameOnCard: "Test", expiryYear: "2025",
-                        expiryMonth: "01", cVV: "123", transactionId: " "
-                      },
-                      lstRoom: [], lstRoomService: [],
-                      lstGym: [], lstSpa: [], lstEvent: []
-                    }
-                  );
-                 
+                  await saveCartToSecureStore({
+                    bookingModel: {
+                      id: 0,
+                      referenceNumber: " ",
+                      bookingAmount: 0,
+                      bookingDate: new Date(),
+                      paidAmount: 0,
+                      status: "UnPaid",
+                      notes: " ",
+                      guestId: guestId,
+                    },
+                    paymentDetail: {
+                      paidAmount: 0,
+                      bookingId: 0,
+                      cardNumber: "4242424242424242",
+                      nameOnCard: "Test",
+                      expiryYear: "2025",
+                      expiryMonth: "01",
+                      cVV: "123",
+                      transactionId: " ",
+                    },
+                    lstRoom: [],
+                    lstRoomService: [],
+                    lstGym: [],
+                    lstSpa: [],
+                    lstEvent: [],
+                  });
                 }
                 const cart = await getCartFromSecureStore();
                 const index =
@@ -296,7 +305,6 @@ const EventBooking = ({ route, navigation }) => {
                 });
               }}
             />
-
             <Text style={styles.ticketPrice}>
               ${selectedEventDetail.adultTicketPrice} per adult
             </Text>

@@ -147,6 +147,9 @@ const putDataIntoCartAndSaveSecureStore = async (obj, type) => {
 };
 
 const reIndexing = (lstObj) => {
+  if (!lstObj || lstObj.length === 0) {
+    return []; // If the list is undefined or empty, return an empty array
+  }
   return lstObj.map((item, index) => ({
     ...item,
     index: index + 1,
@@ -194,33 +197,28 @@ const removeDataFromCartAndSaveLocalStorage = async (Index, type) => {
     if (cart) {
       switch (type) {
         case "R":
-          cart.lstRoom = cart.lstRoom.filter(function (data) {
-            return data.index !== Index;
-          });
+          cart.lstRoom =
+            cart.lstRoom?.filter((data) => data.index !== Index) || [];
           cart.lstRoom = reIndexing(cart.lstRoom);
           break;
         case "RS":
-          cart.lstRoomService = cart.lstRoomService.filter(function (data) {
-            return data.index !== Index;
-          });
+          cart.lstRoomService =
+            cart.lstRoomService?.filter((data) => data.index !== Index) || [];
           cart.lstRoomService = reIndexing(cart.lstRoomService);
           break;
         case "G":
-          cart.lstGym = cart.lstGym.filter(function (data) {
-            return data.index !== Index;
-          });
+          cart.lstGym =
+            cart.lstGym?.filter((data) => data.index !== Index) || [];
           cart.lstGym = reIndexing(cart.lstGym);
           break;
         case "S":
-          cart.lstSpa = cart.lstSpa.filter(function (data) {
-            return data.index !== Index;
-          });
-          cart.lst9DayTour = reIndexing(cart.lst9DayTour);
+          cart.lstSpa =
+            cart.lstSpa?.filter((data) => data.index !== Index) || [];
+          cart.lstSpa = reIndexing(cart.lstSpa);
           break;
         case "E":
-          cart.lstEvent = cart.lstEvent.filter(function (data) {
-            return data.index !== Index;
-          });
+          cart.lstEvent =
+            cart.lstEvent?.filter((data) => data.index !== Index) || [];
           cart.lstEvent = reIndexing(cart.lstEvent);
           break;
         default:

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text, Alert, TextInput,
+  Text,
+  Alert,
+  TextInput,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -12,7 +14,13 @@ import {
 import RNPickerSelect from "react-native-picker-select";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import { getCartFromSecureStore, putDataIntoCartAndSaveSecureStore, removeDataFromCartAndSaveLocalStorage, deleteCartFromSecureStore, saveCartToSecureStore } from "../../../../components/secureStore";
+import {
+  getCartFromSecureStore,
+  putDataIntoCartAndSaveSecureStore,
+  removeDataFromCartAndSaveLocalStorage,
+  deleteCartFromSecureStore,
+  saveCartToSecureStore,
+} from "../../../../components/secureStore";
 import moment from "moment";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -24,10 +32,10 @@ const paymentSchema = Yup.object().shape({
   nameOnCard: Yup.string().required("Required"),
   expiryYear: Yup.string().required("Required"),
   expiryMonth: Yup.string().required("Required"),
-  cVV: Yup.string().min(4).max(4).required("Required")
+  cVV: Yup.string().min(4).max(4).required("Required"),
 });
 const ConfirmBooking = ({ navigation }) => {
-
+  // const [modalVisible, setModalVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   // const [bookings, setBookings] = useState([
@@ -46,12 +54,15 @@ const ConfirmBooking = ({ navigation }) => {
   //   { name: "Room Service", details: "Cleaning, 2 times", totalItem: 50 },
   // ]);
 
-
-  const handleDeleteBooking = (index, type) => {
-    //setBookings(bookings.filter((_, i) => i !== index));
-    removeDataFromCartAndSaveLocalStorage(index, type);
-    FillItems();
-
+  const handleDeleteBooking = async (index, type) => {
+    try {
+      await removeDataFromCartAndSaveLocalStorage(index, type);
+      await FillItems(); // Refresh cart after item is removed
+      Alert.alert("Success", "Item successfully removed.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to remove item.");
+    }
+    // setCartModel(false);
   };
 
   // const totalAmount = bookings.reduce(
@@ -61,50 +72,72 @@ const ConfirmBooking = ({ navigation }) => {
 
   const [cart, setCartModel] = useState({
     bookingModel: {
-      id: 0, referenceNumber: " ", bookingAmount: 0,
+      id: 0,
+      referenceNumber: " ",
+      bookingAmount: 0,
       bookingDate: new Date(),
-      paidAmount: 0, status: "UnPaid",
-      notes: " ", guestId: 0,
+      paidAmount: 0,
+      status: "UnPaid",
+      notes: " ",
+      guestId: 0,
     },
     paymentDetail: {
-      paidAmount: 0, bookingId: 0,
-      cardNumber: "4242424242424242", nameOnCard: "Test", expiryYear: "2025",
-      expiryMonth: "01", cVV: "123", transactionId: " "
+      paidAmount: 0,
+      bookingId: 0,
+      cardNumber: "4242424242424242",
+      nameOnCard: "Test",
+      expiryYear: "2025",
+      expiryMonth: "01",
+      cVV: "123",
+      transactionId: " ",
     },
-    lstRoom: [], lstRoomService: [],
-    lstGym: [], lstSpa: [], lstEvent: []
+    lstRoom: [],
+    lstRoomService: [],
+    lstGym: [],
+    lstSpa: [],
+    lstEvent: [],
   });
   const isFocused = useIsFocused();
 
   const formik = useFormik({
     initialValues: {
-      cardNumber: "", nameOnCard: "", expiryYear: "2024",
-      expiryMonth: "01", cVV: ""
+      cardNumber: "",
+      nameOnCard: "",
+      expiryYear: "2024",
+      expiryMonth: "01",
+      cVV: "",
     },
     validationSchema: paymentSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        navigation.navigate("BookingReceipt")
+        navigation.navigate("BookingReceipt");
         setSubmitting(true);
         setCartModel({
-          ...cart, paymentDetail: {
-            paidAmount: cart.bookingAmount, bookingId: 0,
-            cardNumber: values.cardNumber, nameOnCard: values.nameOnCard, expiryYear: values.expiryYear,
-            expiryMonth: values.expiryMonth, cVV: values.cVV, transactionId: "stayhub"
-          }
+          ...cart,
+          paymentDetail: {
+            paidAmount: cart.bookingAmount,
+            bookingId: 0,
+            cardNumber: values.cardNumber,
+            nameOnCard: values.nameOnCard,
+            expiryYear: values.expiryYear,
+            expiryMonth: values.expiryMonth,
+            cVV: values.cVV,
+            transactionId: "stayhub",
+          },
         });
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Cart/Checkout",
-          cart, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+          cart,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         if (response.data.success) {
-          navigation.navigate("BookingReceipt", { id: response.data.data.id })
+          navigation.navigate("BookingReceipt", { id: response.data.data.id });
         } else {
           Alert.alert("Error", response.data.message);
         }
@@ -121,139 +154,193 @@ const ConfirmBooking = ({ navigation }) => {
     }
   }, [isFocused]);
   const FillItems = async () => {
-
     setLoading(true);
     try {
-      setCartModel(await getCartFromSecureStore())
+      setCartModel(await getCartFromSecureStore());
     } catch (error) {
       console.warn(error);
       Alert.alert("Error", error.message ?? "Something went wrong");
-
     } finally {
       setLoading(false);
     }
   };
   const getDetails = (type, item) => {
-
     switch (type) {
       case "R":
-        const additional = item.maxPerson > 0 ? ` with ${item.maxPerson} additional person(s).` : ".";
-        return `${item.roomName} - Check-in: ${item.checkInDate.toLocaleString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' })}, Check-out: ${item.checkOutDate.toLocaleString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' })}, Total ${item.noofNightStay} night(s)${additional}`;
+        const additional =
+          item.maxPerson > 0
+            ? ` with ${item.maxPerson} additional person(s).`
+            : ".";
+        return `${item.roomName} - Check-in: ${item.checkInDate.toLocaleString(
+          "en-GB",
+          { day: "2-digit", month: "short", year: "numeric" }
+        )}, Check-out: ${item.checkOutDate.toLocaleString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}, Total ${item.noofNightStay} night(s)${additional}`;
 
       case "E":
-        const aTicket = item.adultTickets > 0 ? ` Adult Ticket(s): ${item.adultTickets}` : ".";
-        const cTicket = item.childTickets > 0 ? item.adultTickets > 0 ? `, ` : "" +
-          ` Child Ticket(s): ${item.childTickets}` : "";
+        const aTicket =
+          item.adultTickets > 0
+            ? ` Adult Ticket(s): ${item.adultTickets}`
+            : ".";
+        const cTicket =
+          item.childTickets > 0
+            ? item.adultTickets > 0
+              ? `, `
+              : "" + ` Child Ticket(s): ${item.childTickets}`
+            : "";
         return `${item.name} - ${aTicket}${cTicket}`;
       case "G":
         return `${item.name}, Month: ${item.monthRange}`;
       case "S":
-        return `${item.name}, Total Persons:  ${item.noOfPersons}, Date ${moment(item.spaDate).format("MM/DD/YYYY")}, Timing ${item.time}`;
+        return `${item.name}, Total Persons:  ${
+          item.noOfPersons
+        }, Date ${moment(item.spaDate).format("MM/DD/YYYY")}, Timing ${
+          item.time
+        }`;
       case "RS":
-        return `${item.roomName}, Service Request:  ${item.serviceName}, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY")}`;
+        return `${item.roomName}, Service Request:  ${
+          item.serviceName
+        }, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY")}`;
       default:
         return "";
     }
   };
-
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#180161" />
+      {/* <StatusBar barStyle="light-content" backgroundColor="#180161" /> */}
       <View style={styles.container}>
         <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.navigate("Cart")}
+          >
+            <Icon name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
           <Text style={styles.title}>Confirm Booking</Text>
+          <View style={styles.placeholder} />
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.bookingDetailsSection}>
             <Text style={styles.sectionTitle}>Booking Details</Text>
-            {cart.lstRoom != null && cart.lstRoom.map((item, index) => (
-              <View key={item.roomId + "room" + index} style={styles.bookingItem}>
-                <View style={styles.bookingInfo}>
-                  <Text style={styles.bookingName}>Room</Text>
-                  <Text style={styles.bookingDetails}>{getDetails("R", item)}</Text>
-                  <Text style={styles.bookingTotal}>
-                    {item.itemTotalPrice}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => handleDeleteBooking(item.index, "G")}
-                  style={styles.deleteButton}
+            {cart.lstRoom != null &&
+              cart.lstRoom.map((item, index) => (
+                <View
+                  key={item.roomId + "room" + index}
+                  style={styles.bookingItem}
                 >
-                  <Icon name="delete" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            {cart.lstRoomService != null && cart.lstRoomService.map((item, index) => (
-              <View key={item.roomId + "roomservice" + index} style={styles.bookingItem}>
-                <View style={styles.bookingInfo}>
-                  <Text style={styles.bookingName}>Service</Text>
-                  <Text style={styles.bookingDetails}>{getDetails("RS", item)}</Text>
-                  <Text style={styles.bookingTotal}>
-                    {item.itemTotalPrice}
-                  </Text>
+                  <View style={styles.bookingInfo}>
+                    <Text style={styles.bookingName}>Room</Text>
+                    <Text style={styles.bookingDetails}>
+                      {getDetails("R", item)}
+                    </Text>
+                    <Text style={styles.bookingTotal}>
+                      {item.itemTotalPrice}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteBooking(item.index, "G")}
+                    style={styles.deleteButton}
+                  >
+                    <Icon name="delete" size={24} color="#FF3B30" />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => handleDeleteBooking(item.index, "RS")}
-                  style={styles.deleteButton}
+              ))}
+            {cart.lstRoomService != null &&
+              cart.lstRoomService.map((item, index) => (
+                <View
+                  key={item.roomId + "roomservice" + index}
+                  style={styles.bookingItem}
                 >
-                  <Icon name="delete" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            {cart.lstEvent != null && cart.lstEvent.map((item, index) => (
-              <View key={item.eventId + "event" + index} style={styles.bookingItem}>
-                <View style={styles.bookingInfo}>
-                  <Text style={styles.bookingName}>Event</Text>
-                  <Text style={styles.bookingDetails}>{getDetails("E", item)}</Text>
-                  <Text style={styles.bookingTotal}>
-                    {item.itemTotalPrice}
-                  </Text>
+                  <View style={styles.bookingInfo}>
+                    <Text style={styles.bookingName}>Service</Text>
+                    <Text style={styles.bookingDetails}>
+                      {getDetails("RS", item)}
+                    </Text>
+                    <Text style={styles.bookingTotal}>
+                      {item.itemTotalPrice}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteBooking(item.index, "RS")}
+                    style={styles.deleteButton}
+                  >
+                    <Icon name="delete" size={24} color="#FF3B30" />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => handleDeleteBooking(item.index, "E")}
-                  style={styles.deleteButton}
+              ))}
+            {cart.lstEvent != null &&
+              cart.lstEvent.map((item, index) => (
+                <View
+                  key={item.eventId + "event" + index}
+                  style={styles.bookingItem}
                 >
-                  <Icon name="delete" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            {cart.lstGym != null && cart.lstGym.map((item, index) => (
-              <View key={item.gymId + "gym" + index} style={styles.bookingItem}>
-                <View style={styles.bookingInfo}>
-                  <Text style={styles.bookingName}>Gym</Text>
-                  <Text style={styles.bookingDetails}>{getDetails("G", item)}</Text>
-                  <Text style={styles.bookingTotal}>
-                    {item.price}
-                  </Text>
+                  <View style={styles.bookingInfo}>
+                    <Text style={styles.bookingName}>Event</Text>
+                    <Text style={styles.bookingDetails}>
+                      {getDetails("E", item)}
+                    </Text>
+                    <Text style={styles.bookingTotal}>
+                      {item.itemTotalPrice}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteBooking(item.index, "E")}
+                    style={styles.deleteButton}
+                  >
+                    <Icon name="delete" size={24} color="#FF3B30" />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => handleDeleteBooking(item.index, "G")}
-                  style={styles.deleteButton}
+              ))}
+            {cart.lstGym != null &&
+              cart.lstGym.map((item, index) => (
+                <View
+                  key={item.gymId + "gym" + index}
+                  style={styles.bookingItem}
                 >
-                  <Icon name="delete" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            {cart.lstSpa != null && cart.lstSpa.map((item, index) => (
-              <View key={item.spaId + "spa" + index} style={styles.bookingItem}>
-                <View style={styles.bookingInfo}>
-                  <Text style={styles.bookingName}>Spa</Text>
-                  <Text style={styles.bookingDetails}>{getDetails("S", item)}</Text>
-                  <Text style={styles.bookingTotal}>
-                    {item.price.toLocaleString("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                    })}
-                  </Text>
+                  <View style={styles.bookingInfo}>
+                    <Text style={styles.bookingName}>Gym</Text>
+                    <Text style={styles.bookingDetails}>
+                      {getDetails("G", item)}
+                    </Text>
+                    <Text style={styles.bookingTotal}>{item.price}</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteBooking(item.index, "G")}
+                    style={styles.deleteButton}
+                  >
+                    <Icon name="delete" size={24} color="#FF3B30" />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => handleDeleteBooking(item.index, "S")}
-                  style={styles.deleteButton}
+              ))}
+            {cart.lstSpa != null &&
+              cart.lstSpa.map((item, index) => (
+                <View
+                  key={item.spaId + "spa" + index}
+                  style={styles.bookingItem}
                 >
-                  <Icon name="delete" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-              </View>
-            ))}
+                  <View style={styles.bookingInfo}>
+                    <Text style={styles.bookingName}>Spa</Text>
+                    <Text style={styles.bookingDetails}>
+                      {getDetails("S", item)}
+                    </Text>
+                    <Text style={styles.bookingTotal}>
+                      {item.price.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      })}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteBooking(item.index, "S")}
+                    style={styles.deleteButton}
+                  >
+                    <Icon name="delete" size={24} color="#FF3B30" />
+                  </TouchableOpacity>
+                </View>
+              ))}
             {/* {bookings.map((booking, index) => (
               <View key={index} style={styles.bookingItem}>
               <View style={styles.bookingInfo}>
@@ -273,7 +360,9 @@ const ConfirmBooking = ({ navigation }) => {
             ))} */}
             <View style={styles.totalSection}>
               <Text style={styles.totalText}>Total Amount:</Text>
-              <Text style={styles.totalAmount}>{cart.bookingModel.bookingAmount.toFixed(2)}</Text>
+              <Text style={styles.totalAmount}>
+                {cart.bookingModel.bookingAmount.toFixed(2)}
+              </Text>
             </View>
           </View>
 
@@ -292,9 +381,7 @@ const ConfirmBooking = ({ navigation }) => {
               value={formik.values.nameOnCard}
             />
             {formik.touched.nameOnCard && formik.errors.nameOnCard && (
-              <Text style={styles.errorText}>
-                {formik.errors.nameOnCard}
-              </Text>
+              <Text style={styles.errorText}>{formik.errors.nameOnCard}</Text>
             )}
 
             <TextInput
@@ -307,58 +394,68 @@ const ConfirmBooking = ({ navigation }) => {
               value={formik.values.cardNumber}
             />
             {formik.touched.cardNumber && formik.errors.cardNumber && (
-              <Text style={styles.errorText}>
-                {formik.errors.cardNumber}
-              </Text>
+              <Text style={styles.errorText}>{formik.errors.cardNumber}</Text>
             )}
 
             <View style={styles.row}>
-              <RNPickerSelect
-                onValueChange={(value) => formik.setFieldValue("expiryMonth", value)}
-                value={formik.values.expiryMonth}
-                items={[
-                  { label: "01", value: "01" },
-                  { label: "02", value: "02" },
-                  { label: "03", value: "03" },
-                  { label: "04", value: "04" },
-                  { label: "05", value: "05" },
-                  { label: "06", value: "06" },
-                  { label: "07", value: "07" },
-                  { label: "08", value: "08" },
-                  { label: "09", value: "09" },
-                  { label: "10", value: "10" },
-                  { label: "11", value: "11" },
-                  { label: "12", value: "12" },
-                ]}
-                style={pickerSelectStyles}
-              />
-              {formik.touched.expiryMonth && formik.errors.expiryMonth && (
-                <Text style={styles.errorText}>{formik.errors.expiryMonth}</Text>
-              )}
+              <View style={styles.pickerContainer}>
+                <RNPickerSelect
+                  onValueChange={(value) =>
+                    formik.setFieldValue("expiryMonth", value)
+                  }
+                  value={formik.values.expiryMonth}
+                  items={[
+                    { label: "01", value: "01" },
+                    { label: "02", value: "02" },
+                    { label: "03", value: "03" },
+                    { label: "04", value: "04" },
+                    { label: "05", value: "05" },
+                    { label: "06", value: "06" },
+                    { label: "07", value: "07" },
+                    { label: "08", value: "08" },
+                    { label: "09", value: "09" },
+                    { label: "10", value: "10" },
+                    { label: "11", value: "11" },
+                    { label: "12", value: "12" },
+                  ]}
+                  style={pickerSelectStyles}
+                />
+                {formik.touched.expiryMonth && formik.errors.expiryMonth && (
+                  <Text style={styles.errorText}>
+                    {formik.errors.expiryMonth}
+                  </Text>
+                )}
+              </View>
+
+              <View style={styles.pickerContainer}>
+                <RNPickerSelect
+                  onValueChange={(value) =>
+                    formik.setFieldValue("expiryYear", value)
+                  }
+                  value={formik.values.expiryYear}
+                  items={[
+                    { label: "2024", value: "2024" },
+                    { label: "2025", value: "2025" },
+                    { label: "2026", value: "2026" },
+                    { label: "2027", value: "2027" },
+                    { label: "2028", value: "2028" },
+                    { label: "2029", value: "2029" },
+                    { label: "2030", value: "2030" },
+                    { label: "2031", value: "2031" },
+                    { label: "2032", value: "2032" },
+                    { label: "2033", value: "2033" },
+                    { label: "2034", value: "2034" },
+                  ]}
+                  style={pickerSelectStyles}
+                />
+                {formik.touched.expiryYear && formik.errors.expiryYear && (
+                  <Text style={styles.errorText}>
+                    {formik.errors.expiryYear}
+                  </Text>
+                )}
+              </View>
             </View>
-            <View style={styles.row}>
-              <RNPickerSelect
-                onValueChange={(value) => formik.setFieldValue("expiryYear", value)}
-                value={formik.values.expiryYear}
-                items={[
-                  { label: "2024", value: "2024" },
-                  { label: "2025", value: "2025" },
-                  { label: "2026", value: "2026" },
-                  { label: "2027", value: "2027" },
-                  { label: "2028", value: "2028" },
-                  { label: "2029", value: "2029" },
-                  { label: "2030", value: "2030" },
-                  { label: "2031", value: "2031" },
-                  { label: "2032", value: "2032" },
-                  { label: "2033", value: "2033" },
-                  { label: "2034", value: "2034" },
-                ]}
-                style={pickerSelectStyles}
-              />
-              {formik.touched.expiryYear && formik.errors.expiryYear && (
-                <Text style={styles.errorText}>{formik.errors.expiryYear}</Text>
-              )}
-            </View>
+
             <View style={styles.row}>
               <TextInput
                 style={[styles.input, styles.thirdInput]}
@@ -371,9 +468,7 @@ const ConfirmBooking = ({ navigation }) => {
                 value={formik.values.cVV}
               />
               {formik.touched.cVV && formik.errors.cVV && (
-                <Text style={styles.errorText}>
-                  {formik.errors.cVV}
-                </Text>
+                <Text style={styles.errorText}>{formik.errors.cVV}</Text>
               )}
             </View>
 
@@ -409,14 +504,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
   },
   header: {
-    backgroundColor: "#180161",
-    paddingVertical: 20,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#180161",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  backButton: {
+    padding: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     color: "white",
+  },
+  placeholder: {
+    width: 40, // To balance the header layout
   },
   bookingDetailsSection: {
     backgroundColor: "white",
@@ -511,6 +615,19 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center", // To vertically align pickers and inputs
+    marginBottom: 16, // To add space after row components
+  },
+  pickerContainer: {
+    flex: 1,
+    backgroundColor: "#F0F0F0",
+    borderRadius: 8,
+    marginHorizontal: 4, // This ensures there's space between the two pickers
+    // paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
   },
   thirdInput: {
     flex: 1,
@@ -551,44 +668,20 @@ const styles = StyleSheet.create({
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     fontSize: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    color: "black",
-    paddingRight: 30,
-    backgroundColor: "#fff",
+    color: "#333",
+    paddingRight: 10, // to ensure the text is not overlapped by the icon
   },
   inputAndroid: {
     fontSize: 16,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    color: "black",
-    paddingRight: 30,
-    backgroundColor: "#fff",
-  },
-  dateButton: {
-    borderWidth: 1,
-    borderColor: "#180161",
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 15,
-    backgroundColor: "white",
-  },
-  emptyTableContainer: {
-    flex: 1, // Allows the container to grow and center its content vertically
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-
-  emptyTableText: {
-    fontSize: 16,
-    color: "#666",
+    // borderWidth: 1,
+    // borderColor: "#ccc",
+    // borderRadius: 8,
+    color: "#333",
+    paddingRight: 30, // to ensure the text is not overlapped by the icon
   },
 });
 export default ConfirmBooking;

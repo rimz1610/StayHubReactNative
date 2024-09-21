@@ -32,8 +32,8 @@ const EditMyProfile = () => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setImageUri(result.uri);
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
