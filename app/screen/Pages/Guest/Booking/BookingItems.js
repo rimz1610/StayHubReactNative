@@ -69,14 +69,8 @@ const getDetails = (type, item) => {
         item.maxPerson > 0
           ? ` with ${item.maxPerson} additional person(s).`
           : ".";
-      return `${item.name} - Check-in: ${item.checkInDate.toLocaleString(
-        "en-GB",
-        { day: "2-digit", month: "short", year: "numeric" }
-      )}, Check-out: ${item.checkOutDate.toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })}, Total ${item.noofNightStay} night(s)${additional}`;
+      return `${item.name} - Check-in: ${moment(item.checkInDate).format("MMM DD YYYY")}
+      , Check-out: ${moment(item.checkOutDate).format("MMM DD YYYY")}, Total ${item.noofNightStay} night(s)${additional}`;
 
     case "E":
       const aTicket =
@@ -96,7 +90,7 @@ const getDetails = (type, item) => {
       ).format("MM/DD/YYYY")}, Timing ${item.time}`;
     case "RS":
       return `${item.roomName}, Service Request:  ${item.serviceName
-        }, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY")}`;
+        }, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY hh:mm A")}`;
     default:
       return "";
   }
@@ -268,7 +262,7 @@ const BookingItems = ({ navigation }) => {
                     <BookingItem
                       key={item.roomId + "room service" + index}
                       type={"RS"}
-                      total={item.itemTotalPrice}
+                      total={item.price}
                       item={item}
                       onDelete={handleDelete}
                     />

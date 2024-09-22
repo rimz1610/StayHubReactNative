@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
+  View,Alert,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -18,14 +18,8 @@ const RoomCard = ({ roomId, checkInDate,checkOutDate, title, image, navigation }
     <Image source={{uri:image}} style={styles.image} />
     <View style={styles.cardContent}>
       <View style={styles.roomInfo}>
-        <Text style={styles.roomNumber}>Room ({checkInDate.toLocaleString(
-        "en-GB",
-        { day: "2-digit", month: "short", year: "numeric" }
-      )} - {checkOutDate.toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })})</Text>
+        <Text style={styles.roomNumber}>Room (
+          {moment(checkInDate).format("MMM DD YYYY")} - {moment(checkOutDate).format("MMM DD YYYY")})</Text>
         <Text style={styles.title}>{title}</Text>
       </View>
       <TouchableOpacity
@@ -57,10 +51,11 @@ const MyRooms = () => {
    
       const token = await AsyncStorage.getItem("token");
       const loginId  = await AsyncStorage.getItem("loginId");
+      console.warn(loginId);
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://majidalipl-001-site5.gtempurl.com/Booking/GetCurrentRoomsByGuestId?guestId" +
+          "http://majidalipl-001-site5.gtempurl.com/Booking/GetCurrentRoomsByGuestId?guestId=" +
            loginId,
           {
             headers: {
@@ -68,10 +63,12 @@ const MyRooms = () => {
             },
           }
         );
-
+      
         if (response.data.success) {
           setMyRooms(response.data.list);
+          console.warn(response.data);
         } else {
+
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
@@ -113,7 +110,7 @@ const MyRooms = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Select Your Room</Text>
-      {myRooms.map((room) => (
+      {myRooms!=null && myRooms.map((room) => (
         <RoomCard
           roomId={room.roomId}
           key={room.roomId}

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
+  Text,Alert,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -13,6 +13,14 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  getCartFromSecureStore,
+  putDataIntoCartAndSaveSecureStore,
+  removeDataFromCartAndSaveLocalStorage,
+  deleteCartFromSecureStore,
+  saveCartToSecureStore,
+} from "../../../../components/secureStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
@@ -164,7 +172,7 @@ const ServiceCard = ({ service, onPress }) => (
   </TouchableOpacity>
 );
 
-const RoomServiceBooking = ({route}) => {
+const RoomServiceBooking = ({route,navigation}) => {
   const roomId = route.params?.roomId || 0;
   const roomName = route.params?.roomName || 0;
   const [activeCategory, setActiveCategory] = useState("House Keeping");
@@ -190,18 +198,81 @@ const RoomServiceBooking = ({route}) => {
   const handleBooking = () => {
 
 
+      Alert.alert(
+      "Confirm",
+      "Are you sure you want to book?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => {},
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: async () => {
+            if ((await getCartFromSecureStore()) == null) {
+              console.log("Cart was empty");
+              const guestId = await AsyncStorage.getItem("loginId");
+              console.warn(guestId);
+              await saveCartToSecureStore({
+                bookingModel: {
+                  id: 0,
+                  referenceNumber: " ",
+                  bookingAmount: 0,
+                  bookingDate: new Date(),
+                  paidAmount: 0,
+                  status: "UnPaid",
+                  notes: " ",
+                  guestId: guestId,
+                },
+                paymentDetail: {
+                  cardNumber: "4242424242424242",
+                  nameOnCard: "Test",
+                  expiryYear: "2025",
+                  expiryMonth: "01",
+                  cVV: "123",
+                  transactionId: " ",
+                },
+                lstRoom: [],
+                lstRoomService: [],
+                lstGym: [],
+                lstSpa: [],
+                lstEvent: [],
+              });
+            }
+            const cart = await getCartFromSecureStore();
+            const index =
+              cart.lstRoomService != null && cart.lstRoomService.length > 0
+                ? cart.lstRoomService.length + 1
+                : 1;
+            console.warn(cart.lstRoomService);
+            setRoomServiceModel({ ...roomServceModel, index: index });
+            const updatedCart = { ...cart };
+            if (
+              updatedCart.lstRoomService == undefined ||
+              updatedCart.lstRoomService == null ||
+              updatedCart.lstRoomService.length == 0
+            ) {
+              updatedCart.lstRoomService = [];
+            }
+            updatedCart.lstRoomService.push({  index: index,
+              roomId:roomId,
+              roomName: roomName,
+              serviceName: selectedService.title,
+              description: roomServceModel.description,
+              requestDate: roomServceModel.requestDate,
+              price: selectedService.price});
+            await saveCartToSecureStore(updatedCart);
+            setModalVisible(false);
+            console.warn(await getCartFromSecureStore());
+            navigation.navigate("Cart");
+          },
+        },
+      ],
+      { cancelable: false }
+    );
 
-    console.warn("Booking:", selectedService);
-    console.warn(roomServceModel);
-    setModalVisible(false);
-    setRoomServiceModel({ index: 0,
-      ...roomServceModel,
-      serviceName: "",
-      description: "",
-      requestDate: new Date(),
-      price: 0});
   };
-
   const handleTimeChange = (event, selectedTime) => {
     setShowTimePicker(false);
     if (selectedTime) {
@@ -274,7 +345,7 @@ const RoomServiceBooking = ({route}) => {
                 onPress={() => setShowTimePicker(true)}
               >
                 <Text style={styles.timePickerButtonText}>
-                  {roomServceModel.bookingTime.toLocaleTimeString([], {
+                  {roomServceModel.requestDate.toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}

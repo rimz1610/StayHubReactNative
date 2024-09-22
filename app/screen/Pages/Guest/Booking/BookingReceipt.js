@@ -177,7 +177,9 @@ const BookingReceipt = ({ route, navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
+      
       { data.booking.hasBookedEvent==true&&
+
       <TouchableOpacity
         style={styles.downloadButton}
         onPress={() => navigation.navigate("Ticket",{bookingId: data.booking.id})}

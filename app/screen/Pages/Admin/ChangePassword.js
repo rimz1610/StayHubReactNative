@@ -108,6 +108,7 @@ const AdminChangePasswordContent = ({ navigation }) => {
         handleSubmit,
         values,
         errors,
+        resetForm,
         touched,
         setFieldValue,
         isSubmitting,

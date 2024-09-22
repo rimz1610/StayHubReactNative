@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  View,
+  View,Alert,
   Text,
   TextInput,
   TouchableOpacity,
@@ -13,9 +13,28 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const passwordSchema = Yup.object().shape({
+  currentPassword: Yup.string().required("Required"),
+  newPassword: Yup.string()
+    .required("Required")
+    .min(6, "Password too short")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/,
+      "1 Upper, Lowercase, 1 Number and 1 Special Character"
+    ),
+  repeatPassword: Yup.string()
+    .required("Required")
+    .oneOf([Yup.ref("newPassword"), null], "Passwords must match"),
+});
 
 const ChangePassword = ({ navigation }) => {
   const [isNewPasswordVisible, setIsNewPasswordVisible] = useState(false);
+  const [isOldPasswordVisible, setIsOldPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
     useState(false);
 
@@ -23,11 +42,95 @@ const ChangePassword = ({ navigation }) => {
     setIsNewPasswordVisible(!isNewPasswordVisible);
   };
 
+  const toggleOldPasswordVisibility = () => {
+    setIsOldPasswordVisible(!isOldPasswordVisible);
+  };
+  
+
   const toggleConfirmPasswordVisibility = () => {
     setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
   };
 
+  const initialValues = {
+    id: 0,
+    currentPassword: "",
+    newPassword: "",
+    repeatPassword: "",
+  };
+
+  
+  const handleSubmit = useCallback(
+    async (values, { setSubmitting }) => {
+      try {
+        setSubmitting(true);
+        values.id = Number(await AsyncStorage.getItem("loginId"));
+
+        const token = await AsyncStorage.getItem("token");
+        const response = await axios.post(
+          "http://majidalipl-001-site5.gtempurl.com/Account/ChangePassword",
+          values,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          Alert.alert("Success", "Password changed successfully. Please login again.", [
+            {
+              text: "OK",
+              onPress: async () => {
+                await AsyncStorage.removeItem("token");
+                await AsyncStorage.removeItem("expiry");
+                await AsyncStorage.removeItem("generated");
+                await AsyncStorage.removeItem("role");
+                await AsyncStorage.removeItem("email");
+                await AsyncStorage.removeItem("name");
+                await AsyncStorage.removeItem("loginId");
+                navigation.navigate("Login");
+              },
+            },
+          ]);
+        } else {
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "An error occurred while changing password.");
+        }
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [navigation]
+  );
+
+
   return (
+    <Formik
+    initialValues={initialValues}
+    validationSchema={passwordSchema}
+    onSubmit={handleSubmit}
+  >
+    {({
+      handleChange,
+      handleBlur,
+      handleSubmit,
+      values,
+      errors,
+      touched,
+      setFieldValue,
+      isSubmitting,
+      setValues,
+    }) => {
+      useEffect(() => {}, []);
+
+      return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -44,26 +147,36 @@ const ChangePassword = ({ navigation }) => {
               lowercase letters{"\n"}• Includes numbers and symbols
             </Text>
 
+           
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                placeholderTextColor="#ccc"
-                keyboardType="email-address"
-              />
+              <Text style={styles.label}>Current Password</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  onChangeText={handleChange("currentPassword")}
+                  onBlur={handleBlur("currentPassword")}
+                  value={values.currentPassword}
+                  placeholder="Enter current password"
+                  placeholderTextColor="#ccc"
+                  secureTextEntry={!isOldPasswordVisible}
+                />
+                <TouchableOpacity
+                  onPress={toggleOldPasswordVisibility}
+                  style={styles.eyeIconContainer}
+                >
+                  <Ionicons
+                    name={isNewPasswordVisible ? "eye-off" : "eye"}
+                    size={20}
+                    color="#333"
+                  />
+                </TouchableOpacity>
+              </View>
+              {touched.currentPassword && errors.currentPassword && (
+                    <Text style={styles.errorText}>
+                      {errors.currentPassword}
+                    </Text>
+                  )}
             </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Code</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter the code"
-                placeholderTextColor="#ccc"
-                keyboardType="numeric"
-              />
-            </View>
-
             <View style={styles.inputGroup}>
               <Text style={styles.label}>New Password</Text>
               <View style={styles.passwordContainer}>
@@ -71,6 +184,8 @@ const ChangePassword = ({ navigation }) => {
                   style={styles.passwordInput}
                   placeholder="Enter new password"
                   placeholderTextColor="#ccc"
+                  onChangeText={handleChange("newPassword")}
+                  value={values.newPassword}
                   secureTextEntry={!isNewPasswordVisible}
                 />
                 <TouchableOpacity
@@ -84,6 +199,9 @@ const ChangePassword = ({ navigation }) => {
                   />
                 </TouchableOpacity>
               </View>
+              {touched.newPassword && errors.newPassword ? (
+                    <Text style={styles.errorText}>{errors.newPassword}</Text>
+                  ) : null}
             </View>
 
             <View style={styles.inputGroup}>
@@ -93,6 +211,8 @@ const ChangePassword = ({ navigation }) => {
                   style={styles.passwordInput}
                   placeholder="Confirm new password"
                   placeholderTextColor="#ccc"
+                  onChangeText={handleChange("repeatPassword")}
+                  value={values.repeatPassword}
                   secureTextEntry={!isConfirmPasswordVisible}
                 />
                 <TouchableOpacity
@@ -106,25 +226,29 @@ const ChangePassword = ({ navigation }) => {
                   />
                 </TouchableOpacity>
               </View>
+              {touched.repeatPassword && errors.repeatPassword ? (
+                    <Text style={styles.errorText}>
+                      {errors.repeatPassword}
+                    </Text>
+                  ) : null}
             </View>
 
             <TouchableOpacity
               style={styles.submitButton}
-              onPress={() => {
-                // Handle password change logic here
-                console.log("Change password submitted");
-              }}
+              disabled={isSubmitting}
+              onPress={handleSubmit}
             >
               <Text style={styles.submitButtonText}>Change Password</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.backToLogin}>Back to Login</Text>
-            </TouchableOpacity>
+          
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
+      );
+    }}
+  </Formik>
   );
 };
 
@@ -213,11 +337,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  backToLogin: {
-    fontSize: 16,
-    color: "#0A1D56",
-    textDecorationLine: "underline",
-    marginTop: 20,
+  errorText: {
+    fontSize: 12,
+    color: "red",
   },
 });
 
