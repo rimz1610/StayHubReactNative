@@ -162,24 +162,33 @@ const GymBooking = ({ navigation }) => {
                   console.log("Cart was empty");
                   const guestId = await AsyncStorage.getItem("loginId");
                   console.warn(guestId);
-                  await saveCartToSecureStore(
-                    {
-                      bookingModel: {
-                        id: 0, referenceNumber: " ", bookingAmount: 0,
-                        bookingDate: new Date(),
-                        paidAmount: 0, status: "UnPaid",
-                        notes: " ", guestId: guestId,
-                      },
-                      paymentDetail: {
-                        paidAmount: 0, bookingId: 0,
-                        cardNumber: "4242424242424242", nameOnCard: "Test", expiryYear: "2025",
-                        expiryMonth: "01", cVV: "123", transactionId: " "
-                      },
-                      lstRoom: [], lstRoomService: [],
-                      lstGym: [], lstSpa: [], lstEvent: []
-                    }
-                  );
-                 
+                  await saveCartToSecureStore({
+                    bookingModel: {
+                      id: 0,
+                      referenceNumber: " ",
+                      bookingAmount: 0,
+                      bookingDate: new Date(),
+                      paidAmount: 0,
+                      status: "UnPaid",
+                      notes: " ",
+                      guestId: guestId,
+                    },
+                    paymentDetail: {
+                      paidAmount: 0,
+                      bookingId: 0,
+                      cardNumber: "4242424242424242",
+                      nameOnCard: "Test",
+                      expiryYear: "2025",
+                      expiryMonth: "01",
+                      cVV: "123",
+                      transactionId: " ",
+                    },
+                    lstRoom: [],
+                    lstRoomService: [],
+                    lstGym: [],
+                    lstSpa: [],
+                    lstEvent: [],
+                  });
                 }
                 const cart = await getCartFromSecureStore();
                 const index =
@@ -294,7 +303,7 @@ const GymBooking = ({ navigation }) => {
                   <Text style={styles.timing}>
                     Timing: {gym.openingTime} - {gym.closingTime}
                   </Text>
-                  <Text style={styles.fee}>Fee: ${gym.fee}</Text>
+                  <Text style={styles.fee}>Fee: ${gym.price}</Text>
 
                   <Text style={styles.sessionLabel}>Monthly Session</Text>
 
@@ -302,6 +311,7 @@ const GymBooking = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.button}
                     onPress={async () => await addToBookingCart(gym)}
+                    // onPress={addToBookingCart}
                   >
                     <Icon name="calendar" size={16} color="#fff" />
                     <Text style={styles.buttonText}>Book Now</Text>

@@ -88,7 +88,7 @@ function App() {
           <Stack.Screen name="GuestBottomNav" component={GuestBottomNav} />
           <Stack.Screen name="MyBookings" component={MyBookings} />
           <Stack.Screen name="BookingReceipt" component={BookingReceipt} />
-          <Stack.Screen name="BookingItems" component={BookingItems} />
+          <Stack.Screen name="Cart" component={BookingItems} />
           <Stack.Screen name="ConfirmBooking" component={ConfirmBooking} />
           <Stack.Screen name="Receipt" component={Receipt} />
           <Stack.Screen name="Ticket" component={Ticket} />

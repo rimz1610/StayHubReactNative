@@ -56,12 +56,16 @@ const Account = ({ navigation }) => {
     }
   };
 
+  const [coverImageLoaded, setCoverImageLoaded] = useState(false);
+  const [profileImageLoaded, setProfileImageLoaded] = useState(false);
+
   const screens = [
     { name: "My Bookings", icon: "calendar", route: "MyBookings" },
     { name: "Edit My Profile", icon: "person", route: "EditMyProfile" },
     { name: "My Rooms", icon: "bed", route: "MyRooms" },
     { name: "Change Password", icon: "lock-closed", route: "ChangePassword" },
   ];
+
   const handleLogout = async () => {
     try {
       const keysToRemove = [
@@ -87,29 +91,41 @@ const Account = ({ navigation }) => {
       <ScrollView>
         <View style={styles.coverImageContainer}>
           <Image
+            source={require("../../../../../assets/images/placeholder.jpg")}
+            style={[
+              styles.coverImage,
+              !coverImageLoaded && styles.imagePlaceholder,
+            ]}
+          />
+          <Image
             source={require("../../../../../assets/images/room-two.jpg")}
-            style={styles.coverImage}
+            style={[
+              styles.coverImage,
+              coverImageLoaded ? styles.imageLoaded : styles.imageHidden,
+            ]}
+            onLoad={() => setCoverImageLoaded(true)}
           />
         </View>
 
         <View style={styles.profileContainer}>
-          <Image
-            style={[styles.profileImage, imageLoading && styles.hiddenImage]}
-            source={
-              imageError
-                ? require("../../../../../assets/images/placeholder.jpg")
-                : { uri: `http://majidalipl-001-site5.gtempurl.com/guestprofile/${data.profile}` }
-            }
-            onLoadStart={() => setImageLoading(true)}
-            onLoadEnd={() => setImageLoading(false)}
-            onError={() => {
-              setImageError(true);
-              setImageLoading(false);
-            }}
-           
-          />
-          <Text style={styles.name}>{data.name}</Text>
-          <Text style={styles.name}>{data.guestNo}</Text>
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={require("../../../../../assets/images/placeholder.jpg")}
+              style={[
+                styles.profileImage,
+                !profileImageLoaded && styles.imagePlaceholder,
+              ]}
+            />
+            <Image
+              source={require("../../../../../assets/images/room-one.jpg")}
+              style={[
+                styles.profileImage,
+                profileImageLoaded ? styles.imageLoaded : styles.imageHidden,
+              ]}
+              onLoad={() => setProfileImageLoaded(true)}
+            />
+          </View>
+          <Text style={styles.name}>Fatima Zuhra</Text>
           <View style={styles.emailContainer}>
             <Text style={styles.email}>{data.email}</Text>
           </View>
@@ -128,7 +144,6 @@ const Account = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
-
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={24} color="#333" />
           <Text style={styles.logoutText}>Log Out</Text>
@@ -151,17 +166,33 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "90%",
     resizeMode: "cover",
+    position: "absolute",
   },
   profileContainer: {
     alignItems: "center",
     marginTop: -50,
   },
-  profileImage: {
+  profileImageContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
+    overflow: "hidden",
     borderWidth: 3,
     borderColor: "white",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+  },
+  imagePlaceholder: {
+    backgroundColor: "#e0e0e0",
+  },
+  imageLoaded: {
+    opacity: 1,
+  },
+  imageHidden: {
+    opacity: 0,
   },
   name: {
     fontSize: 22,

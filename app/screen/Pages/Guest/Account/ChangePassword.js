@@ -5,166 +5,202 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  SafeAreaView,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const ChangePassword = ({ navigation }) => {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isNewPasswordVisible, setIsNewPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+    useState(false);
 
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
+  const toggleNewPasswordVisibility = () => {
+    setIsNewPasswordVisible(!isNewPasswordVisible);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <ImageBackground
-        source={require("../../../../../assets/images/back.jpg")}
-        style={styles.bg}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingView}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.innerContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              placeholderTextColor="#ccc"
-              keyboardType="email-address"
-            />
+          <ScrollView contentContainerStyle={styles.innerContainer}>
+            <Text style={styles.heading}>Create New Password</Text>
+            <Text style={styles.description}>
+              Please create a new password that meets the following criteria:
+            </Text>
+            <Text style={styles.rules}>
+              • At least 8 characters long{"\n"}• Contains uppercase and
+              lowercase letters{"\n"}• Includes numbers and symbols
+            </Text>
 
-            <Text style={styles.label}>Code</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter the code"
-              placeholderTextColor="#ccc"
-              keyboardType="numeric"
-            />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                placeholderTextColor="#ccc"
+                keyboardType="email-address"
+              />
+            </View>
 
-            <Text style={styles.label}>New Password</Text>
-            <View style={styles.passwordContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Code</Text>
               <TextInput
-                style={styles.passwordInput}
-                placeholder="Enter new password"
+                style={styles.input}
+                placeholder="Enter the code"
                 placeholderTextColor="#ccc"
-                secureTextEntry={!isPasswordVisible}
+                keyboardType="numeric"
               />
-              <TouchableOpacity
-                onPress={togglePasswordVisibility}
-                style={styles.eyeIconContainer}
-              >
-                <Ionicons
-                  name={isPasswordVisible ? "eye-off" : "eye"}
-                  size={20}
-                  color="white"
-                />
-              </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Confirm new password"
-                placeholderTextColor="#ccc"
-                secureTextEntry={!isPasswordVisible}
-              />
-              <TouchableOpacity
-                onPress={togglePasswordVisibility}
-                style={styles.eyeIconContainer}
-              >
-                <Ionicons
-                  name={isPasswordVisible ? "eye-off" : "eye"}
-                  size={20}
-                  color="white"
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>New Password</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Enter new password"
+                  placeholderTextColor="#ccc"
+                  secureTextEntry={!isNewPasswordVisible}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={toggleNewPasswordVisibility}
+                  style={styles.eyeIconContainer}
+                >
+                  <Ionicons
+                    name={isNewPasswordVisible ? "eye-off" : "eye"}
+                    size={20}
+                    color="#333"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Confirm Password</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Confirm new password"
+                  placeholderTextColor="#ccc"
+                  secureTextEntry={!isConfirmPasswordVisible}
+                />
+                <TouchableOpacity
+                  onPress={toggleConfirmPasswordVisibility}
+                  style={styles.eyeIconContainer}
+                >
+                  <Ionicons
+                    name={isConfirmPasswordVisible ? "eye-off" : "eye"}
+                    size={20}
+                    color="#333"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={() => {
+                // Handle password change logic here
+                console.log("Change password submitted");
+              }}
+            >
+              <Text style={styles.submitButtonText}>Change Password</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.backToLogin}>Back to Login?</Text>
+              <Text style={styles.backToLogin}>Back to Login</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Submit</Text>
-            </TouchableOpacity>
-          </View>
+          </ScrollView>
         </TouchableWithoutFeedback>
-      </ImageBackground>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f0f4f8", // Solid background color
   },
-  bg: {
+  keyboardAvoidingView: {
     flex: 1,
-    width: "100%",
-    height: "100%",
   },
   innerContainer: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    padding: 20,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 30,
-    color: "white",
+    marginBottom: 10,
+    color: "#333",
+    textAlign: "center",
+  },
+  description: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  rules: {
+    fontSize: 14,
+    color: "#888",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  inputGroup: {
+    width: "100%",
+    marginBottom: 20,
   },
   label: {
-    alignSelf: "flex-start",
-    color: "white",
-    marginLeft: 25,
-    fontSize: 13,
+    color: "#333",
+    fontSize: 16,
     marginBottom: 8,
+    fontWeight: "600",
   },
   input: {
-    width: "85%",
+    width: "100%",
     height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    borderColor: "grey",
+    backgroundColor: "white",
+    borderColor: "#ddd",
     borderWidth: 1,
-    color: "white",
+    color: "#333",
     borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 20,
+    paddingHorizontal: 15,
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
-    width: "85%",
+    width: "100%",
     height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    borderColor: "grey",
+    backgroundColor: "white",
+    borderColor: "#ddd",
     borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 20,
   },
   passwordInput: {
     flex: 1,
-    color: "white",
-    paddingHorizontal: 10,
+    color: "#333",
+    paddingHorizontal: 15,
   },
   eyeIconContainer: {
-    paddingHorizontal: 10,
-  },
-  backToLogin: {
-    fontSize: 14,
-    color: "#007BFF",
-    textDecorationLine: "underline",
-    marginBottom: 30,
+    paddingHorizontal: 15,
   },
   submitButton: {
-    width: "60%",
+    width: "100%",
     height: 50,
     marginTop: 20,
     backgroundColor: "#0A1D56",
@@ -176,6 +212,12 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  backToLogin: {
+    fontSize: 16,
+    color: "#0A1D56",
+    textDecorationLine: "underline",
+    marginTop: 20,
   },
 });
 

@@ -135,12 +135,26 @@ const GuestDrawer = () => {
       <Drawer.Screen name="MyRooms" component={MyRooms} />
       <Drawer.Screen name="ChangePassword" component={ChangePassword} />
       <Drawer.Screen name="HotelMap" component={HotelMap} />
-      <Drawer.Screen name="Cart" component={BookingItems} />
-      <Drawer.Screen name="Checkout" component={ConfirmBooking} />
+      <Drawer.Screen
+        name="Cart"
+        component={BookingItems}
+        options={{
+          headerShown: true,
+        }}
+      />
+      <Drawer.Screen
+        name="Checkout"
+        component={ConfirmBooking}
+        options={{
+          headerShown: true,
+        }}
+      />
       <Drawer.Screen name="BookingConfirmation" component={BookingReceipt} />
       <Drawer.Screen name="MyBookingReceipt" component={MyBookingReceipt} />
       <Drawer.Screen name="RoomServiceBooking" component={RoomServiceBooking} />
       <Drawer.Screen name="GuestBottomNav" component={GuestBottomNav} />
+      {/* <Drawer.Screen name="ConfirmBooking" component={ConfirmBooking} /> */}
+      {/* <Drawer.Screen name="GuestBottomNav" component={BookingItems} /> */}
     </Drawer.Navigator>
   );
 };

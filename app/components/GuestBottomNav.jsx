@@ -53,6 +53,8 @@ const GuestBottomNav = () => {
       "ChangePassword",
       "MyRooms",
       "RoomServiceBooking",
+      // "BookingItems",
+      // "ConfirmBooking",
     ];
 
     if (accountScreens.includes(currentRouteName)) {
@@ -102,6 +104,7 @@ const GuestBottomNav = () => {
 
       return <Ionicons name={iconName} size={size} color={color} />;
     },
+    // headerShown: true,
     tabBarActiveTintColor: "white",
     tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
     tabBarStyle: Platform.select({
@@ -159,12 +162,23 @@ const GuestBottomNav = () => {
         "ChangePassword",
         "MyRooms",
         "RoomServiceBooking",
+        // "BookingItems",
       ];
+      const backScreenstwo = ["ConfirmBooking"];
 
       if (backScreens.includes(route.name)) {
         return (
           <TouchableOpacity
             onPress={() => navigation.navigate("Account")}
+            style={{ marginLeft: 15 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+        );
+      } else if (backScreenstwo.includes(route.name)) {
+        return (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("RoomBooking")}
             style={{ marginLeft: 15 }}
           >
             <Ionicons name="arrow-back" size={24} color="white" />
@@ -211,6 +225,7 @@ const GuestBottomNav = () => {
           name="Cart"
           component={BookingItems}
           options={{
+            headerShown: false,
             tabBarButton: () => null,
           }}
         />
@@ -252,9 +267,10 @@ const GuestBottomNav = () => {
           }}
         />
         <Tab.Screen
-          name="Checkout"
+          name="ConfirmBooking"
           component={ConfirmBooking}
           options={{
+            headerShown: false,
             tabBarButton: () => null,
           }}
         />
@@ -300,6 +316,13 @@ const GuestBottomNav = () => {
             tabBarButton: () => null,
           }}
         />
+        {/* <Tab.Screen
+          name="ConfirmBooking"
+          component={ConfirmBooking}
+          options={{
+            tabBarButton: () => null,
+          }}
+        /> */}
       </Tab.Navigator>
       <Modal
         visible={exitModalVisible}
