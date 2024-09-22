@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,10 @@ import {
   TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-
+import { useIsFocused } from "@react-navigation/native";
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const ReceiptHeader = ({ hotel }) => (
   <View style={styles.header}>
     <Text style={styles.hotelName}>{hotel.name}</Text>
@@ -19,46 +22,77 @@ const ReceiptHeader = ({ hotel }) => (
 
 const ReceiptInfo = ({ invoice }) => (
   <View style={styles.receiptInfo}>
-    <Text style={styles.receiptInfoText}>Date: {invoice.invoiceDate}</Text>
+    <Text style={styles.receiptInfoText}>Date: {invoice.bookingDate}</Text>
     <Text style={styles.receiptInfoText}>
-      Booking Person: {invoice.bookingPerson}
+      Booking Person: {invoice.firstName} {invoice.lastName}
     </Text>
     <Text style={styles.receiptInfoText}>
-      Reference No: {invoice.referenceNo}
+      Reference No: {invoice.referenceNumber}
     </Text>
   </View>
 );
 
-const BookingItem = ({ name, details, totalItem }) => (
+const BookingItem = (item) => (
   <View style={styles.bookingItem}>
     <View style={styles.bookingItemLeft}>
-      <Text style={styles.bookingItemName}>{name}</Text>
-      <Text style={styles.bookingItemDetails}>{details}</Text>
+      <Text style={styles.bookingItemName}>{item.typeName}</Text>
+      <Text style={styles.bookingItemDetails}>{item.description}</Text>
     </View>
-    <Text style={styles.bookingItemTotal}>${totalItem.toFixed(2)}</Text>
+    <Text style={styles.bookingItemTotal}>{item.amount}</Text>
   </View>
 );
 
-const TotalSection = ({ subtotal, paid, total }) => (
+const TotalSection = ({ paid, total }) => (
   <View style={styles.totalSection}>
-    <View style={styles.totalRow}>
+    {/* <View style={styles.totalRow}>
       <Text style={styles.totalLabel}>Subtotal</Text>
       <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
+    </View> */}
+     <View style={styles.totalRow}>
+      <Text style={styles.totalLabel}>Total Amount</Text>
+      <Text style={[styles.totalValue, styles.totalAmount]}>
+        {total}
+      </Text>
     </View>
     <View style={styles.totalRow}>
       <Text style={styles.totalLabel}>Paid Amount</Text>
-      <Text style={styles.totalValue}>${paid.toFixed(2)}</Text>
+      <Text style={styles.totalValue}>{paid}</Text>
     </View>
-    <View style={styles.totalRow}>
-      <Text style={styles.totalLabel}>Total</Text>
-      <Text style={[styles.totalValue, styles.totalAmount]}>
-        ${total.toFixed(2)}
-      </Text>
-    </View>
+   
   </View>
 );
 
 const BookingReceipt = ({ route, navigation }) => {
+  const bookingId = route.params?.id || 0;
+  const [data, setData] = useState({
+    booking: {
+      id: 0,
+      guestNumber: "",
+      firstName: "",
+      lastName: "",
+      bookingDate: "",
+      bookingAmount: "",
+      paidAmount: "",
+      email: "",
+      phone: "",
+      location: "",
+      referenceNumber: "",
+      notes: "",
+      paidDate: "",
+      status: "",
+      creditCard: "",
+      guestId: 0,
+      txnRef: "",
+    },
+    bookingType: [
+      {
+        typeId: 0,
+        typeName: "",
+        description: "",
+        amount: "",
+      },
+    ],
+  });
   // In a real app, you'd get this data from route.params or an API call
   const receiptData = {
     hotel: {
@@ -67,35 +101,77 @@ const BookingReceipt = ({ route, navigation }) => {
       country: "Tropical Island",
       adminEmail: "admin@stayhub.com",
     },
-    invoice: {
-      invoiceDate: "2024-08-28",
-      bookingPerson: "Fatima Zuhra",
-      referenceNo: "BK001",
-    },
-    bookings: [
-      { name: "Deluxe Room", details: "2 nights, Ocean View", totalItem: 300 },
-      {
-        name: "Event Booking",
-        details: "Conference Room A, 1 day",
-        totalItem: 200,
-      },
-      { name: "Gym Access", details: "2 days pass", totalItem: 40 },
-      {
-        name: "Spa Treatment",
-        details: "Full Body Massage, 60 mins",
-        totalItem: 120,
-      },
-      { name: "Room Service", details: "Cleaning, 2 times", totalItem: 50 },
-    ],
-    subtotal: 710,
-    paid: 710,
-    total: 710,
+    // invoice: {
+    //   invoiceDate: "2024-08-28",
+    //   bookingPerson: "Fatima Zuhra",
+    //   referenceNo: "BK001",
+    // },
+    // bookings: [
+    //   { name: "Deluxe Room", details: "2 nights, Ocean View", totalItem: 300 },
+    //   {
+    //     name: "Event Booking",
+    //     details: "Conference Room A, 1 day",
+    //     totalItem: 200,
+    //   },
+    //   { name: "Gym Access", details: "2 days pass", totalItem: 40 },
+    //   {
+    //     name: "Spa Treatment",
+    //     details: "Full Body Massage, 60 mins",
+    //     totalItem: 120,
+    //   },
+    //   { name: "Room Service", details: "Cleaning, 2 times", totalItem: 50 },
+    // ],
+    // subtotal: 710,
+    // paid: 710,
+    // total: 710,
   };
 
   // const handleDownload = () => {
 
   //   console.log("Downloading receipt...");
   // };
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused, bookingId]);
+
+  // Function to refetch the updated room list
+  const fetchData = async () => {
+    if (bookingId > 0) {
+      const token = await AsyncStorage.getItem("token");
+
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          "http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId=" +
+            bookingId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setData(response.data.data);
+        } else {
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch booking details.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -108,21 +184,21 @@ const BookingReceipt = ({ route, navigation }) => {
       </TouchableOpacity>
       <View style={styles.receipt}>
         <ReceiptHeader hotel={receiptData.hotel} />
-        <ReceiptInfo invoice={receiptData.invoice} />
+        <ReceiptInfo invoice={data.booking} />
 
         <View style={styles.divider} />
 
         <Text style={styles.sectionTitle}>Booking Details</Text>
-        {receiptData.bookings.map((booking, index) => (
+        {data.bookingType.map((booking, index) => (
           <BookingItem key={index} {...booking} />
         ))}
 
         <View style={styles.divider} />
 
         <TotalSection
-          subtotal={receiptData.subtotal}
-          paid={receiptData.paid}
-          total={receiptData.total}
+         
+          paid={data.booking.paidAmount}
+          total={data.booking.bookingAmount}
         />
 
         <View style={styles.divider} />

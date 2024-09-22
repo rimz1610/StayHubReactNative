@@ -9,13 +9,14 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import RNPickerSelect from "react-native-picker-select";
 
-const MyBookingReceipt = () => {
+const MyBookingReceipt = ({ route, navigation }) => {
   const [selectedReceipt, setSelectedReceipt] = useState("BookingReceipt");
   const navigation = useNavigation();
+  const bookingId = route.params?.id || 0;
 
   const handleNavigation = () => {
     if (selectedReceipt === "BookingReceipt") {
-      navigation.navigate("BookingReceipt");
+      navigation.navigate("BookingReceipt", {id:bookingId});
     } else {
       navigation.navigate("Ticket");
     }

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-  View,
+  View, ActivityIndicator,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -9,41 +9,49 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
-const UserInfo = ({ name, email, phone }) => (
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
+const UserInfo = (guestData) => (
   <View style={styles.userInfoContainer}>
-    <Text style={styles.userInfoTitle}>User Information</Text>
+    <Text style={styles.userInfoTitle}>Guest Information</Text>
     <View style={styles.userInfoContent}>
-      <Text style={styles.userInfoText}>Name: {name}</Text>
-      <Text style={styles.userInfoText}>Email: {email}</Text>
-      <Text style={styles.userInfoText}>Phone: {phone}</Text>
+    <Text style={styles.userInfoText}>Guest Number: {guestData.guestNo}</Text>
+      <Text style={styles.userInfoText}>Name: {guestData.name}</Text>
+      <Text style={styles.userInfoText}>Email: {guestData.email}</Text>
     </View>
   </View>
 );
 
 const TableHeader = () => (
   <View style={styles.tableHeader}>
-    <Text style={[styles.headerText, styles.bookingNoColumn]}>Booking No</Text>
+    <Text style={[styles.headerText, styles.bookingNoColumn]}>Ref No</Text>
     <Text style={[styles.headerText, styles.dateColumn]}>Date</Text>
     <Text style={[styles.headerText, styles.totalColumn]}>Total</Text>
     <Text style={[styles.headerText, styles.statusColumn]}>Status</Text>
     <Text style={[styles.headerText, styles.actionColumn]}>Action</Text>
   </View>
 );
-
+const renderEmptyTable = () => (
+  <View style={styles.emptyTableContainer}>
+    <Text style={styles.emptyTableText}>No rows are added</Text>
+  </View>
+);
 const BookingItem = ({ item, onPressReceipt }) => (
   <View style={styles.bookingItem}>
     <Text style={[styles.bookingText, styles.bookingNoColumn]}>
-      {item.bookingNo}
+    {item.referenceNumber}
     </Text>
-    <Text style={[styles.bookingText, styles.dateColumn]}>{item.date}</Text>
-    <Text style={[styles.bookingText, styles.totalColumn]}>${item.total}</Text>
+    <Text style={[styles.bookingText, styles.dateColumn]}>{item.bookingDate}</Text>
+    <Text style={[styles.bookingText, styles.totalColumn]}>{item.bookingAmount}</Text>
     <View style={[styles.statusColumn, styles.statusContainer]}>
       <Text style={[styles.statusText, styles[item.status.toLowerCase()]]}>
         {item.status}
       </Text>
     </View>
     <TouchableOpacity
-      onPress={() => onPressReceipt(item)}
+      onPress={() => onPressReceipt(item.id)}
       style={styles.actionColumn}
     >
       <Icon name="receipt" size={24} color="#180161" />
@@ -53,50 +61,111 @@ const BookingItem = ({ item, onPressReceipt }) => (
 
 const MyBookings = () => {
   const navigation = useNavigation();
-  const userInfo = {
-    name: "Fatima Zuhra",
-    email: "fatima345@yahoo.com",
-    phone: "+1 234 567 8900",
+  const [guestData, setGuestData] = useState([]);
+  const [bookingData, setBookingData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
+  const fetchData = async () => {
+      setLoading(true);
+      const guestId=  await AsyncStorage.getItem("loginId");
+      const token = await AsyncStorage.getItem("token");
+      setGuestData({
+        guestNo: await AsyncStorage.getItem("guestNo"),
+        name: await AsyncStorage.getItem("name"),
+        email: await AsyncStorage.getItem("email"),
+        profile: await AsyncStorage.getItem("profile")
+      })
+      const status = "";
+      try {
+        const response = await axios.get(
+          `http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
+          &status=${status}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setBookingData(response.data.list);
+        } else {
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch bookings.");
+        }
+      } finally {
+        setLoading(false);
+      }
+
   };
+  const renderLoader = () => {
+    return loading ? (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator
+          size="large"
+          color="#180161"
+          style={styles.activityIndicator}
+        />
+      </View>
+    ) : null;
+  };
+  // const userInfo = {
+  //   name: "Fatima Zuhra",
+  //   email: "fatima345@yahoo.com",
+  //   phone: "+1 234 567 8900",
+  // };
 
-  const bookings = [
-    {
-      id: "1",
-      bookingNo: "BK001",
-      date: "2024-08-15",
-      total: 150,
-      status: "Confirmed",
-    },
-    {
-      id: "2",
-      bookingNo: "BK002",
-      date: "2024-08-20",
-      total: 200,
-      status: "Pending",
-    },
-    {
-      id: "3",
-      bookingNo: "BK003",
-      date: "2024-08-25",
-      total: 180,
-      status: "Cancelled",
-    },
-    // Add more dummy data as needed
-  ];
+  // const bookings = [
+  //   {
+  //     id: "1",
+  //     bookingNo: "BK001",
+  //     date: "2024-08-15",
+  //     total: 150,
+  //     status: "Confirmed",
+  //   },
+  //   {
+  //     id: "2",
+  //     bookingNo: "BK002",
+  //     date: "2024-08-20",
+  //     total: 200,
+  //     status: "Pending",
+  //   },
+  //   {
+  //     id: "3",
+  //     bookingNo: "BK003",
+  //     date: "2024-08-25",
+  //     total: 180,
+  //     status: "Cancelled",
+  //   },
+  //   // Add more dummy data as needed
+  // ];
 
-  const handleReceiptPress = (booking) => {
+  const handleReceiptPress = (bookingId) => {
     // Navigate to MyBookingReceipt screen with booking data
-    navigation.navigate("BookingReceipt", { booking });
+    navigation.navigate("BookingReceipt", { id:bookingId });
   };
   return (
     <ScrollView style={styles.container}>
-      <UserInfo {...userInfo} />
+      <UserInfo {...guestData} />
       <Text style={styles.recentBookingsTitle}>Recent Bookings</Text>
       <View style={styles.tableContainer}>
         <TableHeader />
         <FlatList
-          data={bookings}
+          data={bookingData}
           keyExtractor={(item) => item.id}
+          ListEmptyComponent={loading ? renderLoader() : renderEmptyTable}
           renderItem={({ item }) => (
             <BookingItem item={item} onPressReceipt={handleReceiptPress} />
           )}
@@ -206,6 +275,25 @@ const styles = StyleSheet.create({
   cancelled: {
     backgroundColor: "#f8d7da",
     color: "#721c24",
+  },
+  emptyTableContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  emptyTableText: {
+    fontSize: 16,
+    color: "#666",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  activityIndicator: {
+    padding: 20,
   },
 });
 

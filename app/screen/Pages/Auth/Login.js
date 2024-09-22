@@ -34,6 +34,8 @@ const Login = ({ navigation }) => {
     await AsyncStorage.setItem("email", loginModel.email);
     await AsyncStorage.setItem("name", loginModel.name);
     await AsyncStorage.setItem("loginId", loginModel.id);
+    await AsyncStorage.setItem("profile", loginModel.profile);
+    await AsyncStorage.setItem("guestNo", loginModel.guestNo);
     await AsyncStorage.setItem("generated", new Date().toISOString());
     var role = loginModel.role;
     if (role === "ADMIN") {
@@ -90,6 +92,9 @@ const Login = ({ navigation }) => {
     await AsyncStorage.removeItem("email");
     await AsyncStorage.removeItem("name");
     await AsyncStorage.removeItem("loginId");
+    await AsyncStorage.removeItem("profile");
+    await AsyncStorage.removeItem("guestNo");
+    
     //Temporary deleting store 
     await deleteCartFromSecureStore();
   };

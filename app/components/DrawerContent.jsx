@@ -15,6 +15,9 @@ const DrawerContent = (props) => {
     await AsyncStorage.removeItem("email");
     await AsyncStorage.removeItem("name");
     await AsyncStorage.removeItem("loginId");
+    await AsyncStorage.removeItem("profile");
+    await AsyncStorage.removeItem("guestNo");
+    
     props.navigation.navigate("Login");
   };
 

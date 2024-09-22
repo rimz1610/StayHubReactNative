@@ -35,7 +35,7 @@ const bookingArr = Array.from({ length: 25 }, (_, index) => ({
 }));
 
 const GuestDetailsContent = ({ route, navigation }) => {
-  const [guestData, setGuestData] = useState([]);
+  const [guestData, setGuestData] = useState({});
   const [bookingData, setBookingData] = useState([]);
   const guestId = route.params?.id || 0;
   const [loading, setLoading] = useState(false);

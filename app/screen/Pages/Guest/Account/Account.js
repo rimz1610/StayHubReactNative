@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,8 +10,52 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
+
 
 const Account = ({ navigation }) => {
+  const isFocused = useIsFocused();
+  const LOADING_TIMEOUT = 10000;
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [data, setData] = useState({ guestNo: "", name: "", email: "", profile: "" });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (imageLoading) {
+        setImageError(true);
+        setImageLoading(false);
+      }
+    }, LOADING_TIMEOUT);
+
+    return () => clearTimeout(timer);
+  }, [imageLoading]);
+  useEffect(() => {
+    if (isFocused) {
+      handleAccountLoggedIn();
+    }
+  }, [isFocused]);
+
+
+  const handleAccountLoggedIn = async () => {
+    try {
+      if (await AsyncStorage.getItem("loginId") == null) {
+        navigation.navigate("Login");
+      }
+      else {
+        setData({
+          guestNo: await AsyncStorage.getItem("guestNo"),
+          name: await AsyncStorage.getItem("name"),
+          email: await AsyncStorage.getItem("email"),
+          profile: await AsyncStorage.getItem("profile")
+        })
+      }
+
+    } catch (error) {
+      // console.warn(error);
+    }
+  };
+
   const screens = [
     { name: "My Bookings", icon: "calendar", route: "MyBookings" },
     { name: "Edit My Profile", icon: "person", route: "EditMyProfile" },
@@ -28,6 +72,8 @@ const Account = ({ navigation }) => {
         "email",
         "name",
         "loginId",
+        "profile",
+        "guestNo"
       ];
       await AsyncStorage.multiRemove(keysToRemove);
       navigation.navigate("Login");
@@ -48,12 +94,24 @@ const Account = ({ navigation }) => {
 
         <View style={styles.profileContainer}>
           <Image
-            source={require("../../../../../assets/images/room-one.jpg")}
-            style={styles.profileImage}
+            style={[styles.profileImage, imageLoading && styles.hiddenImage]}
+            source={
+              imageError
+                ? require("../../../../../assets/images/placeholder.jpg")
+                : { uri: `http://majidalipl-001-site5.gtempurl.com/guestprofile/${data.profile}` }
+            }
+            onLoadStart={() => setImageLoading(true)}
+            onLoadEnd={() => setImageLoading(false)}
+            onError={() => {
+              setImageError(true);
+              setImageLoading(false);
+            }}
+           
           />
-          <Text style={styles.name}>Fatima Zuhra</Text>
+          <Text style={styles.name}>{data.name}</Text>
+          <Text style={styles.name}>{data.guestNo}</Text>
           <View style={styles.emailContainer}>
-            <Text style={styles.email}>guest@gmail.com</Text>
+            <Text style={styles.email}>{data.email}</Text>
           </View>
         </View>
 
@@ -154,6 +212,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: "#e0e0e0",
+  },
+  hiddenImage: {
+    opacity: 0,
   },
   logoutText: {
     color: "black",
