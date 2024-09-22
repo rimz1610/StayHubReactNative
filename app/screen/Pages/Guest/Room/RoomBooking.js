@@ -92,6 +92,7 @@ const RoomBooking = ({ navigation }) => {
   });
   useEffect(() => {
     if (isFocused) {
+      setNights(0);
       formik.resetForm();
       setData([]);
     }
@@ -210,14 +211,15 @@ const RoomBooking = ({ navigation }) => {
   // };
 
   const handleAddToBooking = async (item) => {
+    console.warn(item);
     console.log("Inside Handle Booking");
     setBookRoomModel({
-      roomId: item.id,
+      roomId: item.roomId,
       checkInDate: formik.values.checkInDate,
       checkOutDate: formik.values.checkOutDate,
       itemTotalPrice: item.price,
       index: 0,
-      name: item.name,
+      name: item.roomName,
       maxPerson: formik.values.noOfAdditionalPerson,
       noofNightStay: nights,
     });
@@ -235,7 +237,7 @@ const RoomBooking = ({ navigation }) => {
 
     try {
       const datesAreValid = await validateDatesFromSecureStore(
-        item.id,
+        item.roomId,
         formik.values.checkInDate,
         formik.values.checkOutDate
       );
@@ -283,8 +285,6 @@ const RoomBooking = ({ navigation }) => {
                     guestId: guestId,
                   },
                   paymentDetail: {
-                    paidAmount: 0,
-                    bookingId: 0,
                     cardNumber: "4242424242424242",
                     nameOnCard: "Test",
                     expiryYear: "2025",
@@ -299,12 +299,21 @@ const RoomBooking = ({ navigation }) => {
                   lstEvent: [],
                 };
               }
-
+            console.warn(bookRoomModel);
               const index = cart.lstRoom ? cart.lstRoom.length + 1 : 1;
-              const updatedBookRoomModel = { ...bookRoomModel, index: index };
-
+              setBookRoomModel({...bookRoomModel, index: index});
+            
               cart.lstRoom = cart.lstRoom || [];
-              cart.lstRoom.push(updatedBookRoomModel);
+              cart.lstRoom.push({
+                roomId: item.roomId,
+                checkInDate: formik.values.checkInDate,
+                checkOutDate: formik.values.checkOutDate,
+                itemTotalPrice: item.price,
+                index: index,
+                name: item.roomName,
+                maxPerson: formik.values.noOfAdditionalPerson,
+                noofNightStay: nights,
+              });
 
               await saveCartToSecureStore(cart);
               console.warn(await getCartFromSecureStore());

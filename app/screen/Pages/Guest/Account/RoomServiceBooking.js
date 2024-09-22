@@ -139,6 +139,7 @@ const services = [
 ];
 
 const ServiceCard = ({ service, onPress }) => (
+
   <TouchableOpacity style={styles.card} onPress={() => onPress(service)}>
     <MaterialIcons
       name={service.icon}
@@ -163,30 +164,48 @@ const ServiceCard = ({ service, onPress }) => (
   </TouchableOpacity>
 );
 
-const RoomServiceBooking = () => {
+const RoomServiceBooking = ({route}) => {
+  const roomId = route.params?.roomId || 0;
+  const roomName = route.params?.roomName || 0;
   const [activeCategory, setActiveCategory] = useState("House Keeping");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
-  const [bookingTime, setBookingTime] = useState(new Date());
-  const [description, setDescription] = useState("");
+ 
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  const [roomServceModel, setRoomServiceModel] = useState({
+    index: 0,
+    roomId:roomId,
+    roomName: roomName,
+    serviceName: "",
+    description: "",
+    requestDate: new Date(),
+    price: 0
+  })
   const handleServicePress = (service) => {
     setSelectedService(service);
     setModalVisible(true);
   };
 
   const handleBooking = () => {
-    console.log("Booking:", selectedService, bookingTime, description);
+
+
+
+    console.warn("Booking:", selectedService);
+    console.warn(roomServceModel);
     setModalVisible(false);
-    setDescription("");
-    setShowTimePicker(false);
+    setRoomServiceModel({ index: 0,
+      ...roomServceModel,
+      serviceName: "",
+      description: "",
+      requestDate: new Date(),
+      price: 0});
   };
 
   const handleTimeChange = (event, selectedTime) => {
     setShowTimePicker(false);
     if (selectedTime) {
-      setBookingTime(selectedTime);
+      setRoomServiceModel({...roomServceModel, requestDate:selectedTime});
     }
   };
 
@@ -215,7 +234,7 @@ const RoomServiceBooking = () => {
               style={[
                 styles.categoryTabText,
                 activeCategory === category.name &&
-                  styles.activeCategoryTabText,
+                styles.activeCategoryTabText,
               ]}
             >
               {category.name}
@@ -255,7 +274,7 @@ const RoomServiceBooking = () => {
                 onPress={() => setShowTimePicker(true)}
               >
                 <Text style={styles.timePickerButtonText}>
-                  {bookingTime.toLocaleTimeString([], {
+                  {roomServceModel.bookingTime.toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
@@ -267,8 +286,8 @@ const RoomServiceBooking = () => {
                 style={styles.modalInput}
                 multiline
                 numberOfLines={3}
-                value={description}
-                onChangeText={setDescription}
+                value={roomServceModel.description}
+                onChangeText={(e)=>{setRoomServiceModel({...roomServceModel,description:e})}}
                 placeholder="Add any special requests or notes"
                 placeholderTextColor="#A0A0A0"
               />
@@ -288,7 +307,7 @@ const RoomServiceBooking = () => {
           </View>
           {showTimePicker && (
             <DateTimePicker
-              value={bookingTime}
+              value={roomServceModel.requestDate}
               mode="time"
               is24Hour={false}
               display="spinner"

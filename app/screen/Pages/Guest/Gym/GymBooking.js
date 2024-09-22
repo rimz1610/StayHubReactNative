@@ -61,13 +61,15 @@ const GymBooking = ({ navigation }) => {
 
   useEffect(() => {
     if (isFocused) {
-      setGymList([]);
+      setSelectedGender("All");
       fetchGyms();
     }
   }, [isFocused]);
 
   const fetchGyms = async () => {
     setLoading(true);
+    setGymList([]);
+    setSelectedMonths({});
     try {
       const response = await axios.get(
         "http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" +
@@ -124,24 +126,32 @@ const GymBooking = ({ navigation }) => {
   const addToBookingCart = async (gym) => {
     // const selectedMonth = selectedMonths[gym.id];
     const selectedMonth = selectedMonths[gym.id];
+    if(selectedMonth==null){
+      Alert.alert("Error", "Please select month.");
+    }
+    else{
     const monthRange = Object.values(selectedMonth)[0];
-    console.log(gym.price);
+    console.warn(selectedMonth);
     setBookGymModel({
       ...bookGymModel,
-      price: gym.price,
+      price: gym.fee,
       name: gym.name + ", For " + gym.gender,
       gymId: gym.id,
-      monthRange: monthRange,
+      monthRange: selectedMonth,
     });
     const token = await AsyncStorage.getItem("token");
     if (token == null) {
       navigation.navigate("Login");
     }
     try {
-      console.warn(bookGymModel);
+     console.warn(bookGymModel)
       const response = await axios.post(
         "http://majidalipl-001-site5.gtempurl.com/Gym/ValidateGymCapacity",
-        bookGymModel
+        {
+          price: gym.fee, name: gym.name + ", For " + gym.gender,
+          gymId: gym.id,
+          monthRange: selectedMonth, index:0
+        }
       );
       if (response.data.success) {
         setIsValid(true);
@@ -161,7 +171,7 @@ const GymBooking = ({ navigation }) => {
                 if ((await getCartFromSecureStore()) == null) {
                   console.log("Cart was empty");
                   const guestId = await AsyncStorage.getItem("loginId");
-                  console.warn(guestId);
+                
                   await saveCartToSecureStore({
                     bookingModel: {
                       id: 0,
@@ -174,8 +184,6 @@ const GymBooking = ({ navigation }) => {
                       guestId: guestId,
                     },
                     paymentDetail: {
-                      paidAmount: 0,
-                      bookingId: 0,
                       cardNumber: "4242424242424242",
                       nameOnCard: "Test",
                       expiryYear: "2025",
@@ -195,7 +203,7 @@ const GymBooking = ({ navigation }) => {
                   cart.lstGym != null && cart.lstGym.length > 0
                     ? cart.lstGym.length + 1
                     : 1;
-                console.warn(cart.lstGym);
+               
                 setBookGymModel({ ...bookGymModel, index: index });
                 const updatedCart = { ...cart };
                 if (
@@ -205,9 +213,14 @@ const GymBooking = ({ navigation }) => {
                 ) {
                   updatedCart.lstGym = [];
                 }
-                updatedCart.lstGym.push({ ...bookGymModel, index: index });
+                updatedCart.lstGym.push({ 
+                  price: gym.fee, name: gym.name + ", For " + gym.gender,
+                  gymId: gym.id,
+                  monthRange: selectedMonth, index:index
+                });
+                console.warn(bookGymModel)
                 await saveCartToSecureStore(updatedCart);
-                console.warn(await getCartFromSecureStore());
+                
                 navigation.navigate("Cart");
               },
             },
@@ -215,15 +228,15 @@ const GymBooking = ({ navigation }) => {
           { cancelable: false }
         );
       } else {
-        console.warn(response.data.message);
+       
         Alert.alert("Error", response.data.message);
         setIsValid(false);
       }
     } catch (error) {
-      console.warn(error);
+     
       Alert.alert("Error", "An error occurred while validating capacity.");
     } finally {
-    }
+    }}
   };
 
   const renderDropdown = (type, selectedValue, customStyle = {}) => (
@@ -303,14 +316,14 @@ const GymBooking = ({ navigation }) => {
                   <Text style={styles.timing}>
                     Timing: {gym.openingTime} - {gym.closingTime}
                   </Text>
-                  <Text style={styles.fee}>Fee: ${gym.price}</Text>
+                  <Text style={styles.fee}>Fee: ${gym.fee}</Text>
 
                   <Text style={styles.sessionLabel}>Monthly Session</Text>
 
                   {renderDropdown(gym.id, selectedMonths[gym.id])}
                   <TouchableOpacity
                     style={styles.button}
-                    onPress={async () => await addToBookingCart(gym)}
+                    onPress={() => addToBookingCart(gym)}
                     // onPress={addToBookingCart}
                   >
                     <Icon name="calendar" size={16} color="#fff" />

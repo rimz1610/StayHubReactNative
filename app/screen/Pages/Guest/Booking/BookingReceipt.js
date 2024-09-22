@@ -64,6 +64,8 @@ const TotalSection = ({ paid, total }) => (
 
 const BookingReceipt = ({ route, navigation }) => {
   const bookingId = route.params?.id || 0;
+  const isFocused = useIsFocused();
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState({
     booking: {
       id: 0,
@@ -175,13 +177,14 @@ const BookingReceipt = ({ route, navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
+      { data.booking.hasBookedEvent==true&&
       <TouchableOpacity
         style={styles.downloadButton}
-        onPress={() => navigation.navigate("Ticket")}
+        onPress={() => navigation.navigate("Ticket",{bookingId: data.booking.id})}
       >
         <Icon name="file-download" size={20} color="white" />
         <Text style={styles.downloadButtonText}>Download Ticket</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
       <View style={styles.receipt}>
         <ReceiptHeader hotel={receiptData.hotel} />
         <ReceiptInfo invoice={data.booking} />

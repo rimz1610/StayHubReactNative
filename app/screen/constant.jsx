@@ -21,8 +21,6 @@ export const CARTMODEL = {
         guestId: 0,
     },
     paymentDetail: {
-        paidAmount: 0,
-        bookingId: 0,
         cardNumber: "",
         nameOnCard: "",
         expiryYear: "",

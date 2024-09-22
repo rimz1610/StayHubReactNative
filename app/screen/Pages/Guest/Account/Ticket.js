@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+import React, { useRef,useState,useEffect
+ } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,7 +14,10 @@ import ViewShot from "react-native-view-shot";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-
+import moment from "moment";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 const TicketDetail = ({ label, value }) => (
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>{label}:</Text>
@@ -21,8 +25,67 @@ const TicketDetail = ({ label, value }) => (
   </View>
 );
 
-const Ticket = () => {
+const Ticket = ({route,navigation}) => {
   const viewShotRef = useRef();
+  const bookingId = route.params?.bookingId || 0;
+  const isFocused = useIsFocused();
+  const [loading, setLoading] = useState(false);
+  const ticket = {
+    id: 0,
+    bookingDate: "",
+    refNo: "",
+    eventName: "",
+    firstName: "",
+    lastName: "",
+    ticket: "",
+    eventDate: '',
+    eventTime:"",
+    location: '',
+    ticketNumber: ""
+  };
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused, bookingId]);
+
+  // Function to refetch the updated room list
+  const fetchData = async () => {
+    console.warn(bookingId);
+    if (bookingId > 0) {
+      const token = await AsyncStorage.getItem("token");
+
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          "http://majidalipl-001-site5.gtempurl.com/Event/GetTicketList?bookingId=" +
+          bookingId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setData(response.data.list);
+        } else {
+          Alert.alert("Error", response.data.message);
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Redirect to login page
+          navigation.navigate("Login");
+        } else {
+          console.warn(error);
+          Alert.alert("Error", "Failed to fetch ticket details.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   // Sample data - replace with actual data in a real app
   const ticketData = {
@@ -71,43 +134,55 @@ const Ticket = () => {
     }
   };
 
+
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Ticket Booking Details</Text>
       </View>
+      <TouchableOpacity style={styles.downloadButton} onPress={()=>{  
+        navigation.navigate("BookingReceipt", { id: bookingId });}}>
+  
+        <Text style={styles.downloadButtonText}>Back</Text>
+      </TouchableOpacity>
       <TouchableOpacity style={styles.downloadButton} onPress={downloadTicket}>
         <Icon name="file-download" size={20} color="white" />
         <Text style={styles.downloadButtonText}>Download Ticket</Text>
       </TouchableOpacity>
+
       <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 0.9 }}>
-        <View style={styles.ticketContainer}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/100" }}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <View style={styles.detailsContainer}>
-            <TicketDetail label="Invoice Date" value={ticketData.invoiceDate} />
-            <TicketDetail
-              label="Booking Person"
-              value={ticketData.bookingPerson}
-            />
-            <TicketDetail label="Booking Ref #" value={ticketData.bookingRef} />
-            <TicketDetail label="Event" value={ticketData.eventName} />
-            <TicketDetail label="Date" value={ticketData.eventDate} />
-            <TicketDetail label="Time" value={ticketData.timings} />
-            <TicketDetail label="Ticket" value={ticketData.ticketType} />
-            <TicketDetail label="Serial #" value={ticketData.serialNo} />
-          </View>
-        </View>
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>{hotelData.phone}</Text>
-          <Text style={styles.footerText}>{hotelData.email}</Text>
-          <Text style={styles.footerText}>{hotelData.name}</Text>
-          <Text style={styles.footerText}>{hotelData.address}</Text>
-          <Text style={styles.footerText}>{hotelData.city}</Text>
-        </View>
+        {data != undefined &&
+          data.map((ticketItem, index) => {
+            return (<>
+              <View  key={index} style={styles.ticketContainer}>
+                <Image
+                  source={{ uri: "https://via.placeholder.com/100" }}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+                <View style={styles.detailsContainer}>
+                  <TicketDetail label="Invoice Date" value={ticketItem.bookingDate} />
+                  <TicketDetail
+                    label="Booking Person"
+                    value={ticketData.bookingPerson}
+                  />
+                  <TicketDetail label="Booking Ref #" value={ticketItem.refNo} />
+                  <TicketDetail label="Event" value={ticketItem.eventName} />
+                  <TicketDetail label="Date" value={ticketItem.eventDate} />
+                  <TicketDetail label="Time" value={ticketItem.eventTime} />
+                  <TicketDetail label="Ticket" value={ticketItem.ticket} />
+                  <TicketDetail label="Serial #" value={ticketItem.ticketNumber} />
+                </View>
+              </View>
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>{hotelData.phone}</Text>
+                <Text style={styles.footerText}>{hotelData.email}</Text>
+                <Text style={styles.footerText}>{hotelData.name}</Text>
+                <Text style={styles.footerText}>{hotelData.address}</Text>
+                <Text style={styles.footerText}>{hotelData.city}</Text>
+              </View></>);
+          })}
       </ViewShot>
     </ScrollView>
   );

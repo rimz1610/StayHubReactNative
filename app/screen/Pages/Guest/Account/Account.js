@@ -117,7 +117,9 @@ const Account = ({ navigation }) => {
               ]}
             />
             <Image
-              source={require("../../../../../assets/images/room-one.jpg")}
+              source={imageError
+                ? require("../../../../../assets/images/placeholder.jpg")
+                : { uri: `http://majidalipl-001-site5.gtempurl.com/guestprofile/${data.profile}` }}
               style={[
                 styles.profileImage,
                 profileImageLoaded ? styles.imageLoaded : styles.imageHidden,
@@ -125,7 +127,7 @@ const Account = ({ navigation }) => {
               onLoad={() => setProfileImageLoaded(true)}
             />
           </View>
-          <Text style={styles.name}>Fatima Zuhra</Text>
+          <Text style={styles.name}>{data.name}</Text>
           <View style={styles.emailContainer}>
             <Text style={styles.email}>{data.email}</Text>
           </View>

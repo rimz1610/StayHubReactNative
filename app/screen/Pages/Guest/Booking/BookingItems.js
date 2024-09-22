@@ -69,7 +69,7 @@ const getDetails = (type, item) => {
         item.maxPerson > 0
           ? ` with ${item.maxPerson} additional person(s).`
           : ".";
-      return `${item.roomName} - Check-in: ${item.checkInDate.toLocaleString(
+      return `${item.name} - Check-in: ${item.checkInDate.toLocaleString(
         "en-GB",
         { day: "2-digit", month: "short", year: "numeric" }
       )}, Check-out: ${item.checkOutDate.toLocaleString("en-GB", {
@@ -95,9 +95,8 @@ const getDetails = (type, item) => {
         item.spaDate
       ).format("MM/DD/YYYY")}, Timing ${item.time}`;
     case "RS":
-      return `${item.roomName}, Service Request:  ${
-        item.serviceName
-      }, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY")}`;
+      return `${item.roomName}, Service Request:  ${item.serviceName
+        }, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY")}`;
     default:
       return "";
   }
@@ -117,8 +116,6 @@ const BookingItems = ({ navigation }) => {
       guestId: 0,
     },
     paymentDetail: {
-      paidAmount: 0,
-      bookingId: 0,
       cardNumber: "4242424242424242",
       nameOnCard: "Test",
       expiryYear: "2025",
@@ -143,7 +140,7 @@ const BookingItems = ({ navigation }) => {
     setLoading(true);
     try {
       setCartModel(await getCartFromSecureStore());
-      console.warn(await getCartFromSecureStore());
+   
       calculateTotal();
     } catch (error) {
       Alert.alert("Error", error);
@@ -202,12 +199,13 @@ const BookingItems = ({ navigation }) => {
           "http://majidalipl-001-site5.gtempurl.com/Cart/CalculateCartItems",
           data
         );
-        console.warn(response.data);
+      
         if (response.data.success) {
-          console.warn(response.data.data.totalPrice);
-
+         
           const updatedCart = await getCartFromSecureStore();
           updatedCart.bookingModel.bookingAmount =
+            response.data.data.totalPrice;
+            updatedCart.bookingModel.paidAmount =
             response.data.data.totalPrice;
           setCartModel({ ...updatedCart });
           await saveCartToSecureStore(updatedCart);
@@ -216,7 +214,7 @@ const BookingItems = ({ navigation }) => {
           setErrorMessages(response.data.message);
         }
       } catch (error) {
-        console.warn(error);
+     
         const errorMessage = error.message || "Unknown error";
         Alert.alert("Error", errorMessage);
       } finally {
@@ -246,86 +244,87 @@ const BookingItems = ({ navigation }) => {
           >
             <Icon name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.title}>Cart</Text>
+          <Text style={styles.title}>Booking Items</Text>
           <View style={styles.placeholder} />
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
+
           <View style={styles.bookingSection}>
-            <View style={styles.bookingList}>
-              {/* {bookings.map((item) => (
-                <BookingItem
-                  key={item.id}
-                  item={item}
-                  onDelete={handleDelete}
-                />
-              ))} */}
+            {(cart!=null && (cart.lstEvent?.length > 0 || cart.lstRoom?.length > 0 || cart.lstRoomService?.length > 0
+              || cart.lstGym?.length > 0 || cart.lstSpa?.length > 0)) ? (
+              <>
+                <View style={styles.bookingList}>
+                  {cart.lstRoom?.map((item, index) => (
+                    <BookingItem
+                      key={item.roomId + "room" + index}
+                      type={"R"}
+                      total={item.itemTotalPrice}
+                      item={item}
+                      onDelete={handleDelete}
+                    />
+                  ))}
 
-              {cart.lstRoom != null &&
-                cart.lstRoom.map((item, index) => (
-                  <BookingItem
-                    key={item.roomId + "room" + index}
-                    type={"R"}
-                    total={item.itemTotalPrice}
-                    item={item}
-                    onDelete={handleDelete}
-                  />
-                ))}
+                  {cart.lstRoomService?.map((item, index) => (
+                    <BookingItem
+                      key={item.roomId + "room service" + index}
+                      type={"RS"}
+                      total={item.itemTotalPrice}
+                      item={item}
+                      onDelete={handleDelete}
+                    />
+                  ))}
 
-              {cart.lstRoomService != null &&
-                cart.lstRoomService.map((item, index) => (
-                  <BookingItem
-                    key={item.roomId + "room service" + index}
-                    type={"RS"}
-                    total={item.itemTotalPrice}
-                    item={item}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              {cart.lstEvent != null &&
-                cart.lstEvent.map((item, index) => (
-                  <BookingItem
-                    key={item.eventId + "event" + index}
-                    type={"E"}
-                    total={item.itemTotalPrice}
-                    item={item}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              {cart.lstGym != null &&
-                cart.lstGym.map((item, index) => (
-                  <BookingItem
-                    key={item.gymId + "gym" + index}
-                    type={"G"}
-                    item={item}
-                    total={item.price}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              {cart.lstSpa != null &&
-                cart.lstSpa.map((item, index) => (
-                  <BookingItem
-                    key={item.spaId + "spa" + index}
-                    type={"S"}
-                    item={item}
-                    total={item.price}
-                    onDelete={handleDelete}
-                  />
-                ))}
-            </View>
-            <View style={styles.totalSection}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <Text style={styles.totalAmount}>
-                ${cart.bookingModel.bookingAmount}
-              </Text>
-            </View>
+                  {cart.lstEvent?.map((item, index) => (
+                    <BookingItem
+                      key={item.eventId + "event" + index}
+                      type={"E"}
+                      total={item.itemTotalPrice}
+                      item={item}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+
+                  {cart.lstGym?.map((item, index) => (
+                    <BookingItem
+                      key={item.gymId + "gym" + index}
+                      type={"G"}
+                      item={item}
+                      total={item.price}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+
+                  {cart.lstSpa?.map((item, index) => (
+                    <BookingItem
+                      key={item.spaId + "spa" + index}
+                      type={"S"}
+                      item={item}
+                      total={item.price}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </View>
+
+                <View style={styles.totalSection}>
+                  <Text style={styles.totalLabel}>Total Amount</Text>
+                  <Text style={styles.totalAmount}>
+                    ${cart.bookingModel.bookingAmount}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.proceedButton}
+                  onPress={() => navigation.navigate("ConfirmBooking")}
+                >
+                  <Icon name="credit-card" size={24} color="white" />
+                  <Text style={styles.proceedButtonText}>Proceed To Pay</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <View><Text>No items added for booking.</Text></View>
+            )}
           </View>
-          <TouchableOpacity
-            style={styles.proceedButton}
-            onPress={() => navigation.navigate("ConfirmBooking")}
-          >
-            <Icon name="credit-card" size={24} color="white" />
-            <Text style={styles.proceedButtonText}>Proceed To Pay</Text>
-          </TouchableOpacity>
+
         </ScrollView>
 
         <Modal

@@ -32,7 +32,8 @@ const paymentSchema = Yup.object().shape({
   nameOnCard: Yup.string().required("Required"),
   expiryYear: Yup.string().required("Required"),
   expiryMonth: Yup.string().required("Required"),
-  cVV: Yup.string().min(4).max(4).required("Required"),
+  cVV: Yup.string().min(3).required("Required"),
+  notes:Yup.string().max(500).required("Required"),
 });
 const ConfirmBooking = ({ navigation }) => {
   // const [modalVisible, setModalVisible] = useState(false);
@@ -82,8 +83,6 @@ const ConfirmBooking = ({ navigation }) => {
       guestId: 0,
     },
     paymentDetail: {
-      paidAmount: 0,
-      bookingId: 0,
       cardNumber: "4242424242424242",
       nameOnCard: "Test",
       expiryYear: "2025",
@@ -106,17 +105,37 @@ const ConfirmBooking = ({ navigation }) => {
       expiryYear: "2024",
       expiryMonth: "01",
       cVV: "",
+      notes:"",
     },
     validationSchema: paymentSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        navigation.navigate("BookingReceipt");
+        
         setSubmitting(true);
+        const data={
+          ...cart,
+          bookingModel:{
+           ...cart.bookingModel,
+           notes:values.notes
+          },
+          paymentDetail: {
+            cardNumber: values.cardNumber,
+            nameOnCard: values.nameOnCard,
+            expiryYear: values.expiryYear,
+            expiryMonth: values.expiryMonth,
+            cVV: values.cVV,
+            transactionId: "stayhub",
+          },
+        };
+       // data.bookingModel.notes=values.notes;
+        console.warn(data);
         setCartModel({
           ...cart,
+          bookingModel:{
+           ...cart.bookingModel,
+           notes:values.notes
+          },
           paymentDetail: {
-            paidAmount: cart.bookingAmount,
-            bookingId: 0,
             cardNumber: values.cardNumber,
             nameOnCard: values.nameOnCard,
             expiryYear: values.expiryYear,
@@ -128,7 +147,7 @@ const ConfirmBooking = ({ navigation }) => {
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Cart/Checkout",
-          cart,
+          data,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -137,12 +156,14 @@ const ConfirmBooking = ({ navigation }) => {
         );
 
         if (response.data.success) {
-          navigation.navigate("BookingReceipt", { id: response.data.data.id });
+          setSubmitting(false);
+          navigation.navigate("BookingReceipt", { id: response.data.data });
         } else {
+          setSubmitting(false);
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-        Alert.alert("Error", "Something wnet wrong." + error);
+        Alert.alert("Error", "Something went wrong." + error);
       } finally {
         setSubmitting(false);
       }
@@ -171,7 +192,7 @@ const ConfirmBooking = ({ navigation }) => {
           item.maxPerson > 0
             ? ` with ${item.maxPerson} additional person(s).`
             : ".";
-        return `${item.roomName} - Check-in: ${item.checkInDate.toLocaleString(
+        return `${item.name} - Check-in: ${item.checkInDate.toLocaleString(
           "en-GB",
           { day: "2-digit", month: "short", year: "numeric" }
         )}, Check-out: ${item.checkOutDate.toLocaleString("en-GB", {
@@ -471,6 +492,19 @@ const ConfirmBooking = ({ navigation }) => {
                 <Text style={styles.errorText}>{formik.errors.cVV}</Text>
               )}
             </View>
+            
+            <TextInput
+                style={[styles.input]}
+                placeholder="Notes"
+                placeholderTextColor="#888"               
+                onChangeText={formik.handleChange("notes")}
+                onBlur={formik.handleBlur("notes")}
+                value={formik.values.notes}
+              />
+              {formik.touched.notes && formik.errors.notes && (
+                <Text style={styles.errorText}>{formik.errors.notes}</Text>
+              )}
+               
 
             <View style={styles.cardIcons}>
               <FontAwesome name="cc-visa" size={32} color="#1A1F71" />
@@ -481,7 +515,7 @@ const ConfirmBooking = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.submitButton}
-              disabled={submitting}
+          
               onPress={formik.handleSubmit}
             >
               <Icon name="check-circle" size={24} color="white" />

@@ -164,8 +164,6 @@ const EventBooking = ({ route, navigation }) => {
                       guestId: guestId,
                     },
                     paymentDetail: {
-                      paidAmount: 0,
-                      bookingId: 0,
                       cardNumber: "4242424242424242",
                       nameOnCard: "Test",
                       expiryYear: "2025",

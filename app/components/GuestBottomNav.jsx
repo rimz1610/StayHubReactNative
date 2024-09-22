@@ -148,6 +148,7 @@ const GuestBottomNav = () => {
         elevation: 4,
       },
     }),
+    unmountOnBlur: true,
     headerTintColor: "white",
     headerTitleStyle: {
       fontWeight: "bold",
