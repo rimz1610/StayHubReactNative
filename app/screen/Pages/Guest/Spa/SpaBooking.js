@@ -13,6 +13,7 @@ import {
   Image,
   Alert,
 } from "react-native";
+import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Carousel from "react-native-reanimated-carousel";
@@ -176,7 +177,7 @@ const ServiceCard = ({ spa, navigation }) => {
         <Text style={styles.description}>{spa.description}</Text>
         <Text style={styles.label}>Timing</Text>
         <Text style={styles.dateText}>
-          {spa.openingTime} {spa.closingTime}
+          {spa.openingTime}-{spa.closingTime}
         </Text>
         <Text style={styles.label}>Service Date and Time</Text>
         <TouchableOpacity onPress={showDatePicker} style={styles.dateButton}>
@@ -187,7 +188,7 @@ const ServiceCard = ({ spa, navigation }) => {
             style={styles.dateIcon}
           />
           <Text style={styles.dateText}>
-            {bookSpaModel.spaDate.toLocaleString()}
+            {moment(bookSpaModel.spaDate).format("MMM DD YYYY")}
           </Text>
         </TouchableOpacity>
         <DateTimePickerModal
