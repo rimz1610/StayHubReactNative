@@ -26,6 +26,7 @@ import {
   saveCartToSecureStore,
   deleteCartFromSecureStore,
 } from "../../../../components/secureStore";
+import CustomLoader from "../../../../components/CustomLoader";
 
 const { width, height } = Dimensions.get("window");
 
@@ -39,6 +40,7 @@ const GymBooking = ({ navigation }) => {
   const [currentGymDetails, setCurrentGymDetails] = useState({});
   const [errorMessages, setErrorMessages] = useState("");
   const [isValid, setIsValid] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState({});
 
   const [carouselImages, setCarouselImages] = useState([
@@ -126,117 +128,119 @@ const GymBooking = ({ navigation }) => {
   const addToBookingCart = async (gym) => {
     // const selectedMonth = selectedMonths[gym.id];
     const selectedMonth = selectedMonths[gym.id];
-    if(selectedMonth==null){
+    if (selectedMonth == null) {
       Alert.alert("Error", "Please select month.");
-    }
-    else{
-    const monthRange = Object.values(selectedMonth)[0];
-    console.warn(selectedMonth);
-    setBookGymModel({
-      ...bookGymModel,
-      price: gym.fee,
-      name: gym.name + ", For " + gym.gender,
-      gymId: gym.id,
-      monthRange: selectedMonth,
-    });
-    const token = await AsyncStorage.getItem("token");
-    if (token == null) {
-      navigation.navigate("Login");
-    }
-    try {
-     console.warn(bookGymModel)
-      const response = await axios.post(
-        "http://majidalipl-001-site5.gtempurl.com/Gym/ValidateGymCapacity",
-        {
-          price: gym.fee, name: gym.name + ", For " + gym.gender,
-          gymId: gym.id,
-          monthRange: selectedMonth, index:0
-        }
-      );
-      if (response.data.success) {
-        setIsValid(true);
-        setErrorMessages("");
-        Alert.alert(
-          "Confirm",
-          "Are you sure you want to continue?",
-          [
-            {
-              text: "Cancel",
-              onPress: () => {},
-              style: "cancel",
-            },
-            {
-              text: "Yes",
-              onPress: async () => {
-                if ((await getCartFromSecureStore()) == null) {
-                  console.log("Cart was empty");
-                  const guestId = await AsyncStorage.getItem("loginId");
-                
-                  await saveCartToSecureStore({
-                    bookingModel: {
-                      id: 0,
-                      referenceNumber: " ",
-                      bookingAmount: 0,
-                      bookingDate: new Date(),
-                      paidAmount: 0,
-                      status: "UnPaid",
-                      notes: " ",
-                      guestId: guestId,
-                    },
-                    paymentDetail: {
-                      cardNumber: "4242424242424242",
-                      nameOnCard: "Test",
-                      expiryYear: "2025",
-                      expiryMonth: "01",
-                      cVV: "123",
-                      transactionId: " ",
-                    },
-                    lstRoom: [],
-                    lstRoomService: [],
-                    lstGym: [],
-                    lstSpa: [],
-                    lstEvent: [],
-                  });
-                }
-                const cart = await getCartFromSecureStore();
-                const index =
-                  cart.lstGym != null && cart.lstGym.length > 0
-                    ? cart.lstGym.length + 1
-                    : 1;
-               
-                setBookGymModel({ ...bookGymModel, index: index });
-                const updatedCart = { ...cart };
-                if (
-                  updatedCart.lstGym == undefined ||
-                  updatedCart.lstGym == null ||
-                  updatedCart.lstGym.length == 0
-                ) {
-                  updatedCart.lstGym = [];
-                }
-                updatedCart.lstGym.push({ 
-                  price: gym.fee, name: gym.name + ", For " + gym.gender,
-                  gymId: gym.id,
-                  monthRange: selectedMonth, index:index
-                });
-                console.warn(bookGymModel)
-                await saveCartToSecureStore(updatedCart);
-                
-                navigation.navigate("Cart");
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-      } else {
-       
-        Alert.alert("Error", response.data.message);
-        setIsValid(false);
+    } else {
+      const monthRange = Object.values(selectedMonth)[0];
+      console.warn(selectedMonth);
+      setBookGymModel({
+        ...bookGymModel,
+        price: gym.fee,
+        name: gym.name + ", For " + gym.gender,
+        gymId: gym.id,
+        monthRange: selectedMonth,
+      });
+      const token = await AsyncStorage.getItem("token");
+      if (token == null) {
+        navigation.navigate("Login");
       }
-    } catch (error) {
-     
-      Alert.alert("Error", "An error occurred while validating capacity.");
-    } finally {
-    }}
+      try {
+        console.warn(bookGymModel);
+        const response = await axios.post(
+          "http://majidalipl-001-site5.gtempurl.com/Gym/ValidateGymCapacity",
+          {
+            price: gym.fee,
+            name: gym.name + ", For " + gym.gender,
+            gymId: gym.id,
+            monthRange: selectedMonth,
+            index: 0,
+          }
+        );
+        if (response.data.success) {
+          setIsValid(true);
+          setErrorMessages("");
+          Alert.alert(
+            "Confirm",
+            "Are you sure you want to continue?",
+            [
+              {
+                text: "Cancel",
+                onPress: () => {},
+                style: "cancel",
+              },
+              {
+                text: "Yes",
+                onPress: async () => {
+                  if ((await getCartFromSecureStore()) == null) {
+                    console.log("Cart was empty");
+                    const guestId = await AsyncStorage.getItem("loginId");
+
+                    await saveCartToSecureStore({
+                      bookingModel: {
+                        id: 0,
+                        referenceNumber: " ",
+                        bookingAmount: 0,
+                        bookingDate: new Date(),
+                        paidAmount: 0,
+                        status: "UnPaid",
+                        notes: " ",
+                        guestId: guestId,
+                      },
+                      paymentDetail: {
+                        cardNumber: "4242424242424242",
+                        nameOnCard: "Test",
+                        expiryYear: "2025",
+                        expiryMonth: "01",
+                        cVV: "123",
+                        transactionId: " ",
+                      },
+                      lstRoom: [],
+                      lstRoomService: [],
+                      lstGym: [],
+                      lstSpa: [],
+                      lstEvent: [],
+                    });
+                  }
+                  const cart = await getCartFromSecureStore();
+                  const index =
+                    cart.lstGym != null && cart.lstGym.length > 0
+                      ? cart.lstGym.length + 1
+                      : 1;
+
+                  setBookGymModel({ ...bookGymModel, index: index });
+                  const updatedCart = { ...cart };
+                  if (
+                    updatedCart.lstGym == undefined ||
+                    updatedCart.lstGym == null ||
+                    updatedCart.lstGym.length == 0
+                  ) {
+                    updatedCart.lstGym = [];
+                  }
+                  updatedCart.lstGym.push({
+                    price: gym.fee,
+                    name: gym.name + ", For " + gym.gender,
+                    gymId: gym.id,
+                    monthRange: selectedMonth,
+                    index: index,
+                  });
+                  console.warn(bookGymModel);
+                  await saveCartToSecureStore(updatedCart);
+
+                  navigation.navigate("Cart");
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          Alert.alert("Error", response.data.message);
+          setIsValid(false);
+        }
+      } catch (error) {
+        Alert.alert("Error", "An error occurred while validating capacity.");
+      } finally {
+      }
+    }
   };
 
   const renderDropdown = (type, selectedValue, customStyle = {}) => (
@@ -300,11 +304,15 @@ const GymBooking = ({ navigation }) => {
         <Text style={styles.genderTitle}>Select Gender</Text>
         {renderDropdown("gender", selectedGender, styles.genderDropdown)}
       </View>
-
-      <View style={styles.row}>
-        {gymList != undefined &&
-          gymList.map((gym, index) => {
-            return (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#180161" />
+          <Text style={styles.loadingText}>Loading gyms...</Text>
+        </View>
+      ) : (
+        <View style={styles.row}>
+          {gymList.length > 0 ? (
+            gymList.map((gym, index) => (
               <View style={styles.boxcontainer} key={index}>
                 <View style={styles.box}>
                   <Text
@@ -317,23 +325,23 @@ const GymBooking = ({ navigation }) => {
                     Timing: {gym.openingTime} - {gym.closingTime}
                   </Text>
                   <Text style={styles.fee}>Fee: ${gym.fee}</Text>
-
                   <Text style={styles.sessionLabel}>Monthly Session</Text>
-
                   {renderDropdown(gym.id, selectedMonths[gym.id])}
                   <TouchableOpacity
                     style={styles.button}
                     onPress={() => addToBookingCart(gym)}
-                    // onPress={addToBookingCart}
                   >
                     <Icon name="calendar" size={16} color="#fff" />
                     <Text style={styles.buttonText}>Book Now</Text>
                   </TouchableOpacity>
                 </View>
               </View>
-            );
-          })}
-      </View>
+            ))
+          ) : (
+            <Text>No gyms available</Text>
+          )}
+        </View>
+      )}
 
       <Modal
         animationType="slide"
@@ -446,6 +454,17 @@ const styles = StyleSheet.create({
   genderDropdown: {
     backgroundColor: "#f9f9f9",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+  },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -453,7 +472,7 @@ const styles = StyleSheet.create({
   },
   box: {
     width: width * 0.44,
-    height: height * 0.3, // Adjusted height to accommodate the button
+    height: height * 0.33, // Adjusted height to accommodate the button
     backgroundColor: "white",
     borderRadius: 15,
     padding: 15,
@@ -464,6 +483,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     justifyContent: "space-between",
     marginBottom: 15,
+    // overflow: "hidden",
   },
   title: {
     textDecorationLine: "underline",
@@ -513,6 +533,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: Platform.OS === "android" ? 5 : 10, // Adjusted marginTop for Android
     marginBottom: Platform.OS === "android" ? 15 : 10, // Added bottom margin for Android
+    // marginTop: 5,
+    // marginBottom: 5,
+    // flexGrow: 1,
   },
   buttonText: {
     color: "white",

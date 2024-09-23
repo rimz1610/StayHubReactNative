@@ -69,8 +69,12 @@ const getDetails = (type, item) => {
         item.maxPerson > 0
           ? ` with ${item.maxPerson} additional person(s).`
           : ".";
-      return `${item.name} - Check-in: ${moment(item.checkInDate).format("MMM DD YYYY")}
-      , Check-out: ${moment(item.checkOutDate).format("MMM DD YYYY")}, Total ${item.noofNightStay} night(s)${additional}`;
+      return `${item.name} - Check-in: ${moment(item.checkInDate).format(
+        "MMM DD YYYY"
+      )}
+      , Check-out: ${moment(item.checkOutDate).format("MMM DD YYYY")}, Total ${
+        item.noofNightStay
+      } night(s)${additional}`;
 
     case "E":
       const aTicket =
@@ -89,8 +93,11 @@ const getDetails = (type, item) => {
         item.spaDate
       ).format("MM/DD/YYYY")}, Timing ${item.time}`;
     case "RS":
-      return `${item.roomName}, Service Request:  ${item.serviceName
-        }, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY hh:mm A")}`;
+      return `${item.roomName}, Service Request:  ${
+        item.serviceName
+      }, Request Date: ${moment(item.requestDate).format(
+        "MM/DD/YYYY hh:mm A"
+      )}`;
     default:
       return "";
   }
@@ -134,7 +141,7 @@ const BookingItems = ({ navigation }) => {
     setLoading(true);
     try {
       setCartModel(await getCartFromSecureStore());
-   
+
       calculateTotal();
     } catch (error) {
       Alert.alert("Error", error);
@@ -193,14 +200,12 @@ const BookingItems = ({ navigation }) => {
           "http://majidalipl-001-site5.gtempurl.com/Cart/CalculateCartItems",
           data
         );
-      
+
         if (response.data.success) {
-         
           const updatedCart = await getCartFromSecureStore();
           updatedCart.bookingModel.bookingAmount =
             response.data.data.totalPrice;
-            updatedCart.bookingModel.paidAmount =
-            response.data.data.totalPrice;
+          updatedCart.bookingModel.paidAmount = response.data.data.totalPrice;
           setCartModel({ ...updatedCart });
           await saveCartToSecureStore(updatedCart);
         } else {
@@ -208,7 +213,6 @@ const BookingItems = ({ navigation }) => {
           setErrorMessages(response.data.message);
         }
       } catch (error) {
-     
         const errorMessage = error.message || "Unknown error";
         Alert.alert("Error", errorMessage);
       } finally {
@@ -242,10 +246,13 @@ const BookingItems = ({ navigation }) => {
           <View style={styles.placeholder} />
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
-
           <View style={styles.bookingSection}>
-            {(cart!=null && (cart.lstEvent?.length > 0 || cart.lstRoom?.length > 0 || cart.lstRoomService?.length > 0
-              || cart.lstGym?.length > 0 || cart.lstSpa?.length > 0)) ? (
+            {cart != null &&
+            (cart.lstEvent?.length > 0 ||
+              cart.lstRoom?.length > 0 ||
+              cart.lstRoomService?.length > 0 ||
+              cart.lstGym?.length > 0 ||
+              cart.lstSpa?.length > 0) ? (
               <>
                 <View style={styles.bookingList}>
                   {cart.lstRoom?.map((item, index) => (
@@ -315,10 +322,11 @@ const BookingItems = ({ navigation }) => {
                 </TouchableOpacity>
               </>
             ) : (
-              <View><Text>No items added for booking.</Text></View>
+              <View>
+                <Text>No items added for booking.</Text>
+              </View>
             )}
           </View>
-
         </ScrollView>
 
         <Modal
@@ -469,6 +477,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     marginHorizontal: 16,
+    marginTop: 20,
     marginBottom: 20,
     elevation: 3,
     shadowColor: "#000",

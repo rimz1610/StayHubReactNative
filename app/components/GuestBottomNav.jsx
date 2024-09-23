@@ -26,6 +26,7 @@ import HotelMap from "../screen/Pages/Guest/HotelMap";
 import BookingItems from "../screen/Pages/Guest/Booking/BookingItems";
 import ConfirmBooking from "../screen/Pages/Guest/Booking/ConfirmBooking";
 import MyBookingRReceipt from "../screen/Pages/Guest/Account/MyBookingReceipt";
+import Ticket from "../screen/Pages/Guest/Account/Ticket";
 
 const GuestBottomNav = () => {
   const Tab = createBottomTabNavigator();
@@ -317,13 +318,14 @@ const GuestBottomNav = () => {
             tabBarButton: () => null,
           }}
         />
-        {/* <Tab.Screen
-          name="ConfirmBooking"
-          component={ConfirmBooking}
+        <Tab.Screen
+          name="Ticket"
+          component={Ticket}
           options={{
+            headerShown: false,
             tabBarButton: () => null,
           }}
-        /> */}
+        />
       </Tab.Navigator>
       <Modal
         visible={exitModalVisible}

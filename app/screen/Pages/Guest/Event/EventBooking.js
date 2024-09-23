@@ -226,121 +226,137 @@ const EventBooking = ({ route, navigation }) => {
   const imageUrl = `http://majidalipl-001-site5.gtempurl.com/eventimages/${selectedEventDetail.eventImage}`;
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Select Event and Date</Text>
-        <RNPickerSelect
-          onValueChange={handleSelectionChange}
-          items={eventSelectList}
-          value={selectEventId}
-          placeholder={{ label: "Select Event and Date", value: 0 }}
-          style={pickerSelectStyles}
-        />
-      </View>
-      {selectEventId > 0 && (
-        <View style={styles.eventContainer}>
-          <Text style={styles.eventTitle}>
-            Event: {selectedEventDetail.name}
-          </Text>
-          <Text style={styles.eventDate}>
-            Date: {moment(selectedEventDetail.eventDate).format("dd MMM, YYYY")}
-          </Text>
-          <View style={styles.imageContainer}>
-            {imageLoading && (
-              <ActivityIndicator
-                size="large"
-                color="#0000ff"
-                style={styles.loader}
-              />
-            )}
-            <Image
-              style={[styles.eventImage, imageLoading && styles.hiddenImage]}
-              source={
-                imageError
-                  ? require("@/../../assets/images/placeholder.jpg")
-                  : { uri: imageUrl }
-              }
-              onLoadStart={() => setImageLoading(true)}
-              onLoadEnd={() => setImageLoading(false)}
-              onError={() => {
-                setImageError(true);
-                setImageLoading(false);
-              }}
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#180161" />
+          <Text style={styles.loadingText}>Loading Events...</Text>
+        </View>
+      ) : (
+        <>
+          <View style={styles.pickerContainer}>
+            <Text style={styles.label}>Select Event and Date</Text>
+            <RNPickerSelect
+              onValueChange={handleSelectionChange}
+              items={eventSelectList}
+              value={selectEventId}
+              placeholder={{ label: "Select Event and Date", value: 0 }}
+              style={pickerSelectStyles}
             />
           </View>
-          <View style={styles.detailsContainer}>
-            <Text style={styles.heading}>Details</Text>
+          {selectEventId > 0 && (
+            <View style={styles.eventContainer}>
+              <Text style={styles.eventTitle}>
+                Event: {selectedEventDetail.name}
+              </Text>
+              <Text style={styles.eventDate}>
+                Date:{" "}
+                {moment(selectedEventDetail.eventDate).format("dd MMM, YYYY")}
+              </Text>
+              <View style={styles.imageContainer}>
+                {imageLoading && (
+                  <ActivityIndicator
+                    size="large"
+                    color="#0000ff"
+                    style={styles.loader}
+                  />
+                )}
+                <Image
+                  style={[
+                    styles.eventImage,
+                    imageLoading && styles.hiddenImage,
+                  ]}
+                  source={
+                    imageError
+                      ? require("@/../../assets/images/placeholder.jpg")
+                      : { uri: imageUrl }
+                  }
+                  onLoadStart={() => setImageLoading(true)}
+                  onLoadEnd={() => setImageLoading(false)}
+                  onError={() => {
+                    setImageError(true);
+                    setImageLoading(false);
+                  }}
+                />
+              </View>
+              <View style={styles.detailsContainer}>
+                <Text style={styles.heading}>Details</Text>
 
-            <Text style={styles.description}>
-              {/* This is a dummy description of the selected event. It provides a
+                <Text style={styles.description}>
+                  {/* This is a dummy description of the selected event. It provides a
             brief overview of what the event is about. */}
-              {selectedEventDetail.shortDescription}
-            </Text>
-          </View>
-          <View style={styles.termsContainer}>
-            <Text style={styles.heading}>Terms and Conditions</Text>
-            {/* <Text style={styles.bullet}>• No refunds available.</Text>
+                  {selectedEventDetail.shortDescription}
+                </Text>
+              </View>
+              <View style={styles.termsContainer}>
+                <Text style={styles.heading}>Terms and Conditions</Text>
+                {/* <Text style={styles.bullet}>• No refunds available.</Text>
           <Text style={styles.bullet}>• Must present a valid ID.</Text>
           <Text style={styles.bullet}>
             • Event starts at the specified time.
           </Text>  */}
-            <Text>{selectedEventDetail.description}</Text>
-          </View>
-          <View style={styles.ticketContainer}>
-            <Text style={styles.ticketLabel}>No of Adult Tickets:</Text>
-            <TextInput
-              style={styles.ticketInput}
-              keyboardType="numeric"
-              value={String(bookEventModel.adultTickets)}
-              onChangeText={(value) => {
-                const totalPrice =
-                  value * selectedEventDetail.adultTicketPrice +
-                  bookEventModel.childTickets *
-                    selectedEventDetail.childTicketPrice;
-                setBookEventModel({
-                  ...bookEventModel,
-                  adultTickets: parseInt(value) || 0,
-                  itemTotalPrice: totalPrice,
-                });
-              }}
-            />
-            <Text style={styles.ticketPrice}>
-              ${selectedEventDetail.adultTicketPrice} per adult
-            </Text>
-          </View>
-          <View style={styles.ticketContainer}>
-            <Text style={styles.ticketLabel}>No of Child Tickets:</Text>
-            <TextInput
-              style={styles.ticketInput}
-              keyboardType="numeric"
-              value={String(bookEventModel.childTickets)}
-              onChangeText={(value) => {
-                const totalPrice =
-                  bookEventModel.adultTickets *
-                    selectedEventDetail.adultTicketPrice +
-                  value * selectedEventDetail.childTicketPrice;
-                setBookEventModel({
-                  ...bookEventModel,
-                  childTickets: parseInt(value) || 0,
-                  itemTotalPrice: totalPrice,
-                });
-              }}
-            />
+                <Text>{selectedEventDetail.description}</Text>
+              </View>
+              <View style={styles.ticketContainer}>
+                <Text style={styles.ticketLabel}>No of Adult Tickets:</Text>
+                <TextInput
+                  style={styles.ticketInput}
+                  keyboardType="numeric"
+                  value={String(bookEventModel.adultTickets)}
+                  onChangeText={(value) => {
+                    const totalPrice =
+                      value * selectedEventDetail.adultTicketPrice +
+                      bookEventModel.childTickets *
+                        selectedEventDetail.childTicketPrice;
+                    setBookEventModel({
+                      ...bookEventModel,
+                      adultTickets: parseInt(value) || 0,
+                      itemTotalPrice: totalPrice,
+                    });
+                  }}
+                />
+                <Text style={styles.ticketPrice}>
+                  ${selectedEventDetail.adultTicketPrice} per adult
+                </Text>
+              </View>
+              <View style={styles.ticketContainer}>
+                <Text style={styles.ticketLabel}>No of Child Tickets:</Text>
+                <TextInput
+                  style={styles.ticketInput}
+                  keyboardType="numeric"
+                  value={String(bookEventModel.childTickets)}
+                  onChangeText={(value) => {
+                    const totalPrice =
+                      bookEventModel.adultTickets *
+                        selectedEventDetail.adultTicketPrice +
+                      value * selectedEventDetail.childTicketPrice;
+                    setBookEventModel({
+                      ...bookEventModel,
+                      childTickets: parseInt(value) || 0,
+                      itemTotalPrice: totalPrice,
+                    });
+                  }}
+                />
 
-            <Text style={styles.ticketPrice}>
-              ${selectedEventDetail.childTicketPrice} per child
-            </Text>
-          </View>
-          <Text style={styles.finalAmount}>
-            Final Amount: ${bookEventModel.itemTotalPrice}
-          </Text>
-          <TouchableOpacity style={styles.button} onPress={addToBookingCart}>
-            <Icon name="check" size={16} color="#fff" />
-            <Text style={styles.buttonText}>Add To Booking</Text>
-          </TouchableOpacity>
-          {isValid === false ? (
-            <Text style={styles.errorText}>{errorMessages}</Text>
-          ) : null}
-        </View>
+                <Text style={styles.ticketPrice}>
+                  ${selectedEventDetail.childTicketPrice} per child
+                </Text>
+              </View>
+              <Text style={styles.finalAmount}>
+                Final Amount: ${bookEventModel.itemTotalPrice}
+              </Text>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={addToBookingCart}
+              >
+                <Icon name="check" size={16} color="#fff" />
+                <Text style={styles.buttonText}>Add To Booking</Text>
+              </TouchableOpacity>
+              {isValid === false ? (
+                <Text style={styles.errorText}>{errorMessages}</Text>
+              ) : null}
+            </View>
+          )}
+        </>
       )}
     </ScrollView>
   );
@@ -350,6 +366,17 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#f5f5f5",
     flexGrow: 1,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100%", // Full height for loading
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
   },
   imageContainer: {
     position: "relative",

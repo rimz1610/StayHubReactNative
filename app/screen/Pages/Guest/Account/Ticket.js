@@ -1,5 +1,4 @@
-import React, { useRef,useState,useEffect
- } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -25,7 +24,7 @@ const TicketDetail = ({ label, value }) => (
   </View>
 );
 
-const Ticket = ({route,navigation}) => {
+const Ticket = ({ route, navigation }) => {
   const viewShotRef = useRef();
   const bookingId = route.params?.bookingId || 0;
   const isFocused = useIsFocused();
@@ -38,10 +37,10 @@ const Ticket = ({route,navigation}) => {
     firstName: "",
     lastName: "",
     ticket: "",
-    eventDate: '',
-    eventTime:"",
-    location: '',
-    ticketNumber: ""
+    eventDate: "",
+    eventTime: "",
+    location: "",
+    ticketNumber: "",
   };
   const [data, setData] = useState([]);
   useEffect(() => {
@@ -60,7 +59,7 @@ const Ticket = ({route,navigation}) => {
       try {
         const response = await axios.get(
           "http://majidalipl-001-site5.gtempurl.com/Event/GetTicketList?bookingId=" +
-          bookingId,
+            bookingId,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -134,57 +133,81 @@ const Ticket = ({route,navigation}) => {
     }
   };
 
-
-
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Ticket Booking Details</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate("BookingReceipt")}
+        >
+          <Icon name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Tickets</Text>
+        <View style={styles.placeholder} />
       </View>
-      <TouchableOpacity style={styles.downloadButton} onPress={()=>{  
-        navigation.navigate("BookingReceipt", { id: bookingId });}}>
-  
-        <Text style={styles.downloadButtonText}>Back</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.downloadButton} onPress={downloadTicket}>
-        <Icon name="file-download" size={20} color="white" />
-        <Text style={styles.downloadButtonText}>Download Ticket</Text>
-      </TouchableOpacity>
+      <ScrollView>
+        <TouchableOpacity
+          style={styles.downloadButton}
+          onPress={downloadTicket}
+        >
+          <Icon name="file-download" size={20} color="white" />
+          <Text style={styles.downloadButtonText}>Download Ticket</Text>
+        </TouchableOpacity>
 
-      <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 0.9 }}>
-        {data != undefined &&
-          data.map((ticketItem, index) => {
-            return (<>
-              <View  key={index} style={styles.ticketContainer}>
-                <Image
-                  source={{ uri: "https://via.placeholder.com/100" }}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-                <View style={styles.detailsContainer}>
-                  <TicketDetail label="Invoice Date" value={ticketItem.bookingDate} />
-                  <TicketDetail
-                    label="Booking Person"
-                    value={ticketData.bookingPerson}
-                  />
-                  <TicketDetail label="Booking Ref #" value={ticketItem.refNo} />
-                  <TicketDetail label="Event" value={ticketItem.eventName} />
-                  <TicketDetail label="Date" value={ticketItem.eventDate} />
-                  <TicketDetail label="Time" value={ticketItem.eventTime} />
-                  <TicketDetail label="Ticket" value={ticketItem.ticket} />
-                  <TicketDetail label="Serial #" value={ticketItem.ticketNumber} />
-                </View>
-              </View>
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>{hotelData.phone}</Text>
-                <Text style={styles.footerText}>{hotelData.email}</Text>
-                <Text style={styles.footerText}>{hotelData.name}</Text>
-                <Text style={styles.footerText}>{hotelData.address}</Text>
-                <Text style={styles.footerText}>{hotelData.city}</Text>
-              </View></>);
-          })}
-      </ViewShot>
-    </ScrollView>
+        <ViewShot
+          ref={viewShotRef}
+          options={{ format: "jpg", quality: 0.9 }}
+          style={styles.viewShot}
+        >
+          {data != undefined &&
+            data.map((ticketItem, index) => {
+              return (
+                <>
+                  <View key={index} style={styles.ticketContainer}>
+                    <Image
+                      source={{ uri: "https://via.placeholder.com/100" }}
+                      style={styles.logo}
+                      resizeMode="contain"
+                    />
+                    <View style={styles.detailsContainer}>
+                      <TicketDetail
+                        label="Invoice Date"
+                        value={ticketItem.bookingDate}
+                      />
+                      <TicketDetail
+                        label="Booking Person"
+                        value={ticketData.bookingPerson}
+                      />
+                      <TicketDetail
+                        label="Booking Ref #"
+                        value={ticketItem.refNo}
+                      />
+                      <TicketDetail
+                        label="Event"
+                        value={ticketItem.eventName}
+                      />
+                      <TicketDetail label="Date" value={ticketItem.eventDate} />
+                      <TicketDetail label="Time" value={ticketItem.eventTime} />
+                      <TicketDetail label="Ticket" value={ticketItem.ticket} />
+                      <TicketDetail
+                        label="Serial #"
+                        value={ticketItem.ticketNumber}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.footer}>
+                    <Text style={styles.footerText}>{hotelData.phone}</Text>
+                    <Text style={styles.footerText}>{hotelData.email}</Text>
+                    <Text style={styles.footerText}>{hotelData.name}</Text>
+                    <Text style={styles.footerText}>{hotelData.address}</Text>
+                    <Text style={styles.footerText}>{hotelData.city}</Text>
+                  </View>
+                </>
+              );
+            })}
+        </ViewShot>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -192,6 +215,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#e6e6e6",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#180161",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  viewShot: {
+    backgroundColor: "white", // Set background color to white
+    padding: 16, // Optional: add padding if needed
+    borderRadius: 8, // Optional: keep the rounded corners
+  },
+
+  backButton: {
+    padding: 8,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+  },
+  placeholder: {
+    width: 40, // To balance the header layout
   },
   downloadButton: {
     width: "50%",
@@ -212,16 +260,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 8,
   },
-  header: {
-    // backgroundColor: "#dfe4ea",
-    paddingVertical: 20,
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2f3640",
-  },
+  // header: {
+  //   // backgroundColor: "#dfe4ea",
+  //   paddingVertical: 20,
+  //   alignItems: "center",
+  // },
+  // headerTitle: {
+  //   fontSize: 20,
+  //   fontWeight: "bold",
+  //   color: "#2f3640",
+  // },
   ticketContainer: {
     backgroundColor: "#27496d",
     margin: 16,

@@ -338,11 +338,18 @@ const SpaBooking = ({ navigation }) => {
         </View>
       </View>
 
-      {spaList != undefined &&
-        spaList.length > 0 &&
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#180161" />
+          <Text style={styles.loadingText}>Loading Spas...</Text>
+        </View>
+      ) : spaList.length > 0 ? (
         spaList.map((service, index) => (
           <ServiceCard key={index} spa={service} navigation={navigation} />
-        ))}
+        ))
+      ) : (
+        <Text style={styles.noDataText}>No spa services available.</Text>
+      )}
     </ScrollView>
   );
 };
@@ -353,6 +360,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f0f0f0",
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 200, // Adjust as needed
+  },
+  noDataText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#34495e",
+    marginTop: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
   },
   carouselContainer: {
     width: width,

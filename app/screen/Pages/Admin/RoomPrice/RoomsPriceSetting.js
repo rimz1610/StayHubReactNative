@@ -320,36 +320,42 @@ const RoomPriceSettingContent = ({ navigation }) => {
           )}
         </View>
       </View>
-      <View style={styles.priceContainer}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Price</Text>
-          <TextInput
-            placeholder="Price"
-            placeholderTextColor={"#888"}
-            onEndEditing={formik.handleChange("price")}
-            value={formik.values.price}
-            style={styles.priceInput}
-            keyboardType="numeric"
-          />
-          {formik.touched.price && formik.errors.price && (
-            <Text style={styles.errorText}>{formik.errors.price}</Text>
-          )}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.priceContainer}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Price</Text>
+            <TextInput
+              placeholder="Price"
+              placeholderTextColor={"#888"}
+              onChangeText={formik.handleChange("price")}
+              onBlur={formik.handleBlur("price")}
+              value={formik.values.price}
+              style={styles.priceInput}
+              keyboardType="numeric"
+            />
+            {formik.touched.price && formik.errors.price && (
+              <Text style={styles.errorText}>{formik.errors.price}</Text>
+            )}
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Price per Person</Text>
+            <TextInput
+              placeholder="Price per Person"
+              placeholderTextColor={"#888"}
+              onChangeText={formik.handleChange("addPersonPrice")}
+              onBlur={formik.handleBlur("addPersonPrice")}
+              value={formik.values.addPersonPrice}
+              style={styles.priceInput}
+              keyboardType="numeric"
+            />
+            {formik.touched.addPersonPrice && formik.errors.addPersonPrice && (
+              <Text style={styles.errorText}>
+                {formik.errors.addPersonPrice}
+              </Text>
+            )}
+          </View>
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Price per Person</Text>
-          <TextInput
-            placeholder="Price per Person"
-            placeholderTextColor={"#888"}
-            onEndEditing={formik.handleChange("addPersonPrice")}
-            value={formik.values.addPersonPrice}
-            style={styles.priceInput}
-            keyboardType="numeric"
-          />
-          {formik.touched.addPersonPrice && formik.errors.addPersonPrice && (
-            <Text style={styles.errorText}>{formik.errors.addPersonPrice}</Text>
-          )}
-        </View>
-      </View>
+      </TouchableWithoutFeedback>
       <View style={styles.priceContainer}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Status</Text>
