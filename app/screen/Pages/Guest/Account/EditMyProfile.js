@@ -62,6 +62,7 @@ const EditMyProfile = ({ navigation }) => {
 
   const fetchProfileData = useCallback(
     async (formikSetValues, setFieldValue) => {
+     
 
       try {
         const guestId = await AsyncStorage.getItem("loginId");
@@ -71,7 +72,8 @@ const EditMyProfile = ({ navigation }) => {
         if (response.data.success) {
 
           formikSetValues(response.data.data);
-          if(response.data.data.imgPath!="" && response.data.data.imgPath!=null && response.data.data.imgPath!=undefined){
+          if(response.data.data.imgPath!="" && response.data.data.imgPath!="null"
+            && response.data.data.imgPath!=null && response.data.data.imgPath!=undefined){
             setImageUri(`http://majidalipl-001-site5.gtempurl.com/guestprofile/${response.data.data.imgPath}`);
             setImage(null);
           }
@@ -96,6 +98,7 @@ const EditMyProfile = ({ navigation }) => {
       try {
         setSubmitting(true);
         console.warn(values);
+        console.warn(imageUri);
         const formData = new FormData();
         if (photo != null) {
           const picimageUri = photo.uri.startsWith("file://")
@@ -109,19 +112,12 @@ const EditMyProfile = ({ navigation }) => {
             type: photo.mimeType || "image/png",
             name: photo.fileName || "image.png",
           });
+          console.warn(picimageUri)
         }
         Object.keys(values).forEach((key) => {
           formData.append(key, values[key]);
         });
-        Array.from(formData).forEach(([key, value]) => {
-          console.warn(`Key: ${key}, Value: ${value}`);
-          if (value instanceof Object) {
-            console.warn(`Object Value: `);
-            Object.keys(value).forEach((key) => {
-              console.warn(`  ${key}: ${value[key]}`);
-            });
-          }
-        });
+       
        
         const token = await AsyncStorage.getItem("token");
        
@@ -136,11 +132,11 @@ const EditMyProfile = ({ navigation }) => {
           }
         );
         if (response.data.success) {
-          Alert.alert("Success", "Profile updated successfully.");
-          console.warn(response.data.data);
           await AsyncStorage.setItem("email", values.email);
           await AsyncStorage.setItem("name", values.firstName+" "+values.lastName);
           await AsyncStorage.setItem("profile", response.data.data);
+          Alert.alert("Success", "Profile updated successfully.");
+          
         } else {
           Alert.alert("Error", response.data.message);
         }
