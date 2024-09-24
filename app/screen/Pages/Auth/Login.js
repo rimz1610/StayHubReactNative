@@ -96,7 +96,7 @@ const Login = ({ navigation }) => {
     await AsyncStorage.removeItem("guestNo");
     
     //Temporary deleting store 
-    await deleteCartFromSecureStore();
+   // await deleteCartFromSecureStore();
   };
   useEffect(() => {
     if (isFocused) {

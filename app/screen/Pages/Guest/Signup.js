@@ -45,7 +45,7 @@ const Signup = ({ navigation }) => {
       state: "",
       address: "",
       phoneNumber: "",
-      zipCode: "",
+      zipcode: "",
     },
     validationSchema: SignUpSchema,
     onSubmit: (values) => {
@@ -197,6 +197,22 @@ const Signup = ({ navigation }) => {
                   </View>
                 </View>
                 <View style={styles.row}>
+                <View style={styles.zipContainer}>
+                    <Text style={styles.heading}>Zip Code</Text>
+                    <TextInput
+                      style={styles.shortInput}
+                      placeholder="Zip Code"
+                      placeholderTextColor="white"
+                      keyboardType="numeric"
+                      onChangeText={formik.handleChange("zipcode")}
+                      value={formik.values.zipcode}
+                    />
+                    {formik.touched.zipCode && formik.errors.zipcode ? (
+                      <Text style={styles.errorText}>
+                        {formik.errors.zipcode}
+                      </Text>
+                    ) : null}
+                  </View>
                   <View style={styles.phoneContainer}>
                     <Text style={styles.heading}>Phone Number</Text>
                     <TextInput
@@ -213,22 +229,7 @@ const Signup = ({ navigation }) => {
                       </Text>
                     ) : null}
                   </View>
-                  <View style={styles.zipContainer}>
-                    <Text style={styles.heading}>Zip Code</Text>
-                    <TextInput
-                      style={styles.shortInput}
-                      placeholder="Zip Code"
-                      placeholderTextColor="white"
-                      keyboardType="numeric"
-                      onChangeText={formik.handleChange("zipCode")}
-                      value={formik.values.zipCode}
-                    />
-                    {formik.touched.zipCode && formik.errors.zipCode ? (
-                      <Text style={styles.errorText}>
-                        {formik.errors.zipCode}
-                      </Text>
-                    ) : null}
-                  </View>
+                 
                 </View>
                 <TouchableOpacity
                   style={styles.submitButton}
