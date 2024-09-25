@@ -21,6 +21,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
+import CustomLoader from "../../../../components/CustomLoader";
 import {
   getCartFromSecureStore,
   putDataIntoCartAndSaveSecureStore,
@@ -340,7 +341,8 @@ const SpaBooking = ({ navigation }) => {
 
       {loading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#180161" />
+          {/* <ActivityIndicator size="large" color="#180161" /> */}
+          <CustomLoader />
           <Text style={styles.loadingText}>Loading Spas...</Text>
         </View>
       ) : spaList.length > 0 ? (

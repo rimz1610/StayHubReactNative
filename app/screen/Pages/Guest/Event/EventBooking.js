@@ -20,6 +20,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
+import CustomLoader from "../../../../components/CustomLoader";
 import {
   getCartFromSecureStore,
   putDataIntoCartAndSaveSecureStore,
@@ -228,7 +229,8 @@ const EventBooking = ({ route, navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       {loading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#180161" />
+          {/* <ActivityIndicator size="large" color="#180161" /> */}
+          <CustomLoader />
           <Text style={styles.loadingText}>Loading Events...</Text>
         </View>
       ) : (
@@ -254,11 +256,14 @@ const EventBooking = ({ route, navigation }) => {
               </Text>
               <View style={styles.imageContainer}>
                 {imageLoading && (
-                  <ActivityIndicator
-                    size="large"
-                    color="#0000ff"
-                    style={styles.loader}
-                  />
+                  <View style={styles.loader}>
+                    <CustomLoader />
+                  </View>
+                  // <ActivityIndicator
+                  //   size="large"
+                  //   color="#0000ff"
+                  //   style={styles.loader}
+                  // />
                 )}
                 <Image
                   style={[
@@ -371,10 +376,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    height: "100%", // Full height for loading
+    // height: "100%", // Full height for loading
   },
   loadingText: {
-    marginTop: 10,
+    // marginTop: 10,
     fontSize: 16,
     color: "#666",
   },
@@ -395,8 +400,8 @@ const styles = StyleSheet.create({
   },
   loader: {
     position: "absolute",
-    top: "50%",
-    left: "50%",
+    top: "40%",
+    left: "35%",
     transform: [{ translateX: -25 }, { translateY: -25 }],
   },
   pickerContainer: {

@@ -24,6 +24,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import moment from "moment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomLoader from "../../../../components/CustomLoader";
 import {
   saveCartToSecureStore,
   getCartFromSecureStore,
@@ -299,10 +300,10 @@ const RoomBooking = ({ navigation }) => {
                   lstEvent: [],
                 };
               }
-            console.warn(bookRoomModel);
+              console.warn(bookRoomModel);
               const index = cart.lstRoom ? cart.lstRoom.length + 1 : 1;
-              setBookRoomModel({...bookRoomModel, index: index});
-            
+              setBookRoomModel({ ...bookRoomModel, index: index });
+
               cart.lstRoom = cart.lstRoom || [];
               cart.lstRoom.push({
                 roomId: item.roomId,
@@ -686,7 +687,8 @@ const RoomBooking = ({ navigation }) => {
 
       <Text style={styles.availableRoomsHeading}>Available Rooms</Text>
       {submitting ? (
-        <ActivityIndicator size="large" color="#180161" />
+        // <ActivityIndicator size="large" color="#180161" />
+        <CustomLoader />
       ) : data.length === 0 ? (
         <View style={styles.noRoomContainer}>
           <Text style={styles.noRoom}>No rooms are available</Text>

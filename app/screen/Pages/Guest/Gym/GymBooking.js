@@ -77,7 +77,7 @@ const GymBooking = ({ navigation }) => {
         "http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" +
           selectedGender
       );
-
+      // console.log(response.data.list);
       if (response.data.success) {
         setGymList(response.data.list);
       } else {
@@ -282,120 +282,241 @@ const GymBooking = ({ navigation }) => {
     ),
     [onImageLoad]
   );
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.carouselContainer}>
-        <Carousel
-          loop
-          width={width}
-          height={width * 0.7}
-          autoPlay={true}
-          data={carouselImages}
-          scrollAnimationDuration={1000}
-          renderItem={renderCarouselItem}
-        />
-      </View>
-      <View style={styles.tagContainerWrapper}>
-        <View style={styles.tagContainer}>
-          <Text style={styles.tagText}>Gym Services</Text>
-        </View>
-      </View>
-      <View style={styles.genderSection}>
-        <Text style={styles.genderTitle}>Select Gender</Text>
-        {renderDropdown("gender", selectedGender, styles.genderDropdown)}
-      </View>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#180161" />
-          <Text style={styles.loadingText}>Loading gyms...</Text>
-        </View>
-      ) : (
-        <View style={styles.row}>
-          {gymList.length > 0 ? (
-            gymList.map((gym, index) => (
-              <View style={styles.boxcontainer} key={index}>
-                <View style={styles.box}>
-                  <Text
-                    style={styles.title}
-                    onPress={() => openDetailModal(gym)}
-                  >
-                    {gym.name}
-                  </Text>
-                  <Text style={styles.timing}>
-                    Timing: {gym.openingTime} - {gym.closingTime}
-                  </Text>
-                  <Text style={styles.fee}>Fee: ${gym.fee}</Text>
-                  <Text style={styles.sessionLabel}>Monthly Session</Text>
-                  {renderDropdown(gym.id, selectedMonths[gym.id])}
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => addToBookingCart(gym)}
-                  >
-                    <Icon name="calendar" size={16} color="#fff" />
-                    <Text style={styles.buttonText}>Book Now</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text>No gyms available</Text>
-          )}
-        </View>
-      )}
+  // return (
+  //   <View contentContainerStyle={styles.container}>
+  //     {/* <FlatList> */}
+  //     <View style={styles.carouselContainer}>
+  //       <Carousel
+  //         loop
+  //         width={width}
+  //         height={width * 0.7}
+  //         autoPlay={true}
+  //         data={carouselImages}
+  //         scrollAnimationDuration={1000}
+  //         renderItem={renderCarouselItem}
+  //       />
+  //     </View>
+  //     <View style={styles.tagContainerWrapper}>
+  //       <View style={styles.tagContainer}>
+  //         <Text style={styles.tagText}>Gym Services</Text>
+  //       </View>
+  //     </View>
+  //     <View style={styles.genderSection}>
+  //       <Text style={styles.genderTitle}>Select Gender</Text>
+  //       {renderDropdown("gender", selectedGender, styles.genderDropdown)}
+  //     </View>
+  //     {loading ? (
+  //       <View style={styles.loadingContainer}>
+  //         <CustomLoader />
+  //         <Text style={styles.loadingText}>Loading gyms...</Text>
+  //       </View>
+  //     ) : (
+  //       <View style={styles.boxListContainer}>
+  //         <FlatList
+  //           data={gymList}
+  //           keyExtractor={(item, index) => index.toString()}
+  //           // numColumns={2}
+  //           renderItem={({ item: gym }) => (
+  //             <View style={styles.boxcontainer}>
+  //               <View style={styles.box}>
+  //                 <Text
+  //                   style={styles.title}
+  //                   onPress={() => openDetailModal(gym)}
+  //                 >
+  //                   {gym.name}
+  //                 </Text>
+  //                 <Text style={styles.timing}>
+  //                   Timing: {gym.openingTime} - {gym.closingTime}
+  //                 </Text>
+  //                 <Text style={styles.fee}>Fee: ${gym.fee}</Text>
+  //                 <Text style={styles.sessionLabel}>Monthly Session</Text>
+  //                 {renderDropdown(gym.id, selectedMonths[gym.id])}
+  //                 <TouchableOpacity
+  //                   style={styles.button}
+  //                   onPress={() => addToBookingCart(gym)}
+  //                 >
+  //                   <Icon name="calendar" size={16} color="#fff" />
+  //                   <Text style={styles.buttonText}>Book Now</Text>
+  //                 </TouchableOpacity>
+  //               </View>
+  //             </View>
+  //           )}
+  //         />
+  //       </View>
+  //     )}
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={closeDropdown}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPressOut={closeDropdown}
-        >
-          <View style={styles.modalContent}>
-            <FlatList
-              data={currentDropdown === "gender" ? genderOptions : monthOptions}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.optionItem}
-                  onPress={() => selectOption(item)}
-                >
-                  <Text style={styles.optionText}>{item}</Text>
-                </TouchableOpacity>
-              )}
+  //     <Modal
+  //       animationType="slide"
+  //       transparent={true}
+  //       visible={modalVisible}
+  //       onRequestClose={closeDropdown}
+  //     >
+  //       <TouchableOpacity
+  //         style={styles.modalOverlay}
+  //         activeOpacity={1}
+  //         onPressOut={closeDropdown}
+  //       >
+  //         <View style={styles.modalContent}>
+  //           <FlatList
+  //             data={currentDropdown === "gender" ? genderOptions : monthOptions}
+  //             keyExtractor={(item) => item}
+  //             renderItem={({ item }) => (
+  //               <TouchableOpacity
+  //                 style={styles.optionItem}
+  //                 onPress={() => selectOption(item)}
+  //               >
+  //                 <Text style={styles.optionText}>{item}</Text>
+  //               </TouchableOpacity>
+  //             )}
+  //           />
+  //         </View>
+  //       </TouchableOpacity>
+  //     </Modal>
+  //     <Modal
+  //       animationType="slide"
+  //       transparent={true}
+  //       visible={detailModalVisible}
+  //       onRequestClose={closeDetailModal}
+  //     >
+  //       <View style={styles.modalOverlay}>
+  //         <View style={styles.detailModalContent}>
+  //           <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
+  //           <Text style={styles.modalDescription}>
+  //             {currentGymDetails.description}
+  //           </Text>
+  //           <Text style={styles.modalSubtitle}>Equipment Available:</Text>
+  //           <Text style={styles.modalText}>{currentGymDetails.equipment}</Text>
+  //           <Text style={styles.modalSubtitle}>Gym Rules:</Text>
+  //           <Text style={styles.modalText}>{currentGymDetails.rules}</Text>
+  //           <TouchableOpacity
+  //             style={styles.closeButton}
+  //             onPress={closeDetailModal}
+  //           >
+  //             <Text style={styles.closeButtonText}>Close</Text>
+  //           </TouchableOpacity>
+  //         </View>
+  //       </View>
+  //     </Modal>
+  //     {/* </FlatList> */}
+  //   </View>
+  // );
+  return (
+    <FlatList
+      data={gymList}
+      keyExtractor={(item, index) => index.toString()}
+      ListHeaderComponent={
+        <>
+          <View style={styles.carouselContainer}>
+            <Carousel
+              loop
+              width={width}
+              height={width * 0.7}
+              autoPlay={true}
+              data={carouselImages}
+              scrollAnimationDuration={1000}
+              renderItem={renderCarouselItem}
             />
           </View>
-        </TouchableOpacity>
-      </Modal>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={detailModalVisible}
-        onRequestClose={closeDetailModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.detailModalContent}>
-            <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
-            <Text style={styles.modalDescription}>
-              {currentGymDetails.description}
+          <View style={styles.tagContainerWrapper}>
+            <View style={styles.tagContainer}>
+              <Text style={styles.tagText}>Gym Services</Text>
+            </View>
+          </View>
+          <View style={styles.genderSection}>
+            <Text style={styles.genderTitle}>Select Gender</Text>
+            {renderDropdown("gender", selectedGender, styles.genderDropdown)}
+          </View>
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <CustomLoader />
+              <Text style={styles.loadingText}>Loading gyms...</Text>
+            </View>
+          )}
+        </>
+      }
+      renderItem={({ item: gym }) => (
+        <View style={styles.boxcontainer}>
+          <View style={styles.box}>
+            <Text style={styles.title} onPress={() => openDetailModal(gym)}>
+              {gym.name}
             </Text>
-            <Text style={styles.modalSubtitle}>Equipment Available:</Text>
-            <Text style={styles.modalText}>{currentGymDetails.equipment}</Text>
-            <Text style={styles.modalSubtitle}>Gym Rules:</Text>
-            <Text style={styles.modalText}>{currentGymDetails.rules}</Text>
+            <Text style={styles.timing}>
+              Timing: {gym.openingTime} - {gym.closingTime}
+            </Text>
+            <Text style={styles.fee}>Fee: ${gym.fee}</Text>
+            <Text style={styles.sessionLabel}>Monthly Session</Text>
+            {renderDropdown(gym.id, selectedMonths[gym.id])}
             <TouchableOpacity
-              style={styles.closeButton}
-              onPress={closeDetailModal}
+              style={styles.button}
+              onPress={() => addToBookingCart(gym)}
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Icon name="calendar" size={16} color="#fff" />
+              <Text style={styles.buttonText}>Book Now</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </ScrollView>
+      )}
+      ListFooterComponent={
+        <>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={closeDropdown}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPressOut={closeDropdown}
+            >
+              <View style={styles.modalContent}>
+                <FlatList
+                  data={
+                    currentDropdown === "gender" ? genderOptions : monthOptions
+                  }
+                  keyExtractor={(item) => item}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.optionItem}
+                      onPress={() => selectOption(item)}
+                    >
+                      <Text style={styles.optionText}>{item}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </TouchableOpacity>
+          </Modal>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={detailModalVisible}
+            onRequestClose={closeDetailModal}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.detailModalContent}>
+                <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
+                <Text style={styles.modalDescription}>
+                  {currentGymDetails.description}
+                </Text>
+                <Text style={styles.modalSubtitle}>Equipment Available:</Text>
+                <Text style={styles.modalText}>
+                  {currentGymDetails.equipment}
+                </Text>
+                <Text style={styles.modalSubtitle}>Gym Rules:</Text>
+                <Text style={styles.modalText}>{currentGymDetails.rules}</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={closeDetailModal}
+                >
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </>
+      }
+    />
   );
 };
 const styles = StyleSheet.create({
@@ -403,9 +524,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "#f5f5f5",
   },
-  boxcontainer: {
-    padding: 10,
-  },
+
   carouselContainer: {
     width: width,
     height: width * 0.7,
@@ -461,7 +580,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   loadingText: {
-    marginTop: 10,
+    // marginTop: 10,
     fontSize: 16,
     color: "#666",
   },
@@ -470,9 +589,30 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 15,
   },
+  boxcontainer: {
+    // justifyContent: "center",
+    alignSelf: "center",
+    // alignItems: "center",
+    width: "90%",
+    marginBottom: 15,
+  },
+  // box: {
+  //   width: width * 0.44,
+  //   height: height * 0.33, // Adjusted height to accommodate the button
+  //   backgroundColor: "white",
+  //   borderRadius: 15,
+  //   padding: 15,
+  //   shadowColor: "#000",
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.1,
+  //   shadowRadius: 4,
+  //   elevation: 3,
+  //   justifyContent: "space-between",
+  //   marginBottom: 15,
+  //   // overflow: "hidden",
+  // },
   box: {
-    width: width * 0.44,
-    height: height * 0.33, // Adjusted height to accommodate the button
+    height: height * 0.33,
     backgroundColor: "white",
     borderRadius: 15,
     padding: 15,
@@ -482,8 +622,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     justifyContent: "space-between",
-    marginBottom: 15,
-    // overflow: "hidden",
   },
   title: {
     textDecorationLine: "underline",

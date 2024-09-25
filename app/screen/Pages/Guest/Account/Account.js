@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,13 +12,50 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 
+const LOADING_TIMEOUT = 10000;
+const PLACEHOLDER_IMAGE = require("../../../../../assets/images/placeholder.jpg");
+const COVER_IMAGE = require("../../../../../assets/images/room-one.jpg");
 
 const Account = ({ navigation }) => {
   const isFocused = useIsFocused();
-  const LOADING_TIMEOUT = 10000;
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  const [data, setData] = useState({ guestNo: "", name: "", email: "", profile: "" });
+  const [data, setData] = useState({
+    guestNo: "",
+    name: "",
+    email: "",
+    profile: "",
+  });
+  const [profileImageUri, setProfileImageUri] = useState(null);
+
+  const fetchAccountData = useCallback(async () => {
+    try {
+      const loginId = await AsyncStorage.getItem("loginId");
+      if (loginId == null) {
+        navigation.navigate("Login");
+        return;
+      }
+
+      const keys = ["guestNo", "name", "email", "profile"];
+      const values = await AsyncStorage.multiGet(keys);
+      const newData = Object.fromEntries(values);
+      setData(newData);
+
+      if (newData.profile) {
+        setProfileImageUri(
+          `http://majidalipl-001-site5.gtempurl.com/guestprofile/${newData.profile}`
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching account data:", error);
+    }
+  }, [navigation]);
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchAccountData();
+    }
+  }, [isFocused, fetchAccountData]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,41 +67,6 @@ const Account = ({ navigation }) => {
 
     return () => clearTimeout(timer);
   }, [imageLoading]);
-  useEffect(() => {
-    if (isFocused) {
-      handleAccountLoggedIn();
-    }
-  }, [isFocused]);
-
-
-  const handleAccountLoggedIn = async () => {
-    try {
-      if (await AsyncStorage.getItem("loginId") == null) {
-        navigation.navigate("Login");
-      }
-      else {
-        setData({
-          guestNo: await AsyncStorage.getItem("guestNo"),
-          name: await AsyncStorage.getItem("name"),
-          email: await AsyncStorage.getItem("email"),
-          profile: await AsyncStorage.getItem("profile")
-        })
-      }
-
-    } catch (error) {
-      // console.warn(error);
-    }
-  };
-
-  const [coverImageLoaded, setCoverImageLoaded] = useState(false);
-  const [profileImageLoaded, setProfileImageLoaded] = useState(false);
-
-  const screens = [
-    { name: "My Bookings", icon: "calendar", route: "MyBookings" },
-    { name: "Edit My Profile", icon: "person", route: "EditMyProfile" },
-    { name: "My Rooms", icon: "bed", route: "MyRooms" },
-    { name: "Change Password", icon: "lock-closed", route: "ChangePassword" },
-  ];
 
   const handleLogout = async () => {
     try {
@@ -77,7 +79,7 @@ const Account = ({ navigation }) => {
         "name",
         "loginId",
         "profile",
-        "guestNo"
+        "guestNo",
       ];
       await AsyncStorage.multiRemove(keysToRemove);
       navigation.navigate("Login");
@@ -86,47 +88,39 @@ const Account = ({ navigation }) => {
     }
   };
 
+  const screens = [
+    { name: "My Bookings", icon: "calendar", route: "MyBookings" },
+    { name: "Edit My Profile", icon: "person", route: "EditMyProfile" },
+    { name: "My Rooms", icon: "bed", route: "MyRooms" },
+    { name: "Change Password", icon: "lock-closed", route: "ChangePassword" },
+  ];
+
+  const ProfileImage = () => (
+    <View style={styles.profileImageContainer}>
+      <Image source={PLACEHOLDER_IMAGE} style={styles.profileImage} />
+      {profileImageUri && (
+        <Image
+          source={{ uri: profileImageUri }}
+          style={styles.profileImage}
+          onLoad={() => setImageLoading(false)}
+          onError={() => {
+            setImageError(true);
+            setImageLoading(false);
+          }}
+        />
+      )}
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.coverImageContainer}>
-          <Image
-            source={require("../../../../../assets/images/placeholder.jpg")}
-            style={[
-              styles.coverImage,
-              !coverImageLoaded && styles.imagePlaceholder,
-            ]}
-          />
-          <Image
-            source={require("../../../../../assets/images/room-two.jpg")}
-            style={[
-              styles.coverImage,
-              coverImageLoaded ? styles.imageLoaded : styles.imageHidden,
-            ]}
-            onLoad={() => setCoverImageLoaded(true)}
-          />
+          <Image source={COVER_IMAGE} style={styles.coverImage} />
         </View>
 
         <View style={styles.profileContainer}>
-          <View style={styles.profileImageContainer}>
-            <Image
-              source={require("../../../../../assets/images/placeholder.jpg")}
-              style={[
-                styles.profileImage,
-                !profileImageLoaded && styles.imagePlaceholder,
-              ]}
-            />
-            <Image
-              source={imageError
-                ? require("../../../../../assets/images/placeholder.jpg")
-                : { uri: `http://majidalipl-001-site5.gtempurl.com/guestprofile/${data.profile}` }}
-              style={[
-                styles.profileImage,
-                profileImageLoaded ? styles.imageLoaded : styles.imageHidden,
-              ]}
-              onLoad={() => setProfileImageLoaded(true)}
-            />
-          </View>
+          <ProfileImage />
           <Text style={styles.name}>{data.name}</Text>
           <View style={styles.emailContainer}>
             <Text style={styles.email}>{data.email}</Text>
@@ -166,9 +160,8 @@ const styles = StyleSheet.create({
   },
   coverImage: {
     width: "100%",
-    height: "90%",
+    height: "100%",
     resizeMode: "cover",
-    position: "absolute",
   },
   profileContainer: {
     alignItems: "center",
@@ -186,15 +179,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     position: "absolute",
-  },
-  imagePlaceholder: {
-    backgroundColor: "#e0e0e0",
-  },
-  imageLoaded: {
-    opacity: 1,
-  },
-  imageHidden: {
-    opacity: 0,
   },
   name: {
     fontSize: 22,
@@ -245,9 +229,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: "#e0e0e0",
-  },
-  hiddenImage: {
-    opacity: 0,
   },
   logoutText: {
     color: "black",

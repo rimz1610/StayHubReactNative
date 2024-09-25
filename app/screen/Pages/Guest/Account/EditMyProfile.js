@@ -3,11 +3,13 @@ import {
   View,
   Text,
   TextInput,
-  Image,Alert,
+  Image,
+  Alert,
   StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
-  ScrollView,ActivityIndicator,
+  ScrollView,
+  ActivityIndicator,
   Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -17,7 +19,6 @@ import * as Yup from "yup";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const EditProfileSchema = Yup.object().shape({
-  
   email: Yup.string().email("Invalid email address").required("Required"),
   firstName: Yup.string().required("Required"),
   lastName: Yup.string().required("Required"),
@@ -26,7 +27,7 @@ const EditProfileSchema = Yup.object().shape({
   address: Yup.string().required("Required"),
   phoneNumber: Yup.string().required("Required"),
   zipcode: Yup.string().required("Required"),
-  imgPath:Yup.string().notRequired()
+  imgPath: Yup.string().notRequired(),
 });
 const EditMyProfile = ({ navigation }) => {
   const [imageUri, setImageUri] = useState(null);
@@ -57,37 +58,35 @@ const EditMyProfile = ({ navigation }) => {
     address: "",
     phoneNumber: "",
     zipcode: "",
-    imgPath:"",
+    imgPath: "",
   };
 
   const fetchProfileData = useCallback(
     async (formikSetValues, setFieldValue) => {
-     
-
       try {
         const guestId = await AsyncStorage.getItem("loginId");
         const response = await axios.get(
           `http://majidalipl-001-site5.gtempurl.com/Guest/GetProfile?guestId=${guestId}`
         );
         if (response.data.success) {
-
           formikSetValues(response.data.data);
-          if(response.data.data.imgPath!="" && response.data.data.imgPath!="null"
-            && response.data.data.imgPath!=null && response.data.data.imgPath!=undefined){
-            setImageUri(`http://majidalipl-001-site5.gtempurl.com/guestprofile/${response.data.data.imgPath}`);
+          if (
+            response.data.data.imgPath != "" &&
+            response.data.data.imgPath != "null" &&
+            response.data.data.imgPath != null &&
+            response.data.data.imgPath != undefined
+          ) {
+            setImageUri(
+              `http://majidalipl-001-site5.gtempurl.com/guestprofile/${response.data.data.imgPath}`
+            );
             setImage(null);
-          }
-          else{
-           
           }
         } else {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
         console.warn(error);
-        
-          Alert.alert("Error", "Failed to fetch profile");
-        
+        Alert.alert("Error", "Failed to fetch profile");
       }
     },
     [navigation]
@@ -97,30 +96,25 @@ const EditMyProfile = ({ navigation }) => {
     async (values, { setSubmitting }) => {
       try {
         setSubmitting(true);
-        console.warn(values);
-        console.warn(imageUri);
         const formData = new FormData();
-        if (photo != null) {
-          const picimageUri = photo.uri.startsWith("file://")
-            ? photo.uri
-            : "file://" + photo.uri;
 
-          //console.warn(imageUri);
-
+        if (photo) {
           formData.append("guestProfile", {
-            uri: picimageUri,
-            type: photo.mimeType || "image/png",
-            name: photo.fileName || "image.png",
+            uri:
+              Platform.OS === "android"
+                ? photo.uri
+                : photo.uri.replace("file://", ""),
+            type: photo.mimeType || "image/jpeg",
+            name: photo.fileName || `profile_${Date.now()}.jpg`,
           });
-          console.warn(picimageUri)
         }
+
         Object.keys(values).forEach((key) => {
           formData.append(key, values[key]);
         });
-       
-       
+
         const token = await AsyncStorage.getItem("token");
-       
+
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Guest/EditProfile",
           formData,
@@ -131,26 +125,84 @@ const EditMyProfile = ({ navigation }) => {
             },
           }
         );
+
         if (response.data.success) {
           await AsyncStorage.setItem("email", values.email);
-          await AsyncStorage.setItem("name", values.firstName+" "+values.lastName);
+          await AsyncStorage.setItem(
+            "name",
+            `${values.firstName} ${values.lastName}`
+          );
           await AsyncStorage.setItem("profile", response.data.data);
           Alert.alert("Success", "Profile updated successfully.");
-          
         } else {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-       
-          console.warn(error);
-          Alert.alert("Error", "An error occurred while updating profile");
-        
+        console.warn(error);
+        Alert.alert("Error", "An error occurred while updating the profile.");
       } finally {
         setSubmitting(false);
       }
     },
-    [navigation]
+    [navigation, photo]
   );
+
+  //   async (values, { setSubmitting }) => {
+  //     try {
+  //       setSubmitting(true);
+  //       console.warn(values);
+  //       console.warn(imageUri);
+  //       const formData = new FormData();
+  //       if (photo != null) {
+  //         const picimageUri = photo.uri.startsWith("file://")
+  //           ? photo.uri
+  //           : "file://" + photo.uri;
+
+  //         //console.warn(imageUri);
+
+  //         formData.append("guestProfile", {
+  //           uri: picimageUri,
+  //           type: photo.mimeType || "image/png",
+  //           name: photo.fileName || "image.png",
+  //         });
+  //         console.warn(picimageUri);
+  //       }
+  //       Object.keys(values).forEach((key) => {
+  //         formData.append(key, values[key]);
+  //       });
+
+  //       const token = await AsyncStorage.getItem("token");
+
+  //       const response = await axios.post(
+  //         "http://majidalipl-001-site5.gtempurl.com/Guest/EditProfile",
+  //         formData,
+  //         {
+  //           headers: {
+  //             "Content-Type": "multipart/form-data",
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+  //       if (response.data.success) {
+  //         await AsyncStorage.setItem("email", values.email);
+  //         await AsyncStorage.setItem(
+  //           "name",
+  //           values.firstName + " " + values.lastName
+  //         );
+  //         await AsyncStorage.setItem("profile", response.data.data);
+  //         Alert.alert("Success", "Profile updated successfully.");
+  //       } else {
+  //         Alert.alert("Error", response.data.message);
+  //       }
+  //     } catch (error) {
+  //       console.warn(error);
+  //       Alert.alert("Error", "An error occurred while updating profile");
+  //     } finally {
+  //       setSubmitting(false);
+  //     }
+  //   },
+  //   [navigation]
+  // );
   return (
     <Formik
       initialValues={initialValues}
@@ -182,7 +234,10 @@ const EditMyProfile = ({ navigation }) => {
                 <TouchableOpacity onPress={pickImage}>
                   <View style={styles.imageContainer}>
                     {imageUri ? (
-                      <Image source={{ uri: imageUri }} style={styles.profileImage} />
+                      <Image
+                        source={{ uri: imageUri }}
+                        style={styles.profileImage}
+                      />
                     ) : (
                       <Ionicons
                         name="person-circle-outline"
@@ -190,7 +245,10 @@ const EditMyProfile = ({ navigation }) => {
                         color="grey"
                       />
                     )}
-                    <TouchableOpacity style={styles.cameraIcon} onPress={pickImage}>
+                    <TouchableOpacity
+                      style={styles.cameraIcon}
+                      onPress={pickImage}
+                    >
                       <Ionicons name="camera" size={24} color="#180161" />
                     </TouchableOpacity>
                   </View>
@@ -210,9 +268,7 @@ const EditMyProfile = ({ navigation }) => {
                     placeholder="First Name"
                   />
                   {touched.firstName && errors.firstName ? (
-                    <Text style={styles.errorText}>
-                      {errors.firstName}
-                    </Text>
+                    <Text style={styles.errorText}>{errors.firstName}</Text>
                   ) : null}
                 </View>
                 <View style={styles.inputContainerHalf}>
@@ -227,7 +283,6 @@ const EditMyProfile = ({ navigation }) => {
                   {touched.lastName && errors.lastName ? (
                     <Text style={styles.errorText}>{errors.lastName}</Text>
                   ) : null}
-
                 </View>
               </View>
 
@@ -284,9 +339,7 @@ const EditMyProfile = ({ navigation }) => {
                     value={values.state}
                   />
                   {touched.state && errors.state ? (
-                    <Text style={styles.errorText}>
-                      {errors.state}
-                    </Text>
+                    <Text style={styles.errorText}>{errors.state}</Text>
                   ) : null}
                 </View>
               </View>
@@ -303,11 +356,8 @@ const EditMyProfile = ({ navigation }) => {
                     value={values.zipcode}
                   />
                   {touched.zipcode && errors.zipcode ? (
-                    <Text style={styles.errorText}>
-                      {errors.zipcode}
-                    </Text>
+                    <Text style={styles.errorText}>{errors.zipcode}</Text>
                   ) : null}
-
                 </View>
                 <View style={styles.inputContainerHalf}>
                   <Ionicons name="call-outline" size={20} color="gray" />
@@ -320,27 +370,24 @@ const EditMyProfile = ({ navigation }) => {
                     value={values.phoneNumber}
                   />
                   {touched.phoneNumber && errors.phoneNumber ? (
-                    <Text style={styles.errorText}>
-                      {errors.phoneNumber}
-                    </Text>
+                    <Text style={styles.errorText}>{errors.phoneNumber}</Text>
                   ) : null}
                 </View>
               </View>
               <TouchableOpacity
-                  style={styles.updateButton}
-                  disabled={isSubmitting}
-                  onPress={handleSubmit}
-                >
-                  <Ionicons name="checkmark-outline" size={20} color="white" />
-                    <Text style={styles.updateButtonText}>Update</Text>
-                  
-                </TouchableOpacity>
-             
+                style={styles.updateButton}
+                disabled={isSubmitting}
+                onPress={handleSubmit}
+              >
+                <Ionicons name="checkmark-outline" size={20} color="white" />
+                <Text style={styles.updateButtonText}>Update</Text>
+              </TouchableOpacity>
             </ScrollView>
           </KeyboardAvoidingView>
         );
       }}
-    </Formik>);
+    </Formik>
+  );
 };
 
 export default EditMyProfile;
