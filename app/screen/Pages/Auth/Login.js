@@ -12,9 +12,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from "react-native";
 import { ActivityIndicator } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -66,7 +67,6 @@ const Login = ({ navigation }) => {
           if (response.data.success) {
             SetToken(response.data.data);
             setSubmitting(false);
-           
           } else {
             setSubmitting(false);
             Alert.alert("Login Failed", "Invalid email or password", [
@@ -94,15 +94,14 @@ const Login = ({ navigation }) => {
     await AsyncStorage.removeItem("loginId");
     await AsyncStorage.removeItem("profile");
     await AsyncStorage.removeItem("guestNo");
-    
-    //Temporary deleting store 
-   // await deleteCartFromSecureStore();
+
+    //Temporary deleting store
+    // await deleteCartFromSecureStore();
   };
   useEffect(() => {
     if (isFocused) {
       handleLogout();
       formik.resetForm();
-      
     }
   }, [isFocused]);
   // const ScreenWrapper = ({ children }) => (
@@ -110,206 +109,212 @@ const Login = ({ navigation }) => {
   // );
 
   return (
-    // <ScreenWrapper>
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <ImageBackground
-        source={require("../../../../assets/images/back.jpg")}
-        style={styles.bg}
+      {/* <View contentContainerStyle={styles.scrollViewContent}> */}
+      <View style={styles.skipButton}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("RoomBooking")}
+          // onPress={RoomBooking}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.text}>Skip</Text>
+          <Feather
+            name="arrow-right"
+            size={20}
+            color="white"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../../../assets/images/logo.png")}
+          style={styles.logo}
+        />
+      </View>
+      <Text style={styles.loginText}>Login</Text>
+      <View style={styles.formContainer}>
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="mail-outline"
+            size={24}
+            color="#0A1D56"
+            style={styles.inputIcon}
+          />
+          <TextInput
+            name="email"
+            placeholder="Email"
+            placeholderTextColor="#999"
+            onChangeText={formik.handleChange("email")}
+            value={formik.values.email}
+            keyboardType="email-address"
+            style={styles.input}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="lock-closed-outline"
+            size={24}
+            color="#0A1D56"
+            style={styles.inputIcon}
+          />
+          <TextInput
+            name="password"
+            placeholder="Password"
+            placeholderTextColor="#999"
+            onChangeText={formik.handleChange("password")}
+            value={formik.values.password}
+            secureTextEntry={!isPasswordVisible}
+            style={styles.input}
+          />
+          <TouchableOpacity
+            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+            style={styles.eyeIcon}
+          >
+            <Ionicons
+              name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+              size={24}
+              color="#0A1D56"
+            />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitButton}
+          disabled={submitting}
+          onPress={formik.handleSubmit}
+        >
+          <Text style={styles.submitText}>
+            {submitting ? "Logging in..." : "Login"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <TouchableOpacity
+        style={styles.signupBtn}
+        onPress={() => navigation.navigate("Signup")}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            <TouchableOpacity
-              style={styles.skipbtn}
-              onPress={() => navigation.navigate("GuestBottomNav")}
-            >
-              <Text style={styles.skipText}>Skip</Text>
-            </TouchableOpacity>
-            <View style={styles.maincontainer}>
-              <Text style={styles.logintext}>Login</Text>
-              <View style={styles.formContainer}>
-                <Text style={styles.heading}>Email Address</Text>
-                <TextInput
-                  name="email"
-                  placeholder="Email"
-                  placeholderTextColor="white"
-                  onChangeText={formik.handleChange("email")}
-                  value={formik.values.email}
-                  keyboardType="email-address"
-                  style={styles.input}
-                />
-                {formik.touched.email && formik.errors.email ? (
-                  <Text style={styles.errorText}>{formik.errors.email}</Text>
-                ) : null}
-                <Text style={styles.heading}>Password</Text>
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    placeholder="Password"
-                    name="password"
-                    onChangeText={formik.handleChange("password")}
-                    value={formik.values.password}
-                    placeholderTextColor="white"
-                    secureTextEntry={!isPasswordVisible} // Hide or show password based on state
-                    style={styles.passwordInput}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                    style={styles.eyeIcon}
-                  >
-                    <Ionicons
-                      name={isPasswordVisible ? "eye-off" : "eye"}
-                      size={20}
-                      color="white"
-                    />
-                  </TouchableOpacity>
-                </View>
-                {formik.touched.password && formik.errors.password ? (
-                  <Text style={styles.errorText}>{formik.errors.password}</Text>
-                ) : null}
-                <Text
-                  style={styles.forgotPasswordText}
-                  onPress={() => navigation.navigate("ForgotPassword")}
-                >
-                  Forgot Password?
-                </Text>
-                <TouchableOpacity
-                  style={styles.submitButton}
-                  disabled={submitting}
-                  onPress={formik.handleSubmit}
-                >
-                  {submitting ? (
-                    <ActivityIndicator size="small" />
-                  ) : (
-                    <Text style={styles.submitText}>Login</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-            <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-              <Text style={styles.register}>
-                Don't have an account? Register
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </ImageBackground>
+        <Text style={styles.signupText}>
+          New to StayHub? <Text style={styles.signupLink}>Sign up</Text>
+        </Text>
+      </TouchableOpacity>
+      {/* </View> */}
     </KeyboardAvoidingView>
-    // </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "white",
+    padding: 25,
   },
-  bg: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
+  skipButton: {
+    alignSelf: "flex-end",
   },
-  scrollViewContent: {
-    flexGrow: 1,
-    justifyContent: "space-between",
-    padding: 20,
-  },
-  maincontainer: {
-    flex: 1,
-    justifyContent: "center",
+  logoContainer: {
     alignItems: "center",
+    height: "30%",
+    marginTop: -20,
+  },
+  logo: {
+    width: 270,
+    height: 270,
+    resizeMode: "contain",
+    marginBottom: 10,
+  },
+  loginText: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#0A1D56",
+    marginBottom: 30,
+    marginTop: 30,
+    alignSelf: "flex-start",
   },
   formContainer: {
     width: "100%",
-    maxWidth: 300,
   },
-  logintext: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 30,
-    textAlign: "center",
-    marginBottom: 30,
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#0A1D56",
+    marginBottom: 20,
   },
-  heading: {
-    marginBottom: 5,
-    fontWeight: "400",
-    fontSize: 16,
-    color: "white",
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
-    color: "white",
-    borderColor: "grey",
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 10,
+    flex: 1,
     height: 40,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-  },
-  passwordContainer: {
-    position: "relative",
-    marginBottom: 15,
-  },
-  passwordInput: {
-    color: "white",
-    borderColor: "grey",
-
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    height: 40,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    paddingRight: 50, // Adjust padding to avoid overlap with the icon
+    color: "#0A1D56",
+    fontSize: 16,
   },
   eyeIcon: {
-    position: "absolute",
-    right: 10,
-    top: 10, // Adjust this value based on your design to vertically center the icon
+    padding: 10,
   },
   forgotPasswordText: {
-    color: "#007bff",
-    fontSize: 14,
-    textDecorationLine: "underline",
-    marginBottom: 15,
+    color: "#0A1D56",
+    textAlign: "right",
+    marginBottom: 20,
   },
   submitButton: {
-    marginTop: 20,
     backgroundColor: "#0A1D56",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
+    marginBottom: 20,
   },
   submitText: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },
-  register: {
-    color: "#007bff",
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: 20,
-    marginBottom: 20,
-    textDecorationLine: "underline",
+  orText: {
+    color: "#999",
+    marginVertical: 20,
   },
-  skipbtn: {
-    position: "absolute",
-    top: 40,
-    right: 20,
-    backgroundColor: "rgba(10, 29, 86, 0.7)",
-    paddingHorizontal: 25,
+  signupBtn: {
+    top: 55,
+    alignItems: "center",
+  },
+  signupLink: {
+    color: "#0A1D56",
+    fontWeight: "bold",
+  },
+  signupText: {
+    marginTop: 70,
+  },
+  skipButton: {
+    alignSelf: "flex-end",
+    marginBottom: 5,
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#0A1D56",
     paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "white",
+    elevation: 3, // for Android shadow
+    shadowColor: "#000", // for iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  skipText: {
+  text: {
     color: "white",
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: "bold",
+    marginRight: 8,
   },
-  errorText: {
-    fontSize: 12,
-    color: "red",
+  icon: {
+    marginLeft: 4,
   },
 });
 

@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Image,
 } from "react-native";
 import { useFormik } from "formik";
 import { Ionicons } from "@expo/vector-icons";
@@ -80,175 +81,268 @@ const Signup = ({ navigation }) => {
         });
     },
   });
+  const InputField = ({
+    icon,
+    placeholder,
+    value,
+    onChangeText,
+    secureTextEntry,
+    keyboardType,
+  }) => (
+    <View style={styles.inputContainer}>
+      <Ionicons
+        name={icon}
+        size={24}
+        color="#0A1D56"
+        style={styles.inputIcon}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={placeholder}
+        placeholderTextColor="#999"
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+      />
+    </View>
+  );
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <ImageBackground
-        source={require("../../../../assets/images/front.jpg")}
-        style={styles.bg}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            <View style={styles.maincontainer}>
-              <Text style={styles.logintext}>Register as guest</Text>
-              <View style={styles.formContainer}>
-                <Text style={styles.heading}>First Name</Text>
-                <TextInput
-                  onChangeText={formik.handleChange("firstName")}
-                  value={formik.values.firstName}
-                  style={styles.input}
-                  placeholder="First Name"
-                  placeholderTextColor="white"
-                />
-                {formik.touched.firstName && formik.errors.firstName ? (
-                  <Text style={styles.errorText}>
-                    {formik.errors.firstName}
-                  </Text>
-                ) : null}
-                <Text style={styles.heading}>Last Name</Text>
-                <TextInput
-                  onChangeText={formik.handleChange("lastName")}
-                  value={formik.values.lastName}
-                  style={styles.input}
-                  placeholder="Last Name"
-                  placeholderTextColor="white"
-                />
-                {formik.touched.lastName && formik.errors.lastName ? (
-                  <Text style={styles.errorText}>{formik.errors.lastName}</Text>
-                ) : null}
-                <Text style={styles.heading}>Email Address</Text>
-                <TextInput
-                  placeholder="Email"
-                  onChangeText={formik.handleChange("email")}
-                  value={formik.values.email}
-                  placeholderTextColor="white"
-                  keyboardType="email-address"
-                  style={styles.input}
-                />
-                {formik.touched.email && formik.errors.email ? (
-                  <Text style={styles.errorText}>{formik.errors.email}</Text>
-                ) : null}
-                <Text style={styles.heading}>Password</Text>
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    placeholder="Password"
-                    placeholderTextColor="white"
-                    secureTextEntry={!isPasswordVisible}
-                    style={styles.input}
-                    onChangeText={formik.handleChange("password")}
-                    value={formik.values.password}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                    style={styles.eyeIcon}
-                  >
-                    <Ionicons
-                      name={isPasswordVisible ? "eye-off" : "eye"}
-                      size={20}
-                      color="white"
-                    />
-                  </TouchableOpacity>
-                </View>
-                {formik.touched.password && formik.errors.password ? (
-                  <Text style={styles.errorText}>{formik.errors.password}</Text>
-                ) : null}
-                <Text style={styles.heading}>Address</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Address"
-                  placeholderTextColor="white"
-                  onChangeText={formik.handleChange("address")}
-                  value={formik.values.address}
-                />
-                {formik.touched.address && formik.errors.address ? (
-                  <Text style={styles.errorText}>{formik.errors.address}</Text>
-                ) : null}
-                <View style={styles.row}>
-                  <View style={styles.CityContainer}>
-                    <Text style={styles.heading}>City</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="City"
-                      placeholderTextColor="white"
-                      onChangeText={formik.handleChange("city")}
-                      value={formik.values.city}
-                    />
-                    {formik.touched.city && formik.errors.city ? (
-                      <Text style={styles.errorText}>{formik.errors.city}</Text>
-                    ) : null}
-                  </View>
-                  <View style={styles.StateContainer}>
-                    <Text style={styles.heading}>State</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="State"
-                      placeholderTextColor="white"
-                      onChangeText={formik.handleChange("state")}
-                      value={formik.values.state}
-                    />
-                    {formik.touched.state && formik.errors.state ? (
-                      <Text style={styles.errorText}>
-                        {formik.errors.state}
-                      </Text>
-                    ) : null}
-                  </View>
-                </View>
-                <View style={styles.row}>
-                <View style={styles.zipContainer}>
-                    <Text style={styles.heading}>Zip Code</Text>
-                    <TextInput
-                      style={styles.shortInput}
-                      placeholder="Zip Code"
-                      placeholderTextColor="white"
-                      keyboardType="numeric"
-                      onChangeText={formik.handleChange("zipcode")}
-                      value={formik.values.zipcode}
-                    />
-                    {formik.touched.zipCode && formik.errors.zipcode ? (
-                      <Text style={styles.errorText}>
-                        {formik.errors.zipcode}
-                      </Text>
-                    ) : null}
-                  </View>
-                  <View style={styles.phoneContainer}>
-                    <Text style={styles.heading}>Phone Number</Text>
-                    <TextInput
-                      style={styles.shortInput}
-                      placeholder="Phone Number"
-                      placeholderTextColor="white"
-                      keyboardType="phone-pad"
-                      onChangeText={formik.handleChange("phoneNumber")}
-                      value={formik.values.phoneNumber}
-                    />
-                    {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
-                      <Text style={styles.errorText}>
-                        {formik.errors.phoneNumber}
-                      </Text>
-                    ) : null}
-                  </View>
-                 
-                </View>
-                <TouchableOpacity
-                  style={styles.submitButton}
-                  disabled={submitting}
-                  // onPress={formik.handleSubmit}
-                  onPress={() => navigation.navigate("RoomBooking")}
-                >
-                  <Text style={styles.submitText}>Register</Text>
-                </TouchableOpacity>
-              </View>
+      {/* <ScrollView contentContainerStyle={styles.scrollViewContent}> */}
+      <View contentContainerStyle={styles.scrollViewContent}>
+        <TouchableOpacity
+          style={styles.backIcon}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Ionicons name="arrow-back" size={28} color="#0A1D56" />
+        </TouchableOpacity>
+        <Image
+          source={require("../../../../assets/images/logo.png")}
+          style={styles.logo}
+        />
+        <Text style={styles.signupText}>Sign up</Text>
+        <View style={styles.formContainer}>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="person-outline"
+              size={24}
+              color="#0A1D56"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="First Name"
+              placeholderTextColor="#999"
+              value={formik.values.firstName}
+              onChangeText={formik.handleChange("firstName")}
+            />
+          </View>
+          {formik.touched.firstName && formik.errors.firstName && (
+            <Text style={styles.errorText}>{formik.errors.firstName}</Text>
+          )}
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="person-outline"
+              size={24}
+              color="#0A1D56"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              placeholderTextColor="#999"
+              value={formik.values.lastName}
+              onChangeText={formik.handleChange("lastName")}
+            />
+          </View>
+          {formik.touched.lastName && formik.errors.lastName && (
+            <Text style={styles.errorText}>{formik.errors.lastName}</Text>
+          )}
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="mail-outline"
+              size={24}
+              color="#0A1D56"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Email Address"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              value={formik.values.email}
+              onChangeText={formik.handleChange("email")}
+            />
+          </View>
+          {formik.touched.email && formik.errors.email && (
+            <Text style={styles.errorText}>{formik.errors.email}</Text>
+          )}
+
+          <View style={styles.passwordContainer}>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={24}
+                color="#0A1D56"
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#999"
+                secureTextEntry={!isPasswordVisible}
+                value={formik.values.password}
+                onChangeText={formik.handleChange("password")}
+              />
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.register}>
-                Already have an account? Login
-              </Text>
+            <TouchableOpacity
+              onPress={togglePasswordVisibility}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                size={24}
+                color="#0A1D56"
+              />
             </TouchableOpacity>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </ImageBackground>
+          </View>
+          {formik.touched.password && formik.errors.password && (
+            <Text style={styles.errorText}>{formik.errors.password}</Text>
+          )}
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="home-outline"
+              size={24}
+              color="#0A1D56"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Address"
+              placeholderTextColor="#999"
+              value={formik.values.address}
+              onChangeText={formik.handleChange("address")}
+            />
+          </View>
+          {formik.touched.address && formik.errors.address && (
+            <Text style={styles.errorText}>{formik.errors.address}</Text>
+          )}
+
+          <View style={styles.row}>
+            <View style={styles.halfWidth}>
+              <View style={styles.inputContainer}>
+                <Ionicons
+                  name="business-outline"
+                  size={24}
+                  color="#0A1D56"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="City"
+                  placeholderTextColor="#999"
+                  value={formik.values.city}
+                  onChangeText={formik.handleChange("city")}
+                />
+              </View>
+              {formik.touched.city && formik.errors.city && (
+                <Text style={styles.errorText}>{formik.errors.city}</Text>
+              )}
+            </View>
+
+            <View style={styles.halfWidth}>
+              <View style={styles.inputContainer}>
+                <Ionicons
+                  name="map-outline"
+                  size={24}
+                  color="#0A1D56"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="State"
+                  placeholderTextColor="#999"
+                  value={formik.values.state}
+                  onChangeText={formik.handleChange("state")}
+                />
+              </View>
+              {formik.touched.state && formik.errors.state && (
+                <Text style={styles.errorText}>{formik.errors.state}</Text>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.halfWidth}>
+              <View style={styles.inputContainer}>
+                <Ionicons
+                  name="location-outline"
+                  size={24}
+                  color="#0A1D56"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Zip Code"
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
+                  value={formik.values.zipcode}
+                  onChangeText={formik.handleChange("zipcode")}
+                />
+              </View>
+              {formik.touched.zipcode && formik.errors.zipcode && (
+                <Text style={styles.errorText}>{formik.errors.zipcode}</Text>
+              )}
+            </View>
+
+            <View style={styles.halfWidth}>
+              <View style={styles.inputContainer}>
+                <Ionicons
+                  name="call-outline"
+                  size={24}
+                  color="#0A1D56"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Phone Number"
+                  placeholderTextColor="#999"
+                  keyboardType="phone-pad"
+                  value={formik.values.phoneNumber}
+                  onChangeText={formik.handleChange("phoneNumber")}
+                />
+              </View>
+              {formik.touched.phoneNumber && formik.errors.phoneNumber && (
+                <Text style={styles.errorText}>
+                  {formik.errors.phoneNumber}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.submitButton}
+            disabled={submitting}
+            onPress={() => navigation.navigate("RoomBooking")}
+          >
+            <Text style={styles.submitText}>Register</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.loginLink}>
+            Already have an account?{" "}
+            <Text style={styles.loginLinkHighlight}>Login</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -256,106 +350,98 @@ const Signup = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  bg: {
-    flex: 1,
-    resizeMode: "cover",
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: "space-between",
+    justifyContent: "center",
     padding: 20,
   },
-  maincontainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  backIcon: {
+    position: "absolute",
+    zIndex: 1,
+  },
+  logo: {
+    width: 110,
+    height: 110,
+    resizeMode: "contain",
+    alignSelf: "center",
+    // marginBottom: 10,
+  },
+  signupText: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#0A1D56",
+    // marginBottom: 20,
+    alignSelf: "flex-start",
   },
   formContainer: {
     width: "100%",
-    maxWidth: 300,
   },
-  logintext: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 24,
-    textAlign: "center",
-    marginBottom: 30,
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    paddingVertical: 10,
+    marginVertical: 10,
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
-    color: "white",
-    borderColor: "grey",
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 10,
-    height: 40,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    flex: 1,
+    color: "#0A1D56",
+    fontSize: 16,
   },
   passwordContainer: {
     position: "relative",
-    // marginBottom: 10,
   },
   eyeIcon: {
     position: "absolute",
-    right: 10,
-    top: 10, // Adjust this value based on your design to vertically center the icon
+    right: 0,
+    top: 18,
+    zIndex: 1,
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  phoneContainer: {
+  halfWidth: {
     width: "48%",
-  },
-  zipContainer: {
-    width: "48%",
-  },
-  CityContainer: {
-    width: "48%",
-  },
-  StateContainer: {
-    width: "48%",
-  },
-  shortInput: {
-    color: "white",
-    borderColor: "grey",
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 10,
-    height: 40,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-  },
-  heading: {
-    marginBottom: 5,
-    fontWeight: "400",
-    fontSize: 16,
-    color: "white",
-  },
-  register: {
-    color: "#007bff",
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: 20,
-    marginBottom: 20,
-    textDecorationLine: "underline",
   },
   submitButton: {
-    marginTop: 20,
     backgroundColor: "#0A1D56",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
+    marginTop: 20,
   },
   submitText: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },
+  loginLink: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+    color: "#0A1D56",
+  },
+  loginLinkHighlight: {
+    color: "#0A1D56",
+    fontWeight: "bold",
+    // color: "#007bff",
+    textDecorationLine: "underline",
+  },
   errorText: {
     fontSize: 12,
     color: "red",
+    marginTop: -15,
+    marginBottom: 10,
   },
 });
 
