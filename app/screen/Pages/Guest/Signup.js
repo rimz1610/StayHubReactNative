@@ -24,7 +24,12 @@ const Signup = ({ navigation }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const SignUpSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email address").required("Required"),
-    password: Yup.string().required("Required"),
+    password: Yup.string().required("Required")
+    .min(6, "Password too short")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/,
+      "1 Upper, Lowercase, 1 Number and 1 Special Character"
+    ),
     firstName: Yup.string().required("Required"),
     lastName: Yup.string().required("Required"),
     city: Yup.string().required("Required"),
@@ -331,9 +336,9 @@ const Signup = ({ navigation }) => {
           <TouchableOpacity
             style={styles.submitButton}
             disabled={submitting}
-            onPress={() => navigation.navigate("RoomBooking")}
+            onPress={formik.handleSubmit}
           >
-            <Text style={styles.submitText}>Register</Text>
+            <Text style={styles.submitText}> {submitting ? "Signing Up..." : "Sign Up"}</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("Login")}>
