@@ -157,7 +157,16 @@ const ConfirmBooking = ({ navigation }) => {
 
         if (response.data.success) {
           setSubmitting(false);
-          navigation.navigate("BookingReceipt", { id: response.data.data });
+          await deleteCartFromSecureStore();
+          Alert.alert("Success", "Thank You for booking.", [
+            {
+              text: "OK",
+              onPress: () => {
+                navigation.navigate("BookingReceipt", { id: response.data.data });
+              },
+            },
+          ]);
+        
         } else {
           setSubmitting(false);
           Alert.alert("Error", response.data.message);

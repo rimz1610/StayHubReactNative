@@ -252,7 +252,7 @@ const EventBooking = ({ route, navigation }) => {
               </Text>
               <Text style={styles.eventDate}>
                 Date:{" "}
-                {moment(selectedEventDetail.eventDate).format("dd MMM, YYYY")}
+                {moment(selectedEventDetail.eventDate).format("ddd MMM, YYYY")}
               </Text>
               <View style={styles.imageContainer}>
                 {imageLoading && (
