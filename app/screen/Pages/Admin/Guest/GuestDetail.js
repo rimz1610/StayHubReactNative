@@ -408,7 +408,7 @@ export default GuestDetails;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "white",
   },
   scrollContent: {
     padding: 10,

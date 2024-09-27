@@ -12,8 +12,10 @@ import {
   ActivityIndicator,
   StyleSheet,
   Alert,
+  ScrollView,
+  Image,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
@@ -84,93 +86,120 @@ const ResetPassword = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <ImageBackground
-        source={require("../../../../assets/images/back.jpg")}
-        style={styles.bg}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.innerContainer}>
-            <Text style={styles.heading}>Reset Password</Text>
-
-            <Text style={styles.label}>Code</Text>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <TouchableOpacity
+          style={styles.backIcon}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Ionicons name="arrow-back" size={28} color="#0A1D56" />
+        </TouchableOpacity>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../../../assets/images/logo.png")}
+            style={styles.logo}
+          />
+        </View>
+        <Text style={styles.heading}>Reset Password</Text>
+        <View style={styles.formContainer}>
+          <Text style={styles.label}>Code</Text>
+          <View style={styles.inputContainer}>
+            <MaterialIcons
+              name="verified-user"
+              size={24}
+              color="black"
+              style={styles.inputIcon}
+            />
             <TextInput
               style={styles.input}
               onChangeText={formik.handleChange("code")}
               value={formik.values.code}
               placeholder="Enter the code"
-              placeholderTextColor="#ccc"
+              placeholderTextColor="#999"
             />
+
             {formik.touched.code && formik.errors.code ? (
               <Text style={styles.errorText}>{formik.errors.code}</Text>
             ) : null}
-            <Text style={styles.label}>New Password</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Enter new password"
-                placeholderTextColor="#ccc"
-                onChangeText={formik.handleChange("newPassword")}
-                value={formik.values.newPassword}
-                secureTextEntry={!isPasswordVisible}
-              />
-              <TouchableOpacity
-                onPress={togglePasswordVisibility}
-                style={styles.eyeIconContainer}
-              >
-                <Ionicons
-                  name={isPasswordVisible ? "eye-off" : "eye"}
-                  size={20}
-                  color="white"
-                />
-              </TouchableOpacity>
-            </View>
-            {formik.touched.newPassword && formik.errors.newPassword ? (
-              <Text style={styles.errorText}>{formik.errors.newPassword}</Text>
-            ) : null}
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder="Confirm new password"
-                placeholderTextColor="#ccc"
-                onChangeText={formik.handleChange("confirmPassword")}
-                value={formik.values.confirmPassword}
-                secureTextEntry={!isPasswordVisible}
-              />
-              <TouchableOpacity
-                onPress={togglePasswordVisibility}
-                style={styles.eyeIconContainer}
-              >
-                <Ionicons
-                  name={isPasswordVisible ? "eye-off" : "eye"}
-                  size={20}
-                  color="white"
-                />
-              </TouchableOpacity>
-            </View>
-            {formik.touched.confirmPassword && formik.errors.confirmPassword ? (
-              <Text style={styles.errorText}>
-                {formik.errors.confirmPassword}
-              </Text>
-            ) : null}
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.backToLogin}>Back to Login?</Text>
-            </TouchableOpacity>
-
+          </View>
+          <Text style={styles.label}>New Password</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={24}
+              color="#0A1D56"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter new password"
+              placeholderTextColor="#999"
+              onChangeText={formik.handleChange("newPassword")}
+              value={formik.values.newPassword}
+              secureTextEntry={!isPasswordVisible}
+            />
             <TouchableOpacity
-              style={styles.submitButton}
-              disabled={submitting}
-              onPress={formik.handleSubmit}
+              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              style={styles.eyeIcon}
             >
-              {submitting ? (
-                <ActivityIndicator size="small" />
-              ) : (
-                <Text style={styles.submitButtonText}>Submit</Text>
-              )}
+              <Ionicons
+                name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                size={24}
+                color="#0A1D56"
+              />
             </TouchableOpacity>
           </View>
-        </TouchableWithoutFeedback>
-      </ImageBackground>
+          {formik.touched.newPassword && formik.errors.newPassword ? (
+            <Text style={styles.errorText}>{formik.errors.newPassword}</Text>
+          ) : null}
+          <Text style={styles.label}>Confirm Password</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={24}
+              color="#0A1D56"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm new password"
+              placeholderTextColor="#999"
+              onChangeText={formik.handleChange("confirmPassword")}
+              value={formik.values.confirmPassword}
+              secureTextEntry={!isPasswordVisible}
+            />
+            <TouchableOpacity
+              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                size={24}
+                color="#0A1D56"
+              />
+            </TouchableOpacity>
+          </View>
+          {formik.touched.confirmPassword && formik.errors.confirmPassword ? (
+            <Text style={styles.errorText}>
+              {formik.errors.confirmPassword}
+            </Text>
+          ) : null}
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+            <Text style={styles.backToLogin}>Back to Login?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.submitButton}
+            disabled={submitting}
+            onPress={formik.handleSubmit}
+          >
+            {submitting ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <Text style={styles.submitButtonText}>Submit</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -178,23 +207,39 @@ const ResetPassword = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "white",
+    padding: 20,
   },
-  bg: {
-    flex: 1,
+  backIcon: {
+    top: 10,
+    position: "absolute",
+    zIndex: 1,
+  },
+  formContainer: {
     width: "100%",
-    height: "100%",
   },
-  innerContainer: {
-    flex: 1,
-    justifyContent: "center",
+  childContainer: {
+    marginTop: 80,
+  },
+  logoContainer: {
     alignItems: "center",
-    paddingHorizontal: 20,
+    height: "30%",
+    marginTop: -30,
+  },
+  logo: {
+    width: 270,
+    height: 270,
+    resizeMode: "contain",
+    marginTop: 20,
+    marginBottom: 10,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 30,
-    color: "white",
+    color: "#0A1D56",
+    marginBottom: 10,
+    marginTop: 60,
+    alignSelf: "flex-start",
   },
   label: {
     alignSelf: "flex-start",
@@ -203,50 +248,39 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 8,
   },
-  input: {
-    width: "85%",
-    height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    borderColor: "grey",
-    borderWidth: 1,
-    color: "white",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-  },
-  passwordContainer: {
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    width: "85%",
-    height: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    borderColor: "grey",
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#0A1D56",
+    marginBottom: 10,
   },
-  passwordInput: {
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
     flex: 1,
-    color: "white",
-    paddingHorizontal: 10,
+    height: 40,
+    color: "#0A1D56",
+    fontSize: 16,
   },
-  eyeIconContainer: {
-    paddingHorizontal: 10,
+  eyeIcon: {
+    padding: 10,
   },
   backToLogin: {
-    fontSize: 14,
-    color: "#007BFF",
+    color: "#0A1D56",
+    textAlign: "left",
+    marginTop: 10,
+    marginBottom: 20,
     textDecorationLine: "underline",
-    marginBottom: 30,
   },
   submitButton: {
-    width: "60%",
-    height: 50,
-    marginTop: 20,
     backgroundColor: "#0A1D56",
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 15,
     borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 20,
   },
   submitButtonText: {
     color: "#fff",

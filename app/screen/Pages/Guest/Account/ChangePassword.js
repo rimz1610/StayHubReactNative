@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  View,Alert,
+  View,
+  Alert,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Formik } from "formik";
@@ -33,22 +32,10 @@ const passwordSchema = Yup.object().shape({
 });
 
 const ChangePassword = ({ navigation }) => {
-  const [isNewPasswordVisible, setIsNewPasswordVisible] = useState(false);
-  const [isOldPasswordVisible, setIsOldPasswordVisible] = useState(false);
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
-    useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  const toggleNewPasswordVisibility = () => {
-    setIsNewPasswordVisible(!isNewPasswordVisible);
-  };
-
-  const toggleOldPasswordVisibility = () => {
-    setIsOldPasswordVisible(!isOldPasswordVisible);
-  };
-  
-
-  const toggleConfirmPasswordVisibility = () => {
-    setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
   };
 
   const initialValues = {
@@ -58,7 +45,6 @@ const ChangePassword = ({ navigation }) => {
     repeatPassword: "",
   };
 
-  
   const handleSubmit = useCallback(
     async (values, { setSubmitting }) => {
       try {
@@ -77,21 +63,25 @@ const ChangePassword = ({ navigation }) => {
         );
 
         if (response.data.success) {
-          Alert.alert("Success", "Password changed successfully. Please login again.", [
-            {
-              text: "OK",
-              onPress: async () => {
-                await AsyncStorage.removeItem("token");
-                await AsyncStorage.removeItem("expiry");
-                await AsyncStorage.removeItem("generated");
-                await AsyncStorage.removeItem("role");
-                await AsyncStorage.removeItem("email");
-                await AsyncStorage.removeItem("name");
-                await AsyncStorage.removeItem("loginId");
-                navigation.navigate("Login");
+          Alert.alert(
+            "Success",
+            "Password changed successfully. Please login again.",
+            [
+              {
+                text: "OK",
+                onPress: async () => {
+                  await AsyncStorage.removeItem("token");
+                  await AsyncStorage.removeItem("expiry");
+                  await AsyncStorage.removeItem("generated");
+                  await AsyncStorage.removeItem("role");
+                  await AsyncStorage.removeItem("email");
+                  await AsyncStorage.removeItem("name");
+                  await AsyncStorage.removeItem("loginId");
+                  navigation.navigate("Login");
+                },
               },
-            },
-          ]);
+            ]
+          );
         } else {
           Alert.alert("Error", response.data.message);
         }
@@ -110,224 +100,225 @@ const ChangePassword = ({ navigation }) => {
     [navigation]
   );
 
-
   return (
     <Formik
-    initialValues={initialValues}
-    validationSchema={passwordSchema}
-    onSubmit={handleSubmit}
-  >
-    {({
-      handleChange,
-      handleBlur,
-      handleSubmit,
-      values,
-      errors,
-      touched,
-      setFieldValue,
-      isSubmitting,
-      setValues,
-    }) => {
-      useEffect(() => {}, []);
+      initialValues={initialValues}
+      validationSchema={passwordSchema}
+      onSubmit={handleSubmit}
+    >
+      {({
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        values,
+        errors,
+        touched,
+        setFieldValue,
+        isSubmitting,
+        setValues,
+      }) => {
+        useEffect(() => {}, []);
 
-      return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidingView}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={styles.innerContainer}>
-            <Text style={styles.heading}>Create New Password</Text>
-            <Text style={styles.description}>
-              Please create a new password that meets the following criteria:
-            </Text>
-            <Text style={styles.rules}>
-              • At least 8 characters long{"\n"}• Contains uppercase and
-              lowercase letters{"\n"}• Includes numbers and symbols
-            </Text>
+        return (
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+          >
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../../../../assets/images/logo.png")}
+                  style={styles.logo}
+                />
+              </View>
+              <Text style={styles.heading}>Create New Password</Text>
+              <Text style={styles.label}>
+                Please create a new password that meets the following criteria:
+              </Text>
+              <Text style={styles.label}>• At least 8 characters long </Text>
+              <Text style={styles.label}>
+                • Contains uppercase and lowercase letters
+              </Text>
+              <Text style={styles.label}>• Includes numbers and symbols</Text>
 
-           
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Current Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  onChangeText={handleChange("currentPassword")}
-                  onBlur={handleBlur("currentPassword")}
-                  value={values.currentPassword}
-                  placeholder="Enter current password"
-                  placeholderTextColor="#ccc"
-                  secureTextEntry={!isOldPasswordVisible}
-                />
-                <TouchableOpacity
-                  onPress={toggleOldPasswordVisibility}
-                  style={styles.eyeIconContainer}
-                >
+              <View style={styles.formContainer}>
+                <View style={styles.inputContainer}>
+                  {/* <Text style={styles.label}>Current Password</Text> */}
                   <Ionicons
-                    name={isNewPasswordVisible ? "eye-off" : "eye"}
-                    size={20}
-                    color="#333"
+                    name="lock-closed-outline"
+                    size={24}
+                    color="#0A1D56"
+                    style={styles.inputIcon}
                   />
-                </TouchableOpacity>
-              </View>
-              {touched.currentPassword && errors.currentPassword && (
-                    <Text style={styles.errorText}>
-                      {errors.currentPassword}
-                    </Text>
-                  )}
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>New Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="Enter new password"
-                  placeholderTextColor="#ccc"
-                  onChangeText={handleChange("newPassword")}
-                  value={values.newPassword}
-                  secureTextEntry={!isNewPasswordVisible}
-                />
-                <TouchableOpacity
-                  onPress={toggleNewPasswordVisibility}
-                  style={styles.eyeIconContainer}
-                >
+                  <TextInput
+                    onChangeText={handleChange("currentPassword")}
+                    onBlur={handleBlur("currentPassword")}
+                    value={values.currentPassword}
+                    style={styles.input}
+                    placeholder="Current Password"
+                    placeholderTextColor="#999"
+                    secureTextEntry={!isPasswordVisible}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                    style={styles.eyeIcon}
+                  >
+                    <Ionicons
+                      name={isPasswordVisible ? "eye-off" : "eye"}
+                      size={20}
+                      color="#180161"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {touched.currentPassword && errors.currentPassword && (
+                  <Text style={styles.errorText}>{errors.currentPassword}</Text>
+                )}
+                <View style={styles.inputContainer}>
+                  {/* <Text style={styles.label}>New Password</Text> */}
                   <Ionicons
-                    name={isNewPasswordVisible ? "eye-off" : "eye"}
-                    size={20}
-                    color="#333"
+                    name="lock-closed-outline"
+                    size={24}
+                    color="#0A1D56"
+                    style={styles.inputIcon}
                   />
-                </TouchableOpacity>
-              </View>
-              {touched.newPassword && errors.newPassword ? (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter new password"
+                    placeholderTextColor="#999"
+                    onChangeText={handleChange("newPassword")}
+                    value={values.newPassword}
+                    secureTextEntry={!isPasswordVisible}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                    style={styles.eyeIcon}
+                  >
+                    <Ionicons
+                      name={isPasswordVisible ? "eye-off" : "eye"}
+                      size={20}
+                      color="#180161"
+                    />
+                  </TouchableOpacity>
+                  {touched.newPassword && errors.newPassword ? (
                     <Text style={styles.errorText}>{errors.newPassword}</Text>
                   ) : null}
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="Confirm new password"
-                  placeholderTextColor="#ccc"
-                  onChangeText={handleChange("repeatPassword")}
-                  value={values.repeatPassword}
-                  secureTextEntry={!isConfirmPasswordVisible}
-                />
-                <TouchableOpacity
-                  onPress={toggleConfirmPasswordVisibility}
-                  style={styles.eyeIconContainer}
-                >
+                </View>
+                <View style={styles.inputContainer}>
+                  {/* <Text style={styles.label}>Repeat Password</Text> */}
                   <Ionicons
-                    name={isConfirmPasswordVisible ? "eye-off" : "eye"}
-                    size={20}
-                    color="#333"
+                    name="lock-closed-outline"
+                    size={24}
+                    color="#0A1D56"
+                    style={styles.inputIcon}
                   />
-                </TouchableOpacity>
-              </View>
-              {touched.repeatPassword && errors.repeatPassword ? (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter new password"
+                    placeholderTextColor="#999"
+                    onChangeText={handleChange("repeatPassword")}
+                    value={values.repeatPassword}
+                    secureTextEntry={!isPasswordVisible}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                    style={styles.eyeIcon}
+                  >
+                    <Ionicons
+                      name={isPasswordVisible ? "eye-off" : "eye"}
+                      size={20}
+                      color="#180161"
+                    />
+                  </TouchableOpacity>
+                  {touched.repeatPassword && errors.repeatPassword ? (
                     <Text style={styles.errorText}>
                       {errors.repeatPassword}
                     </Text>
                   ) : null}
-            </View>
+                </View>
+              </View>
 
-            <TouchableOpacity
-              style={styles.submitButton}
-              disabled={isSubmitting}
-              onPress={handleSubmit}
-            >
-              <Text style={styles.submitButtonText}>Change Password</Text>
-            </TouchableOpacity>
-
-          
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-      );
-    }}
-  </Formik>
+              <TouchableOpacity
+                style={styles.submitButton}
+                disabled={isSubmitting}
+                onPress={handleSubmit}
+              >
+                <Text style={styles.submitButtonText}>Change Password</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        );
+      }}
+    </Formik>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f4f8", // Solid background color
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  innerContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "white",
     padding: 20,
   },
+  logoContainer: {
+    alignItems: "center",
+    height: "30%",
+    marginTop: -50,
+  },
+  logo: {
+    width: 270,
+    height: 270,
+    resizeMode: "contain",
+    marginTop: 20,
+    marginBottom: 20,
+  },
   heading: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
-    color: "#333",
-    textAlign: "center",
-  },
-  description: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  rules: {
-    fontSize: 14,
-    color: "#888",
+    color: "#0A1D56",
     marginBottom: 20,
-    textAlign: "center",
-  },
-  inputGroup: {
-    width: "100%",
-    marginBottom: 20,
+    marginTop: 60,
+    alignSelf: "flex-start",
   },
   label: {
-    color: "#333",
-    fontSize: 16,
-    marginBottom: 8,
-    fontWeight: "600",
+    fontSize: 11,
+    color: "#999",
+    marginBottom: 3,
+    alignSelf: "flex-start",
+    textAlign: "center",
   },
-  input: {
+  formContainer: {
+    marginTop: 30,
     width: "100%",
-    height: 50,
-    backgroundColor: "white",
-    borderColor: "#ddd",
-    borderWidth: 1,
-    color: "#333",
-    borderRadius: 8,
-    paddingHorizontal: 15,
   },
-  passwordContainer: {
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
-    height: 50,
-    backgroundColor: "white",
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#0A1D56",
+    marginBottom: 30,
   },
-  passwordInput: {
+  input: {
     flex: 1,
-    color: "#333",
-    paddingHorizontal: 15,
+    height: 40,
+    color: "#0A1D56",
+    fontSize: 16,
   },
-  eyeIconContainer: {
-    paddingHorizontal: 15,
+  passwordContainer: {
+    position: "relative",
+    // marginBottom: 10,
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 10,
+    top: 10, // Adjust this value based on your design to vertically center the icon
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   submitButton: {
     width: "100%",
     height: 50,
     marginTop: 20,
-    backgroundColor: "#0A1D56",
+    backgroundColor: "#180161",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
