@@ -113,8 +113,8 @@ const Signup = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      {/* <ScrollView contentContainerStyle={styles.scrollViewContent}> */}
-      <View contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        {/* <View contentContainerStyle={styles.scrollViewContent}> */}
         <TouchableOpacity
           style={styles.backIcon}
           onPress={() => navigation.navigate("Login")}
@@ -342,7 +342,7 @@ const Signup = ({ navigation }) => {
             <Text style={styles.loginLinkHighlight}>Login</Text>
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -351,9 +351,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
+    // justifyContent: "center",
+    // alignItems: "center",
+    // padding: 20,
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -361,6 +361,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   backIcon: {
+    top: 20,
+    left: 10,
     position: "absolute",
     zIndex: 1,
   },

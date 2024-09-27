@@ -36,6 +36,8 @@ import Receipt from "./Pages/Guest/Booking/Receipt";
 import Ticket from "./Pages/Guest/Account/Ticket";
 import AdminChangePassword from "./Pages/Admin/ChangePassword";
 import RoomBooking from "./Pages/Guest/Room/RoomBooking";
+import StaffTasks from "./Pages/Staff/StaffTasks";
+
 // import { SafeAreaView } from "react-native-safe-area-context";
 
 function App() {
@@ -94,6 +96,7 @@ function App() {
           <Stack.Screen name="ConfirmBooking" component={ConfirmBooking} />
           <Stack.Screen name="Receipt" component={Receipt} />
           <Stack.Screen name="Ticket" component={Ticket} />
+          <Stack.Screen name="StaffTasks" component={StaffTasks} />
         </Stack.Navigator>
         {/* </ScrollView> */}
       </GestureHandlerRootView>

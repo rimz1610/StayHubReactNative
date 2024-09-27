@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "white",
   },
   loadingContainer: {
     flex: 1,
