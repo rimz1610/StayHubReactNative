@@ -37,6 +37,9 @@ import Ticket from "./Pages/Guest/Account/Ticket";
 import AdminChangePassword from "./Pages/Admin/ChangePassword";
 import RoomBooking from "./Pages/Guest/Room/RoomBooking";
 import StaffTasks from "./Pages/Staff/StaffTasks";
+import EditStaffprofile from "./Pages/Staff/EditStaffprofile";
+import ChangePasswordStaff from "./Pages/Staff/ChangePasswordStaff";
+import CheckTicket from "./Pages/Staff/CheckTicket";
 
 // import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -97,6 +100,12 @@ function App() {
           <Stack.Screen name="Receipt" component={Receipt} />
           <Stack.Screen name="Ticket" component={Ticket} />
           <Stack.Screen name="StaffTasks" component={StaffTasks} />
+          <Stack.Screen name="EditStaffprofile" component={EditStaffprofile} />
+          <Stack.Screen
+            name="ChangePasswordStaff"
+            component={ChangePasswordStaff}
+          />
+          <Stack.Screen name="CheckTicket" component={CheckTicket} />
         </Stack.Navigator>
         {/* </ScrollView> */}
       </GestureHandlerRootView>

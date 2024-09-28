@@ -90,7 +90,6 @@ const StaffActivitiesContent = ({ route, navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "An error occurred while saving the activity.");
         }
       } finally {
@@ -134,7 +133,6 @@ const StaffActivitiesContent = ({ route, navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "Failed to fetch activities.");
         }
       } finally {
@@ -181,7 +179,6 @@ const StaffActivitiesContent = ({ route, navigation }) => {
               Alert.alert("Error", response.data.message);
             }
           } catch (error) {
-            console.warn(error);
             Alert.alert("Error", "Failed to delete the staff activity.");
           } finally {
             setLoading(false);

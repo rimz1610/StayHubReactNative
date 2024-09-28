@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  View, ActivityIndicator,
+  View,
+  ActivityIndicator,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -17,7 +18,7 @@ const UserInfo = (guestData) => (
   <View style={styles.userInfoContainer}>
     <Text style={styles.userInfoTitle}>Guest Information</Text>
     <View style={styles.userInfoContent}>
-    <Text style={styles.userInfoText}>Guest Number: {guestData.guestNo}</Text>
+      <Text style={styles.userInfoText}>Guest Number: {guestData.guestNo}</Text>
       <Text style={styles.userInfoText}>Name: {guestData.name}</Text>
       <Text style={styles.userInfoText}>Email: {guestData.email}</Text>
     </View>
@@ -41,10 +42,14 @@ const renderEmptyTable = () => (
 const BookingItem = ({ item, onPressReceipt }) => (
   <View style={styles.bookingItem}>
     <Text style={[styles.bookingText, styles.bookingNoColumn]}>
-    {item.referenceNumber}
+      {item.referenceNumber}
     </Text>
-    <Text style={[styles.bookingText, styles.dateColumn]}>{item.bookingDate}</Text>
-    <Text style={[styles.bookingText, styles.totalColumn]}>{item.bookingAmount}</Text>
+    <Text style={[styles.bookingText, styles.dateColumn]}>
+      {item.bookingDate}
+    </Text>
+    <Text style={[styles.bookingText, styles.totalColumn]}>
+      {item.bookingAmount}
+    </Text>
     <View style={[styles.statusColumn, styles.statusContainer]}>
       <Text style={[styles.statusText, styles[item.status.toLowerCase()]]}>
         {item.status}
@@ -71,44 +76,42 @@ const MyBookings = () => {
     }
   }, [isFocused]);
   const fetchData = async () => {
-      setLoading(true);
-      const guestId=  await AsyncStorage.getItem("loginId");
-      const token = await AsyncStorage.getItem("token");
-      setGuestData({
-        guestNo: await AsyncStorage.getItem("guestNo"),
-        name: await AsyncStorage.getItem("name"),
-        email: await AsyncStorage.getItem("email"),
-        profile: await AsyncStorage.getItem("profile")
-      })
-      const status = "";
-      try {
-        const response = await axios.get(
-          `http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
+    setLoading(true);
+    const guestId = await AsyncStorage.getItem("loginId");
+    const token = await AsyncStorage.getItem("token");
+    setGuestData({
+      guestNo: await AsyncStorage.getItem("guestNo"),
+      name: await AsyncStorage.getItem("name"),
+      email: await AsyncStorage.getItem("email"),
+      profile: await AsyncStorage.getItem("profile"),
+    });
+    const status = "";
+    try {
+      const response = await axios.get(
+        `http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
           &status=${status}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        if (response.data.success) {
-          setBookingData(response.data.list);
-        } else {
-          Alert.alert("Error", response.data.message);
-        }
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          // Redirect to login page
-          navigation.navigate("Login");
-        } else {
-          console.warn(error);
-          Alert.alert("Error", "Failed to fetch bookings.");
-        }
-      } finally {
-        setLoading(false);
+      if (response.data.success) {
+        setBookingData(response.data.list);
+      } else {
+        Alert.alert("Error", response.data.message);
       }
-
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate("Login");
+      } else {
+        Alert.alert("Error", "Failed to fetch bookings.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
   const renderLoader = () => {
     return loading ? (
@@ -154,7 +157,7 @@ const MyBookings = () => {
 
   const handleReceiptPress = (bookingId) => {
     // Navigate to MyBookingReceipt screen with booking data
-    navigation.navigate("BookingReceipt", { id:bookingId });
+    navigation.navigate("BookingReceipt", { id: bookingId });
   };
   return (
     <ScrollView style={styles.container}>

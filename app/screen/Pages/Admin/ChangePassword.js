@@ -89,7 +89,6 @@ const AdminChangePasswordContent = ({ navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "An error occurred while changing password.");
         }
       } finally {

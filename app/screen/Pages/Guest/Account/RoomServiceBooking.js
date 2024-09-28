@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,Alert,
+  Text,
+  Alert,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -147,7 +148,6 @@ const services = [
 ];
 
 const ServiceCard = ({ service, onPress }) => (
-
   <TouchableOpacity style={styles.card} onPress={() => onPress(service)}>
     <MaterialIcons
       name={service.icon}
@@ -172,33 +172,31 @@ const ServiceCard = ({ service, onPress }) => (
   </TouchableOpacity>
 );
 
-const RoomServiceBooking = ({route,navigation}) => {
+const RoomServiceBooking = ({ route, navigation }) => {
   const roomId = route.params?.roomId || 0;
   const roomName = route.params?.roomName || 0;
   const [activeCategory, setActiveCategory] = useState("House Keeping");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
- 
+
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const [roomServceModel, setRoomServiceModel] = useState({
     index: 0,
-    roomId:roomId,
+    roomId: roomId,
     roomName: roomName,
     serviceName: "",
     description: "",
     requestDate: new Date(),
-    price: 0
-  })
+    price: 0,
+  });
   const handleServicePress = (service) => {
     setSelectedService(service);
     setModalVisible(true);
   };
 
   const handleBooking = () => {
-
-
-      Alert.alert(
+    Alert.alert(
       "Confirm",
       "Are you sure you want to book?",
       [
@@ -211,9 +209,7 @@ const RoomServiceBooking = ({route,navigation}) => {
           text: "Yes",
           onPress: async () => {
             if ((await getCartFromSecureStore()) == null) {
-              console.log("Cart was empty");
               const guestId = await AsyncStorage.getItem("loginId");
-              console.warn(guestId);
               await saveCartToSecureStore({
                 bookingModel: {
                   id: 0,
@@ -245,7 +241,6 @@ const RoomServiceBooking = ({route,navigation}) => {
               cart.lstRoomService != null && cart.lstRoomService.length > 0
                 ? cart.lstRoomService.length + 1
                 : 1;
-            console.warn(cart.lstRoomService);
             setRoomServiceModel({ ...roomServceModel, index: index });
             const updatedCart = { ...cart };
             if (
@@ -255,28 +250,28 @@ const RoomServiceBooking = ({route,navigation}) => {
             ) {
               updatedCart.lstRoomService = [];
             }
-            updatedCart.lstRoomService.push({  index: index,
-              roomId:roomId,
+            updatedCart.lstRoomService.push({
+              index: index,
+              roomId: roomId,
               roomName: roomName,
               serviceName: selectedService.title,
               description: roomServceModel.description,
               requestDate: roomServceModel.requestDate,
-              price: selectedService.price});
+              price: selectedService.price,
+            });
             await saveCartToSecureStore(updatedCart);
             setModalVisible(false);
-            console.warn(await getCartFromSecureStore());
             navigation.navigate("Cart");
           },
         },
       ],
       { cancelable: false }
     );
-
   };
   const handleTimeChange = (event, selectedTime) => {
     setShowTimePicker(false);
     if (selectedTime) {
-      setRoomServiceModel({...roomServceModel, requestDate:selectedTime});
+      setRoomServiceModel({ ...roomServceModel, requestDate: selectedTime });
     }
   };
 
@@ -305,7 +300,7 @@ const RoomServiceBooking = ({route,navigation}) => {
               style={[
                 styles.categoryTabText,
                 activeCategory === category.name &&
-                styles.activeCategoryTabText,
+                  styles.activeCategoryTabText,
               ]}
             >
               {category.name}
@@ -358,7 +353,9 @@ const RoomServiceBooking = ({route,navigation}) => {
                 multiline
                 numberOfLines={3}
                 value={roomServceModel.description}
-                onChangeText={(e)=>{setRoomServiceModel({...roomServceModel,description:e})}}
+                onChangeText={(e) => {
+                  setRoomServiceModel({ ...roomServceModel, description: e });
+                }}
                 placeholder="Add any special requests or notes"
                 placeholderTextColor="#A0A0A0"
               />

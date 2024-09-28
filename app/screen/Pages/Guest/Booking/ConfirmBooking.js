@@ -33,43 +33,21 @@ const paymentSchema = Yup.object().shape({
   expiryYear: Yup.string().required("Required"),
   expiryMonth: Yup.string().required("Required"),
   cVV: Yup.string().min(3).required("Required"),
-  notes:Yup.string().max(500).required("Required"),
+  notes: Yup.string().max(500).required("Required"),
 });
 const ConfirmBooking = ({ navigation }) => {
-  // const [modalVisible, setModalVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
-  // const [bookings, setBookings] = useState([
-  //   { name: "Deluxe Room", details: "2 nights, Ocean View", totalItem: 300 },
-  //   {
-  //     name: "Event Booking",
-  //     details: "Conference Room A, 1 day",
-  //     totalItem: 200,
-  //   },
-  //   { name: "Gym Access", details: "2 days pass", totalItem: 40 },
-  //   {
-  //     name: "Spa Treatment",
-  //     details: "Full Body Massage, 60 mins",
-  //     totalItem: 120,
-  //   },
-  //   { name: "Room Service", details: "Cleaning, 2 times", totalItem: 50 },
-  // ]);
 
   const handleDeleteBooking = async (index, type) => {
     try {
       await removeDataFromCartAndSaveLocalStorage(index, type);
-      await FillItems(); // Refresh cart after item is removed
+      await FillItems();
       Alert.alert("Success", "Item successfully removed.");
     } catch (error) {
       Alert.alert("Error", "Failed to remove item.");
     }
-    // setCartModel(false);
   };
-
-  // const totalAmount = bookings.reduce(
-  //   (sum, booking) => sum + booking.totalItem,
-  //   0
-  // );
 
   const [cart, setCartModel] = useState({
     bookingModel: {
@@ -105,18 +83,17 @@ const ConfirmBooking = ({ navigation }) => {
       expiryYear: "2024",
       expiryMonth: "01",
       cVV: "",
-      notes:"",
+      notes: "",
     },
     validationSchema: paymentSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        
         setSubmitting(true);
-        const data={
+        const data = {
           ...cart,
-          bookingModel:{
-           ...cart.bookingModel,
-           notes:values.notes
+          bookingModel: {
+            ...cart.bookingModel,
+            notes: values.notes,
           },
           paymentDetail: {
             cardNumber: values.cardNumber,
@@ -127,13 +104,11 @@ const ConfirmBooking = ({ navigation }) => {
             transactionId: "stayhub",
           },
         };
-       // data.bookingModel.notes=values.notes;
-        console.warn(data);
         setCartModel({
           ...cart,
-          bookingModel:{
-           ...cart.bookingModel,
-           notes:values.notes
+          bookingModel: {
+            ...cart.bookingModel,
+            notes: values.notes,
           },
           paymentDetail: {
             cardNumber: values.cardNumber,
@@ -162,11 +137,12 @@ const ConfirmBooking = ({ navigation }) => {
             {
               text: "OK",
               onPress: () => {
-                navigation.navigate("BookingReceipt", { id: response.data.data });
+                navigation.navigate("BookingReceipt", {
+                  id: response.data.data,
+                });
               },
             },
           ]);
-        
         } else {
           setSubmitting(false);
           Alert.alert("Error", response.data.message);
@@ -188,7 +164,6 @@ const ConfirmBooking = ({ navigation }) => {
     try {
       setCartModel(await getCartFromSecureStore());
     } catch (error) {
-      console.warn(error);
       Alert.alert("Error", error.message ?? "Something went wrong");
     } finally {
       setLoading(false);
@@ -201,8 +176,12 @@ const ConfirmBooking = ({ navigation }) => {
           item.maxPerson > 0
             ? ` with ${item.maxPerson} additional person(s).`
             : ".";
-        return `${item.name} - Check-in: ${moment(item.checkInDate).format("MMM DD YYYY")},
-         Check-out: ${moment(item.checkOutDate).format("MMM DD YYYY")}, Total ${item.noofNightStay} night(s)${additional}`;
+        return `${item.name} - Check-in: ${moment(item.checkInDate).format(
+          "MMM DD YYYY"
+        )},
+         Check-out: ${moment(item.checkOutDate).format("MMM DD YYYY")}, Total ${
+          item.noofNightStay
+        } night(s)${additional}`;
 
       case "E":
         const aTicket =
@@ -227,7 +206,9 @@ const ConfirmBooking = ({ navigation }) => {
       case "RS":
         return `${item.roomName}, Service Request:  ${
           item.serviceName
-        }, Request Date: ${moment(item.requestDate).format("MM/DD/YYYY hh:mm A")}`;
+        }, Request Date: ${moment(item.requestDate).format(
+          "MM/DD/YYYY hh:mm A"
+        )}`;
       default:
         return "";
     }
@@ -283,9 +264,7 @@ const ConfirmBooking = ({ navigation }) => {
                     <Text style={styles.bookingDetails}>
                       {getDetails("RS", item)}
                     </Text>
-                    <Text style={styles.bookingTotal}>
-                      {item.price}
-                    </Text>
+                    <Text style={styles.bookingTotal}>{item.price}</Text>
                   </View>
                   <TouchableOpacity
                     onPress={() => handleDeleteBooking(item.index, "RS")}
@@ -365,23 +344,6 @@ const ConfirmBooking = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
               ))}
-            {/* {bookings.map((booking, index) => (
-              <View key={index} style={styles.bookingItem}>
-              <View style={styles.bookingInfo}>
-                <Text style={styles.bookingName}>{booking.name}</Text>
-                <Text style={styles.bookingDetails}>{booking.details}</Text>
-                <Text style={styles.bookingTotal}>
-                  ${booking.totalItem.toFixed(2)}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleDeleteBooking(index)}
-                style={styles.deleteButton}
-              >
-                <Icon name="delete" size={24} color="#FF3B30" />
-              </TouchableOpacity>
-            </View>
-            ))} */}
             <View style={styles.totalSection}>
               <Text style={styles.totalText}>Total Amount:</Text>
               <Text style={styles.totalAmount}>
@@ -495,19 +457,18 @@ const ConfirmBooking = ({ navigation }) => {
                 <Text style={styles.errorText}>{formik.errors.cVV}</Text>
               )}
             </View>
-            
+
             <TextInput
-                style={[styles.input]}
-                placeholder="Notes"
-                placeholderTextColor="#888"               
-                onChangeText={formik.handleChange("notes")}
-                onBlur={formik.handleBlur("notes")}
-                value={formik.values.notes}
-              />
-              {formik.touched.notes && formik.errors.notes && (
-                <Text style={styles.errorText}>{formik.errors.notes}</Text>
-              )}
-               
+              style={[styles.input]}
+              placeholder="Notes"
+              placeholderTextColor="#888"
+              onChangeText={formik.handleChange("notes")}
+              onBlur={formik.handleBlur("notes")}
+              value={formik.values.notes}
+            />
+            {formik.touched.notes && formik.errors.notes && (
+              <Text style={styles.errorText}>{formik.errors.notes}</Text>
+            )}
 
             <View style={styles.cardIcons}>
               <FontAwesome name="cc-visa" size={32} color="#1A1F71" />
@@ -518,7 +479,6 @@ const ConfirmBooking = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.submitButton}
-          
               onPress={formik.handleSubmit}
             >
               <Icon name="check-circle" size={24} color="white" />
@@ -652,15 +612,14 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center", // To vertically align pickers and inputs
-    marginBottom: 16, // To add space after row components
+    alignItems: "center",
+    marginBottom: 16,
   },
   pickerContainer: {
     flex: 1,
     backgroundColor: "#F0F0F0",
     borderRadius: 8,
-    marginHorizontal: 4, // This ensures there's space between the two pickers
-    // paddingHorizontal: 10,
+    marginHorizontal: 4,
     paddingVertical: 4,
     borderWidth: 1,
     borderColor: "#ccc",
@@ -708,17 +667,14 @@ const pickerSelectStyles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
     color: "#333",
-    paddingRight: 10, // to ensure the text is not overlapped by the icon
+    paddingRight: 10,
   },
   inputAndroid: {
     fontSize: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    // borderWidth: 1,
-    // borderColor: "#ccc",
-    // borderRadius: 8,
     color: "#333",
-    paddingRight: 30, // to ensure the text is not overlapped by the icon
+    paddingRight: 30,
   },
 });
 export default ConfirmBooking;

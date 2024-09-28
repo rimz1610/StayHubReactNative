@@ -69,7 +69,6 @@ const DashboardContent = ({ navigation }) => {
       if (error.response && error.response.status === 401) {
         // Redirect to login page
       } else {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch guests.");
       }
     } finally {
@@ -113,7 +112,6 @@ const DashboardContent = ({ navigation }) => {
         // Redirect to login page
         navigation.navigate("Login");
       } else {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch bookings.");
       }
     } finally {

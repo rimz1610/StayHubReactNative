@@ -67,7 +67,6 @@ const GuestListContent = ({ navigation }) => {
         // Redirect to login page
         navigation.navigate("Login");
       } else {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch guests.");
       }
     } finally {
@@ -108,7 +107,6 @@ const GuestListContent = ({ navigation }) => {
               // Redirect to login page
               navigation.navigate("Login");
             } else {
-              console.warn(error);
               Alert.alert("Error", "Failed to delete the guest.");
             }
           } finally {

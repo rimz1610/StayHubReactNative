@@ -103,9 +103,7 @@ const ServiceCard = ({ spa, navigation }) => {
               text: "Yes",
               onPress: async () => {
                 if ((await getCartFromSecureStore()) == null) {
-                  console.log("Cart was empty");
                   const guestId = await AsyncStorage.getItem("loginId");
-                  console.warn(guestId);
                   await saveCartToSecureStore({
                     bookingModel: {
                       id: 0,
@@ -137,7 +135,6 @@ const ServiceCard = ({ spa, navigation }) => {
                   cart.lstSpa != null && cart.lstSpa.length > 0
                     ? cart.lstSpa.length + 1
                     : 1;
-                console.warn(cart.lstSpa);
                 setBookSpaModel({ ...bookSpaModel, index: index });
                 const updatedCart = { ...cart };
                 if (
@@ -149,7 +146,6 @@ const ServiceCard = ({ spa, navigation }) => {
                 }
                 updatedCart.lstSpa.push({ ...bookSpaModel, index: index });
                 await saveCartToSecureStore(updatedCart);
-                console.warn(await getCartFromSecureStore());
                 navigation.navigate("Cart");
               },
             },
@@ -162,7 +158,6 @@ const ServiceCard = ({ spa, navigation }) => {
         setErrorMessages(response.data.message);
       }
     } catch (error) {
-      console.warn(error);
       Alert.alert("Error", "An error occurred while validating capacity.");
     } finally {
     }
@@ -284,6 +279,7 @@ const SpaBooking = ({ navigation }) => {
       );
       if (response.data.success) {
         setSpaList(response.data.list);
+        // console.log("Spa list", spaList);
       } else {
         Alert.alert("Error", response.data.message);
       }

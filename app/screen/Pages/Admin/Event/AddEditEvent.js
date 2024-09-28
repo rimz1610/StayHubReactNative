@@ -168,14 +168,11 @@ const AddEditEvent = ({
         const token = await AsyncStorage.getItem("token");
         const myPhoto = await AsyncStorage.getItem("eventFile");
         const formData = new FormData();
-        //console.warn(photo);
 
         if (photo != null) {
           const imageUri = photo.uri.startsWith("file://")
             ? photo.uri
             : "file://" + photo.uri;
-
-          //console.warn(imageUri);
 
           formData.append("eventFile", {
             uri: imageUri,
@@ -193,10 +190,6 @@ const AddEditEvent = ({
             formData.append(key, values[key]);
           }
         });
-        // console.warn("FormData Content:");
-        // for (let [key, value] of formData._parts) {
-        //   console.warn(key, value);
-        // }
 
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent",
@@ -224,7 +217,6 @@ const AddEditEvent = ({
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "An error occurred while saving the event.");
         }
       } finally {

@@ -150,49 +150,10 @@ const BookingItems = ({ navigation }) => {
     }
   };
 
-  // const [bookings, setBookings] = useState([
-  //   {
-  //     id: "1",
-  //     type: "Room",
-  //     name: "Deluxe Ocean View",
-  //     details: "2 nights, King bed, Balcony",
-  //     total: 700,
-  //   },
-  //   {
-  //     id: "2",
-  //     type: "Event",
-  //     name: "Beach Wedding Package",
-  //     details: "Ceremony setup, 50 guests",
-  //     total: 3000,
-  //   },
-  //   {
-  //     id: "3",
-  //     type: "Gym",
-  //     name: "Fitness Center Access",
-  //     details: "Unlimited access, 7 days",
-  //     total: 100,
-  //   },
-  //   {
-  //     id: "4",
-  //     type: "Spa",
-  //     name: "Body Massage",
-  //     details: "90 minutes, Aromatherapy",
-  //     total: 250,
-  //   },
-  //   {
-  //     id: "5",
-  //     type: "Room Service",
-  //     name: "In-Room Dining",
-  //     details: "Breakfast for two, 2 days",
-  //     total: 120,
-  //   },
-  // ]);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(0);
   const [itemType, setItemType] = useState("");
   const calculateTotal = async () => {
-    console.warn("calling total");
     const data = await getCartFromSecureStore();
     if (data != null)
       try {
@@ -228,7 +189,6 @@ const BookingItems = ({ navigation }) => {
   const confirmDelete = () => {
     removeDataFromCartAndSaveLocalStorage(itemToDelete, itemType);
     FillItems();
-    //  setBookings(bookings.filter((item) => item.id !== itemToDelete));
     setModalVisible(false);
   };
 
@@ -388,7 +348,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   placeholder: {
-    width: 40, // To balance the header layout
+    width: 40,
   },
   bookingSection: {
     backgroundColor: "white",

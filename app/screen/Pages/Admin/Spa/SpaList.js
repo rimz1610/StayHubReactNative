@@ -64,7 +64,6 @@ const SpaListContent = ({ route, navigation }) => {
         // Redirect to login page
         navigation.navigate("Login");
       } else {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch spas.");
       }
     } finally {
@@ -105,7 +104,6 @@ const SpaListContent = ({ route, navigation }) => {
               // Redirect to login page
               navigation.navigate("Login");
             } else {
-              console.warn(error);
               Alert.alert("Error", "Failed to delete the spa.");
             }
           } finally {

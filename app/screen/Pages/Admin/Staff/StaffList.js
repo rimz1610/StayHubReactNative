@@ -98,7 +98,6 @@ const StaffListContent = ({ navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "An error occurred while saving the staff.");
         }
       } finally {
@@ -140,7 +139,6 @@ const StaffListContent = ({ navigation }) => {
         // Redirect to login page
         navigation.navigate("Login");
       } else {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch staffs.");
       }
     } finally {
@@ -179,7 +177,6 @@ const StaffListContent = ({ navigation }) => {
               Alert.alert("Error", response.data.message);
             }
           } catch (error) {
-            console.warn(error);
             Alert.alert("Error", "Failed to delete the staff account.");
           } finally {
             setLoading(false);
@@ -217,7 +214,6 @@ const StaffListContent = ({ navigation }) => {
               Alert.alert("Error", response.data.message);
             }
           } catch (error) {
-            console.warn(error);
             Alert.alert("Error", "Failed to change status.");
           } finally {
             setLoading(false);
@@ -226,20 +222,6 @@ const StaffListContent = ({ navigation }) => {
       },
     ]);
   };
-
-  // const handleSave = () => {
-  //   if (editMode) {
-  //     setData((prevData) =>
-  //       prevData.map((item) =>
-  //         item.id === currentItem.id ? { ...currentItem } : item
-  //       )
-  //     );
-  //   } else {
-  //     setData((prevData) => [...prevData, { ...currentItem, id: Date.now().toString() }]);
-  //   }
-  //   setModalVisible(false);
-  //   setCurrentItem(null);
-  // };
 
   const handlePageChange = (direction) => {
     if (direction === "next" && currentPage < pages - 1) {

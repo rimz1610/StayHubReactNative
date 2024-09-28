@@ -116,7 +116,6 @@ const AddEditGymContent = ({
     async (values, { setSubmitting }) => {
       try {
         setSubmitting(true);
-        console.warn(values);
         values.fee = Number(values.fee);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
@@ -141,7 +140,6 @@ const AddEditGymContent = ({
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "An error occurred while saving the gym.");
         }
       } finally {

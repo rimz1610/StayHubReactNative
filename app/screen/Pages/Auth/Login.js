@@ -77,7 +77,6 @@ const Login = ({ navigation }) => {
           }
         })
         .catch(function (error) {
-          console.log(error);
           setSubmitting(false);
           Alert.alert("Login Failed", "Invalid email or password", [
             { text: "OK" },

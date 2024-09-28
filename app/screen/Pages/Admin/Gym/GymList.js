@@ -18,7 +18,6 @@ import moment from "moment";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
-// Dummy data for the table
 const initialData = Array.from({ length: 25 }, (_, index) => ({
   id: index,
   name: `GymKhana`,
@@ -44,7 +43,6 @@ const GymListContent = ({ route, navigation }) => {
     }
   }, [isFocused]);
 
-  // Function to refetch the updated room list
   const fetchData = async () => {
     const token = await AsyncStorage.getItem("token");
 
@@ -67,10 +65,8 @@ const GymListContent = ({ route, navigation }) => {
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        // Redirect to login page
         navigation.navigate("Login");
       } else {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch gyms.");
       }
     } finally {
@@ -87,10 +83,8 @@ const GymListContent = ({ route, navigation }) => {
           try {
             setLoading(true);
 
-            // Get the JWT token from AsyncStorage
             const token = await AsyncStorage.getItem("token");
 
-            // Send the delete request
             const response = await axios.get(
               `http://majidalipl-001-site5.gtempurl.com/Gym/DeleteGym?Id=${gymId}`,
               {
@@ -111,7 +105,6 @@ const GymListContent = ({ route, navigation }) => {
               // Redirect to login page
               navigation.navigate("Login");
             } else {
-              console.warn(error);
               Alert.alert("Error", "Failed to delete the event.");
             }
           } finally {

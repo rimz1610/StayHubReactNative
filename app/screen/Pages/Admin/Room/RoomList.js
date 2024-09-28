@@ -67,7 +67,6 @@ const RoomListContent = ({ route, navigation }) => {
         // Redirect to login page
         navigation.navigate("Login");
       } else {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch rooms.");
       }
     } finally {
@@ -108,7 +107,6 @@ const RoomListContent = ({ route, navigation }) => {
               // Redirect to login page
               navigation.navigate("Login");
             } else {
-              console.warn(error);
               Alert.alert("Error", "Failed to delete the room.");
             }
           } finally {

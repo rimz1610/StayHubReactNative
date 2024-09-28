@@ -89,8 +89,8 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 5,
+    // marginBottom: 5,
   },
   logo: {
     width: 120,
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   userInfoContainer: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 5,
   },
   userName: {
     fontSize: 18,

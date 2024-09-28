@@ -5,7 +5,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import StaffDrawer from "../../../components/StaffDrawer";
 
 const Drawer = createDrawerNavigator();
-const StaffTaskcontent = ({ navigation }) => {
+const EditStaffprofile = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -14,11 +14,11 @@ const StaffTaskcontent = ({ navigation }) => {
       >
         <Ionicons name="menu" size={24} color="black" />
       </TouchableOpacity>
-      <Text>StaffTasks</Text>
+      <Text>EditStaffprofile</Text>
     </View>
   );
 };
-const StaffTasks = () => {
+const EditStaff = () => {
   return (
     <Drawer.Navigator
       drawerContent={(props) => <StaffDrawer {...props} />}
@@ -29,12 +29,12 @@ const StaffTasks = () => {
         },
       }}
     >
-      <Drawer.Screen name="StaffTaskcontent" component={StaffTaskcontent} />
+      <Drawer.Screen name="EditStaffprofile" component={EditStaffprofile} />
     </Drawer.Navigator>
   );
 };
 
-export default StaffTasks;
+export default EditStaff;
 
 const styles = StyleSheet.create({
   container: {

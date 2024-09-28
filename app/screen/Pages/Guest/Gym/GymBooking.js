@@ -33,14 +33,13 @@ const { width, height } = Dimensions.get("window");
 const GymBooking = ({ navigation }) => {
   const [gymList, setGymList] = useState([]);
   const [selectedGender, setSelectedGender] = useState("All");
-  const [selectedMonths, setSelectedMonths] = useState({}); // Initialize as an object
+  const [selectedMonths, setSelectedMonths] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
   const [currentDropdown, setCurrentDropdown] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [currentGymDetails, setCurrentGymDetails] = useState({});
   const [errorMessages, setErrorMessages] = useState("");
   const [isValid, setIsValid] = useState(true);
-  // const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState({});
 
   const [carouselImages, setCarouselImages] = useState([
@@ -77,7 +76,6 @@ const GymBooking = ({ navigation }) => {
         "http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" +
           selectedGender
       );
-      // console.log(response.data.list);
       if (response.data.success) {
         setGymList(response.data.list);
       } else {
@@ -110,12 +108,6 @@ const GymBooking = ({ navigation }) => {
     closeDropdown();
   };
 
-  // const carouselImages = [
-  //   require("../../../../../assets/images/gym.jpg"),
-  //   require("../../../../../assets/images/gym-one.jpg"), // Add more images as needed
-  //   require("../../../../../assets/images/gym-two.jpg"),
-  // ];
-
   const openDetailModal = (gym) => {
     setCurrentGymDetails(gym);
     setDetailModalVisible(true);
@@ -126,13 +118,11 @@ const GymBooking = ({ navigation }) => {
   };
 
   const addToBookingCart = async (gym) => {
-    // const selectedMonth = selectedMonths[gym.id];
     const selectedMonth = selectedMonths[gym.id];
     if (selectedMonth == null) {
       Alert.alert("Error", "Please select month.");
     } else {
       const monthRange = Object.values(selectedMonth)[0];
-      console.warn(selectedMonth);
       setBookGymModel({
         ...bookGymModel,
         price: gym.fee,
@@ -145,7 +135,6 @@ const GymBooking = ({ navigation }) => {
         navigation.navigate("Login");
       }
       try {
-        console.warn(bookGymModel);
         const response = await axios.post(
           "http://majidalipl-001-site5.gtempurl.com/Gym/ValidateGymCapacity",
           {
@@ -172,7 +161,6 @@ const GymBooking = ({ navigation }) => {
                 text: "Yes",
                 onPress: async () => {
                   if ((await getCartFromSecureStore()) == null) {
-                    console.log("Cart was empty");
                     const guestId = await AsyncStorage.getItem("loginId");
 
                     await saveCartToSecureStore({
@@ -223,7 +211,6 @@ const GymBooking = ({ navigation }) => {
                     monthRange: selectedMonth,
                     index: index,
                   });
-                  console.warn(bookGymModel);
                   await saveCartToSecureStore(updatedCart);
 
                   navigation.navigate("Cart");
@@ -282,124 +269,6 @@ const GymBooking = ({ navigation }) => {
     ),
     [onImageLoad]
   );
-  // return (
-  //   <View contentContainerStyle={styles.container}>
-  //     {/* <FlatList> */}
-  //     <View style={styles.carouselContainer}>
-  //       <Carousel
-  //         loop
-  //         width={width}
-  //         height={width * 0.7}
-  //         autoPlay={true}
-  //         data={carouselImages}
-  //         scrollAnimationDuration={1000}
-  //         renderItem={renderCarouselItem}
-  //       />
-  //     </View>
-  //     <View style={styles.tagContainerWrapper}>
-  //       <View style={styles.tagContainer}>
-  //         <Text style={styles.tagText}>Gym Services</Text>
-  //       </View>
-  //     </View>
-  //     <View style={styles.genderSection}>
-  //       <Text style={styles.genderTitle}>Select Gender</Text>
-  //       {renderDropdown("gender", selectedGender, styles.genderDropdown)}
-  //     </View>
-  //     {loading ? (
-  //       <View style={styles.loadingContainer}>
-  //         <CustomLoader />
-  //         <Text style={styles.loadingText}>Loading gyms...</Text>
-  //       </View>
-  //     ) : (
-  //       <View style={styles.boxListContainer}>
-  //         <FlatList
-  //           data={gymList}
-  //           keyExtractor={(item, index) => index.toString()}
-  //           // numColumns={2}
-  //           renderItem={({ item: gym }) => (
-  //             <View style={styles.boxcontainer}>
-  //               <View style={styles.box}>
-  //                 <Text
-  //                   style={styles.title}
-  //                   onPress={() => openDetailModal(gym)}
-  //                 >
-  //                   {gym.name}
-  //                 </Text>
-  //                 <Text style={styles.timing}>
-  //                   Timing: {gym.openingTime} - {gym.closingTime}
-  //                 </Text>
-  //                 <Text style={styles.fee}>Fee: ${gym.fee}</Text>
-  //                 <Text style={styles.sessionLabel}>Monthly Session</Text>
-  //                 {renderDropdown(gym.id, selectedMonths[gym.id])}
-  //                 <TouchableOpacity
-  //                   style={styles.button}
-  //                   onPress={() => addToBookingCart(gym)}
-  //                 >
-  //                   <Icon name="calendar" size={16} color="#fff" />
-  //                   <Text style={styles.buttonText}>Book Now</Text>
-  //                 </TouchableOpacity>
-  //               </View>
-  //             </View>
-  //           )}
-  //         />
-  //       </View>
-  //     )}
-
-  //     <Modal
-  //       animationType="slide"
-  //       transparent={true}
-  //       visible={modalVisible}
-  //       onRequestClose={closeDropdown}
-  //     >
-  //       <TouchableOpacity
-  //         style={styles.modalOverlay}
-  //         activeOpacity={1}
-  //         onPressOut={closeDropdown}
-  //       >
-  //         <View style={styles.modalContent}>
-  //           <FlatList
-  //             data={currentDropdown === "gender" ? genderOptions : monthOptions}
-  //             keyExtractor={(item) => item}
-  //             renderItem={({ item }) => (
-  //               <TouchableOpacity
-  //                 style={styles.optionItem}
-  //                 onPress={() => selectOption(item)}
-  //               >
-  //                 <Text style={styles.optionText}>{item}</Text>
-  //               </TouchableOpacity>
-  //             )}
-  //           />
-  //         </View>
-  //       </TouchableOpacity>
-  //     </Modal>
-  //     <Modal
-  //       animationType="slide"
-  //       transparent={true}
-  //       visible={detailModalVisible}
-  //       onRequestClose={closeDetailModal}
-  //     >
-  //       <View style={styles.modalOverlay}>
-  //         <View style={styles.detailModalContent}>
-  //           <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
-  //           <Text style={styles.modalDescription}>
-  //             {currentGymDetails.description}
-  //           </Text>
-  //           <Text style={styles.modalSubtitle}>Equipment Available:</Text>
-  //           <Text style={styles.modalText}>{currentGymDetails.equipment}</Text>
-  //           <Text style={styles.modalSubtitle}>Gym Rules:</Text>
-  //           <Text style={styles.modalText}>{currentGymDetails.rules}</Text>
-  //           <TouchableOpacity
-  //             style={styles.closeButton}
-  //             onPress={closeDetailModal}
-  //           >
-  //             <Text style={styles.closeButtonText}>Close</Text>
-  //           </TouchableOpacity>
-  //         </View>
-  //       </View>
-  //     </Modal>
-  //     {/* </FlatList> */}
-  //   </View>
-  // );
   return (
     <FlatList
       data={gymList}
@@ -580,7 +449,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   loadingText: {
-    // marginTop: 10,
     fontSize: 16,
     color: "#666",
   },
@@ -590,27 +458,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   boxcontainer: {
-    // justifyContent: "center",
     alignSelf: "center",
-    // alignItems: "center",
     width: "90%",
     marginBottom: 15,
   },
-  // box: {
-  //   width: width * 0.44,
-  //   height: height * 0.33, // Adjusted height to accommodate the button
-  //   backgroundColor: "white",
-  //   borderRadius: 15,
-  //   padding: 15,
-  //   shadowColor: "#000",
-  //   shadowOffset: { width: 0, height: 2 },
-  //   shadowOpacity: 0.1,
-  //   shadowRadius: 4,
-  //   elevation: 3,
-  //   justifyContent: "space-between",
-  //   marginBottom: 15,
-  //   // overflow: "hidden",
-  // },
   box: {
     height: height * 0.33,
     backgroundColor: "white",
@@ -669,11 +520,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 12,
     borderRadius: 8,
-    marginTop: Platform.OS === "android" ? 5 : 10, // Adjusted marginTop for Android
-    marginBottom: Platform.OS === "android" ? 15 : 10, // Added bottom margin for Android
-    // marginTop: 5,
-    // marginBottom: 5,
-    // flexGrow: 1,
+    marginTop: Platform.OS === "android" ? 5 : 10,
+    marginBottom: Platform.OS === "android" ? 15 : 10,
   },
   buttonText: {
     color: "white",
@@ -703,13 +551,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
-  // viewDetailsButtonText: {
-  //   fontSize: 14,
-  //   textDecorationLine: "underline",
-  //   fontWeight: "bold",
-  //   color: "#180161",
-  //   marginBottom: 5,
-  // },
+
   modalOverlay: {
     flex: 1,
     justifyContent: "center",

@@ -72,7 +72,6 @@ const ResetPassword = ({ navigation }) => {
           }
         })
         .catch(function (error) {
-          console.log(error);
           setSubmitting(false);
           Alert.alert("Request Failed", "Please try again later.", [
             { text: "OK" },

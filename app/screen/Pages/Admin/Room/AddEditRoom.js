@@ -148,7 +148,6 @@ const AddEditRoom = ({
       } finally {
         setSubmitting(false);
       }
-      console.log("value", values);
     },
 
     [navigation]

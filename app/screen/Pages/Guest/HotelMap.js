@@ -12,22 +12,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 const HotelMap = ({ navigation }) => {
-  // const openGoogleMaps = () => {
-  //   const latitude = 37.78825;
-  //   const longitude = -122.4324;
-  //   const label = "StayHub Hotel & Resort";
-  //   const scheme = Platform.select({
-  //     ios: "maps:0,0?q=",
-  //     android: "geo:0,0?q=",
-  //   });
-  //   const latLng = `${latitude},${longitude}`;
-  //   const url = Platform.select({
-  //     ios: `${scheme}${label}@${latLng}`,
-  //     android: `${scheme}${latLng}(${label})`,
-  //   });
-  //   Linking.openURL(url);
-  // };
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.mapContainer}>
@@ -35,12 +19,6 @@ const HotelMap = ({ navigation }) => {
           source={require("../../../../assets/images/map.jpg")}
           style={styles.mapImage}
         />
-        {/* <TouchableOpacity
-          style={styles.fullScreenButton}
-          onPress={openGoogleMaps}
-        >
-          <Text style={styles.fullScreenButtonText}>Open in Google Maps</Text>
-        </TouchableOpacity> */}
       </View>
 
       <View style={styles.infoContainer}>

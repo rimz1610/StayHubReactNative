@@ -51,7 +51,6 @@ const Ticket = ({ route, navigation }) => {
 
   // Function to refetch the updated room list
   const fetchData = async () => {
-    console.warn(bookingId);
     if (bookingId > 0) {
       const token = await AsyncStorage.getItem("token");
 
@@ -77,7 +76,6 @@ const Ticket = ({ route, navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "Failed to fetch ticket details.");
         }
       } finally {
@@ -128,7 +126,6 @@ const Ticket = ({ route, navigation }) => {
         await Sharing.shareAsync(uri);
       }
     } catch (error) {
-      console.error("Failed to save image:", error);
       Alert.alert("Error", "Failed to save ticket image.");
     }
   };

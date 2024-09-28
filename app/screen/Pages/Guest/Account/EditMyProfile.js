@@ -85,7 +85,6 @@ const EditMyProfile = ({ navigation }) => {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-        console.warn(error);
         Alert.alert("Error", "Failed to fetch profile");
       }
     },
@@ -138,7 +137,6 @@ const EditMyProfile = ({ navigation }) => {
           Alert.alert("Error", response.data.message);
         }
       } catch (error) {
-        console.warn(error);
         Alert.alert("Error", "An error occurred while updating the profile.");
       } finally {
         setSubmitting(false);
@@ -146,63 +144,6 @@ const EditMyProfile = ({ navigation }) => {
     },
     [navigation, photo]
   );
-
-  //   async (values, { setSubmitting }) => {
-  //     try {
-  //       setSubmitting(true);
-  //       console.warn(values);
-  //       console.warn(imageUri);
-  //       const formData = new FormData();
-  //       if (photo != null) {
-  //         const picimageUri = photo.uri.startsWith("file://")
-  //           ? photo.uri
-  //           : "file://" + photo.uri;
-
-  //         //console.warn(imageUri);
-
-  //         formData.append("guestProfile", {
-  //           uri: picimageUri,
-  //           type: photo.mimeType || "image/png",
-  //           name: photo.fileName || "image.png",
-  //         });
-  //         console.warn(picimageUri);
-  //       }
-  //       Object.keys(values).forEach((key) => {
-  //         formData.append(key, values[key]);
-  //       });
-
-  //       const token = await AsyncStorage.getItem("token");
-
-  //       const response = await axios.post(
-  //         "http://majidalipl-001-site5.gtempurl.com/Guest/EditProfile",
-  //         formData,
-  //         {
-  //           headers: {
-  //             "Content-Type": "multipart/form-data",
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //         }
-  //       );
-  //       if (response.data.success) {
-  //         await AsyncStorage.setItem("email", values.email);
-  //         await AsyncStorage.setItem(
-  //           "name",
-  //           values.firstName + " " + values.lastName
-  //         );
-  //         await AsyncStorage.setItem("profile", response.data.data);
-  //         Alert.alert("Success", "Profile updated successfully.");
-  //       } else {
-  //         Alert.alert("Error", response.data.message);
-  //       }
-  //     } catch (error) {
-  //       console.warn(error);
-  //       Alert.alert("Error", "An error occurred while updating profile");
-  //     } finally {
-  //       setSubmitting(false);
-  //     }
-  //   },
-  //   [navigation]
-  // );
   return (
     <Formik
       initialValues={initialValues}

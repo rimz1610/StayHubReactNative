@@ -44,21 +44,14 @@ const BookingItem = (item) => (
 
 const TotalSection = ({ paid, total }) => (
   <View style={styles.totalSection}>
-    {/* <View style={styles.totalRow}>
-      <Text style={styles.totalLabel}>Subtotal</Text>
-      <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
-    </View> */}
-     <View style={styles.totalRow}>
+    <View style={styles.totalRow}>
       <Text style={styles.totalLabel}>Total Amount</Text>
-      <Text style={[styles.totalValue, styles.totalAmount]}>
-        {total}
-      </Text>
+      <Text style={[styles.totalValue, styles.totalAmount]}>{total}</Text>
     </View>
     <View style={styles.totalRow}>
       <Text style={styles.totalLabel}>Paid Amount</Text>
       <Text style={styles.totalValue}>{paid}</Text>
     </View>
-   
   </View>
 );
 
@@ -95,7 +88,6 @@ const BookingReceipt = ({ route, navigation }) => {
       },
     ],
   });
-  // In a real app, you'd get this data from route.params or an API call
   const receiptData = {
     hotel: {
       name: "StayHub Hotel & Resort",
@@ -103,35 +95,7 @@ const BookingReceipt = ({ route, navigation }) => {
       country: "Tropical Island",
       adminEmail: "admin@stayhub.com",
     },
-    // invoice: {
-    //   invoiceDate: "2024-08-28",
-    //   bookingPerson: "Fatima Zuhra",
-    //   referenceNo: "BK001",
-    // },
-    // bookings: [
-    //   { name: "Deluxe Room", details: "2 nights, Ocean View", totalItem: 300 },
-    //   {
-    //     name: "Event Booking",
-    //     details: "Conference Room A, 1 day",
-    //     totalItem: 200,
-    //   },
-    //   { name: "Gym Access", details: "2 days pass", totalItem: 40 },
-    //   {
-    //     name: "Spa Treatment",
-    //     details: "Full Body Massage, 60 mins",
-    //     totalItem: 120,
-    //   },
-    //   { name: "Room Service", details: "Cleaning, 2 times", totalItem: 50 },
-    // ],
-    // subtotal: 710,
-    // paid: 710,
-    // total: 710,
   };
-
-  // const handleDownload = () => {
-
-  //   console.log("Downloading receipt...");
-  // };
 
   useEffect(() => {
     if (isFocused) {
@@ -139,7 +103,6 @@ const BookingReceipt = ({ route, navigation }) => {
     }
   }, [isFocused, bookingId]);
 
-  // Function to refetch the updated room list
   const fetchData = async () => {
     if (bookingId > 0) {
       const token = await AsyncStorage.getItem("token");
@@ -163,10 +126,8 @@ const BookingReceipt = ({ route, navigation }) => {
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "Failed to fetch booking details.");
         }
       } finally {
@@ -177,16 +138,17 @@ const BookingReceipt = ({ route, navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      
-      { data.booking.hasBookedEvent==true&&
-
-      <TouchableOpacity
-        style={styles.downloadButton}
-        onPress={() => navigation.navigate("Ticket",{bookingId: data.booking.id})}
-      >
-        <Icon name="file-download" size={20} color="white" />
-        <Text style={styles.downloadButtonText}>Download Ticket</Text>
-      </TouchableOpacity>}
+      {data.booking.hasBookedEvent == true && (
+        <TouchableOpacity
+          style={styles.downloadButton}
+          onPress={() =>
+            navigation.navigate("Ticket", { bookingId: data.booking.id })
+          }
+        >
+          <Icon name="file-download" size={20} color="white" />
+          <Text style={styles.downloadButtonText}>Download Ticket</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.receipt}>
         <ReceiptHeader hotel={receiptData.hotel} />
         <ReceiptInfo invoice={data.booking} />
@@ -201,7 +163,6 @@ const BookingReceipt = ({ route, navigation }) => {
         <View style={styles.divider} />
 
         <TotalSection
-         
           paid={data.booking.paidAmount}
           total={data.booking.bookingAmount}
         />

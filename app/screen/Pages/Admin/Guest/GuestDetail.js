@@ -108,7 +108,6 @@ const GuestDetailsContent = ({ route, navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "Failed to fetch booking details.");
         }
       } finally {
@@ -134,7 +133,6 @@ const GuestDetailsContent = ({ route, navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "Failed to fetch guest details.");
         }
       } finally {
@@ -170,7 +168,6 @@ const GuestDetailsContent = ({ route, navigation }) => {
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "Failed to fetch booking details.");
         }
       } finally {

@@ -90,7 +90,6 @@ const AddEditSpaContent = ({
               response.data.data.capacity.toString();
 
             formikSetValues(response.data.data);
-            console.warn(response.data.data);
           } else {
             Alert.alert("Error", response.data.message);
           }
@@ -134,7 +133,6 @@ const AddEditSpaContent = ({
           // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "An error occurred while saving the spa.");
         }
       } finally {

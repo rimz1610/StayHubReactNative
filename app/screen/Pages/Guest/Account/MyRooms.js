@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,Alert,
+  View,
+  Alert,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -13,19 +14,31 @@ import { useIsFocused } from "@react-navigation/native";
 import moment from "moment";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const RoomCard = ({ roomId, checkInDate,checkOutDate, title, image, navigation }) => (
+const RoomCard = ({
+  roomId,
+  checkInDate,
+  checkOutDate,
+  title,
+  image,
+  navigation,
+}) => (
   <View style={styles.card}>
-    <Image source={{uri:image}} style={styles.image} />
+    <Image source={{ uri: image }} style={styles.image} />
     <View style={styles.cardContent}>
       <View style={styles.roomInfo}>
-        <Text style={styles.roomNumber}>Room (
-          {moment(checkInDate).format("MMM DD YYYY")} - {moment(checkOutDate).format("MMM DD YYYY")})</Text>
+        <Text style={styles.roomNumber}>
+          Room ({moment(checkInDate).format("MMM DD YYYY")} -{" "}
+          {moment(checkOutDate).format("MMM DD YYYY")})
+        </Text>
         <Text style={styles.title}>{title}</Text>
       </View>
       <TouchableOpacity
         style={styles.viewButton}
         onPress={() =>
-          navigation.navigate("RoomServiceBooking", { roomId: roomId, roomName:title})
+          navigation.navigate("RoomServiceBooking", {
+            roomId: roomId,
+            roomName: title,
+          })
         }
       >
         <Text style={styles.viewButtonText}>Services</Text>
@@ -39,7 +52,7 @@ const MyRooms = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(false);
-  const [myRooms,setMyRooms]=useState([]);
+  const [myRooms, setMyRooms] = useState([]);
   useEffect(() => {
     if (isFocused) {
       fetchData();
@@ -48,43 +61,36 @@ const MyRooms = () => {
 
   // Function to refetch the updated room list
   const fetchData = async () => {
-   
-      const token = await AsyncStorage.getItem("token");
-      const loginId  = await AsyncStorage.getItem("loginId");
-      console.warn(loginId);
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          "http://majidalipl-001-site5.gtempurl.com/Booking/GetCurrentRoomsByGuestId?guestId=" +
-           loginId,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      
-        if (response.data.success) {
-          setMyRooms(response.data.list);
-          console.warn(response.data);
-        } else {
+    const token = await AsyncStorage.getItem("token");
+    const loginId = await AsyncStorage.getItem("loginId");
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        "http://majidalipl-001-site5.gtempurl.com/Booking/GetCurrentRoomsByGuestId?guestId=" +
+          loginId,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-          Alert.alert("Error", response.data.message);
-        }
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          // Redirect to login page
-          navigation.navigate("Login");
-        } else {
-          console.warn(error);
-          Alert.alert("Error", "Failed to fetch your rooms.");
-        }
-      } finally {
-        setLoading(false);
+      if (response.data.success) {
+        setMyRooms(response.data.list);
+      } else {
+        Alert.alert("Error", response.data.message);
       }
-    
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login page
+        navigation.navigate("Login");
+      } else {
+        Alert.alert("Error", "Failed to fetch your rooms.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   const rooms = [
     {
@@ -110,17 +116,18 @@ const MyRooms = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Select Your Room</Text>
-      {myRooms!=null && myRooms.map((room) => (
-        <RoomCard
-          roomId={room.roomId}
-          key={room.roomId}
-          checkInDate={room.checkInDate}
-          checkOutDate={room.checkOutDate}
-          title={room.roomName}
-          image={room.roomImage}
-          navigation={navigation}
-        />
-      ))}
+      {myRooms != null &&
+        myRooms.map((room) => (
+          <RoomCard
+            roomId={room.roomId}
+            key={room.roomId}
+            checkInDate={room.checkInDate}
+            checkOutDate={room.checkOutDate}
+            title={room.roomName}
+            image={room.roomImage}
+            navigation={navigation}
+          />
+        ))}
     </ScrollView>
   );
 };

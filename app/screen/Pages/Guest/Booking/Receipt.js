@@ -49,21 +49,14 @@ const BookingItem = ({ name, details, totalItem }) => (
 
 const TotalSection = ({ paid, total }) => (
   <View style={styles.totalSection}>
-    {/* <View style={styles.totalRow}>
-      <Text style={styles.totalLabel}>Subtotal</Text>
-      <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
-    </View> */}
-     <View style={styles.totalRow}>
+    <View style={styles.totalRow}>
       <Text style={styles.totalLabel}>Total Amount</Text>
-      <Text style={[styles.totalValue, styles.totalAmount]}>
-        {total}
-      </Text>
+      <Text style={[styles.totalValue, styles.totalAmount]}>{total}</Text>
     </View>
     <View style={styles.totalRow}>
       <Text style={styles.totalLabel}>Paid Amount</Text>
       <Text style={styles.totalValue}>{paid}</Text>
     </View>
-   
   </View>
 );
 
@@ -100,7 +93,6 @@ const Receipt = ({ route }) => {
       },
     ],
   });
-  // In a real app, you'd get this data from route.params or an API call
   const receiptData = {
     hotel: {
       name: "StayHub Hotel & Resort",
@@ -108,29 +100,6 @@ const Receipt = ({ route }) => {
       country: "Tropical Island",
       adminEmail: "admin@stayhub.com",
     },
-    // invoice: {
-    //   invoiceDate: "2024-08-28",
-    //   bookingPerson: "Fatima Zuhra",
-    //   referenceNo: "BK001",
-    // },
-    // bookings: [
-    //   { name: "Deluxe Room", details: "2 nights, Ocean View", totalItem: 300 },
-    //   {
-    //     name: "Event Booking",
-    //     details: "Conference Room A, 1 day",
-    //     totalItem: 200,
-    //   },
-    //   { name: "Gym Access", details: "2 days pass", totalItem: 40 },
-    //   {
-    //     name: "Spa Treatment",
-    //     details: "Full Body Massage, 60 mins",
-    //     totalItem: 120,
-    //   },
-    //   { name: "Room Service", details: "Cleaning, 2 times", totalItem: 50 },
-    // ],
-    // subtotal: 710,
-    // paid: 710,
-    // total: 710,
   };
   useEffect(() => {
     if (isFocused) {
@@ -138,7 +107,6 @@ const Receipt = ({ route }) => {
     }
   }, [isFocused, bookingId]);
 
-  // Function to refetch the updated room list
   const fetchData = async () => {
     if (bookingId > 0) {
       const token = await AsyncStorage.getItem("token");
@@ -162,10 +130,8 @@ const Receipt = ({ route }) => {
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          // Redirect to login page
           navigation.navigate("Login");
         } else {
-          console.warn(error);
           Alert.alert("Error", "Failed to fetch booking details.");
         }
       } finally {
@@ -247,8 +213,8 @@ Thank you for choosing StayHub Hotel & Resort. We hope you enjoyed your stay!
         <View style={styles.divider} />
 
         <TotalSection
-         paid={data.booking.paidAmount}
-         total={data.booking.bookingAmount}
+          paid={data.booking.paidAmount}
+          total={data.booking.bookingAmount}
         />
 
         <View style={styles.divider} />

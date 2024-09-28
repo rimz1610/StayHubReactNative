@@ -150,9 +150,7 @@ const EventBooking = ({ route, navigation }) => {
               text: "Yes",
               onPress: async () => {
                 if ((await getCartFromSecureStore()) == null) {
-                  console.log("Cart was empty");
                   const guestId = await AsyncStorage.getItem("loginId");
-                  console.warn(guestId);
                   await saveCartToSecureStore({
                     bookingModel: {
                       id: 0,
@@ -184,7 +182,6 @@ const EventBooking = ({ route, navigation }) => {
                   cart.lstEvent != null && cart.lstEvent.length > 0
                     ? cart.lstEvent.length + 1
                     : 1;
-                console.warn(cart.lstEvent);
                 setBookEventModel({ ...bookEventModel, index: index });
                 const updatedCart = { ...cart };
                 if (
@@ -196,7 +193,6 @@ const EventBooking = ({ route, navigation }) => {
                 }
                 updatedCart.lstEvent.push({ ...bookEventModel, index: index });
                 await saveCartToSecureStore(updatedCart);
-                console.warn(await getCartFromSecureStore());
                 navigation.navigate("Cart");
               },
             },
@@ -208,7 +204,6 @@ const EventBooking = ({ route, navigation }) => {
         setErrorMessages(response.data.message);
       }
     } catch (error) {
-      console.warn(error);
       Alert.alert("Error", "An error occurred while validating tickets.");
     } finally {
     }
@@ -376,10 +371,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // height: "100%", // Full height for loading
   },
   loadingText: {
-    // marginTop: 10,
     fontSize: 16,
     color: "#666",
   },
