@@ -30,7 +30,7 @@ import {
   saveCartToSecureStore,
 } from "../../../../components/secureStore";
 
-
+const { width } = Dimensions.get("window");
 const ServiceCard = ({ spa, navigation }) => {
   const [errorMessages, setErrorMessages] = useState("");
   const [isValid, setIsValid] = useState(true);

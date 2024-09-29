@@ -30,6 +30,7 @@ import {
 import CustomLoader from "../../../../components/CustomLoader";
 
 
+const { width, height } = Dimensions.get("window");
 const GymBooking = ({ navigation }) => {
   const [gymList, setGymList] = useState([]);
   const [selectedGender, setSelectedGender] = useState("All");
