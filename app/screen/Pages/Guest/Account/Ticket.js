@@ -98,7 +98,7 @@ const Ticket = ({ route, navigation }) => {
 
   const hotelData = {
     phone: "+1 884-6789-9876",
-    email: "admin@stayhub.com",
+    email: "info@stayhub.com",
     name: "StayHub Hotel & Resort",
     address: "346 Matangi Road",
     city: "Albama, 23456, United States",

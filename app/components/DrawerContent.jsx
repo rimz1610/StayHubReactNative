@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState ,useEffect} from "react";
 import {
   View,
   Text,
@@ -10,10 +10,21 @@ import {
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+
 const DrawerContent = (props) => {
   const { state, descriptors, navigation } = props;
   const activeRoute = state.routeNames[state.index];
+  const [name,setName]=useState("");
+  const [email,setEmail]=useState("");
+  useEffect(() => {
+    setProfile();
+}, [setProfile]);
+  
 
+  const setProfile= async ()=>{
+    setEmail(await AsyncStorage.getItem("email"));
+    setName(await AsyncStorage.getItem("name"));
+  }
   const handleLogout = async () => {
     try {
       await AsyncStorage.multiRemove([
@@ -61,8 +72,8 @@ const DrawerContent = (props) => {
         />
       </View>
       <View style={styles.userInfoContainer}>
-        <Text style={styles.userName}>David Robinson</Text>
-        <Text style={styles.userEmail}>admin@gmail.com</Text>
+        <Text style={styles.userName}>{name}</Text>
+        <Text style={styles.userEmail}>{email}</Text>
       </View>
       <View style={styles.menuContainer}>
         {renderDrawerItem("Manage Bookings", "Dashboard")}

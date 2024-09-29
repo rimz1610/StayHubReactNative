@@ -93,7 +93,7 @@ const BookingReceipt = ({ route, navigation }) => {
       name: "StayHub Hotel & Resort",
       location: "123 Paradise Street",
       country: "Tropical Island",
-      adminEmail: "admin@stayhub.com",
+      adminEmail: "info@stayhub.com",
     },
   };
 

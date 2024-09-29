@@ -50,7 +50,6 @@ const EditMyProfile = ({ navigation }) => {
   const initialValues = {
     id: 0,
     email: "",
-    password: "",
     firstName: "",
     lastName: "",
     city: "",

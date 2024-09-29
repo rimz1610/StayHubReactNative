@@ -11,7 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useRef, useState, useEffect } from "react";
 const Drawer = createDrawerNavigator();
-const CheckTicket = ({ navigation }) => {
+const CheckTicketContent = ({ navigation }) => {
   const TicketDetail = ({ label, value }) => (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}:</Text>
@@ -25,7 +25,7 @@ const CheckTicket = ({ navigation }) => {
   const [hasSearched, setHasSearched] = useState(false);
   const hotelData = {
     phone: "+1 884-6789-9876",
-    email: "admin@stayhub.com",
+    email: "info@stayhub.com",
     name: "StayHub Hotel & Resort",
     address: "346 Matangi Road",
     city: "Albama, 23456, United States",
@@ -38,26 +38,30 @@ const CheckTicket = ({ navigation }) => {
     }
   }, [isFocused]);
   const fetchTicketDetails = async () => {
-    setHasSearched(true);
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Ticket/GetTicketByTicketNo?ticketNo=" +
-        ticketNumber,
-      );
+    if (ticketNumber == "") {
+      Alert.alert("Error", "Please enter ticket number.");
+    }
+    else {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          "http://majidalipl-001-site5.gtempurl.com/Ticket/GetTicketByTicketNo?ticketNo=" +
+          ticketNumber,
+        );
+        setHasSearched(true);
+        if (response.data.success) {
+          setTicketData(response.data.data);
+        } else {
+          setTicketData(null);
 
-      if (response.data.success) {
-        setTicketData(response.data.data);
-      } else {
-        setTicketData(null);
-       
+        }
+      } catch (error) {
+
+        Alert.alert("Error", "Failed to fetch ticket details.");
+
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-
-      Alert.alert("Error", "Failed to fetch ticket details.");
-
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -105,7 +109,7 @@ const CheckTicket = ({ navigation }) => {
               value={ticketNumber}
               onChangeText={setTicketNumber}
             />
-            </View>
+          </View>
           <View style={styles.inputContainer}>
             <TouchableOpacity
               style={styles.saveButton}
@@ -122,8 +126,8 @@ const CheckTicket = ({ navigation }) => {
         </View>
 
         {hasSearched && ticketData === null && (
-      <Text style={styles.noTicketText}>No ticket found</Text>
-    )}
+          <Text style={styles.noTicketText}>No ticket found</Text>
+        )}
         {ticketData != null &&
           <>
             <Text style={styles.title}>Ticket Booking Details</Text>
@@ -140,7 +144,7 @@ const CheckTicket = ({ navigation }) => {
                 />
                 <TicketDetail
                   label="Booking Person"
-                  value={ticketData.firstName+" "+ticketData.lastName} 
+                  value={ticketData.firstName + " " + ticketData.lastName}
                 />
                 <TicketDetail
                   label="Booking Ref #"
@@ -181,7 +185,7 @@ const CheckTicket = ({ navigation }) => {
               <Text style={styles.footerText}>{hotelData.city}</Text>
             </View>
           </>}
-        </View>
+      </View>
     </ScrollView>
   </>
   );
@@ -197,7 +201,7 @@ const CheckTaskDrawer = () => {
         },
       }}
     >
-      <Drawer.Screen name="CheckTicket" component={CheckTicket} />
+      <Drawer.Screen name="CheckTicketContent" component={CheckTicketContent} />
     </Drawer.Navigator>
   );
 };
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
   },
   ticketContainer: {
     backgroundColor: "#27496d",
-    marginTop:2,
+    marginTop: 2,
     margin: 16,
     borderRadius: 8,
     padding: 16,

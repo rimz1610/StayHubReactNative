@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState ,useEffect} from "react";
 import {
   View,
   Text,
@@ -12,7 +12,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const StaffDrawer = (props) => {
   const { navigation, state, descriptors } = props;
   const activeRoute = state.routeNames[state.index];
+  const [name,setName]=useState("");
+  const [email,setEmail]=useState("");
+  useEffect(() => {
+      setProfile();
+  }, [setProfile]);
+  
 
+  const setProfile= async ()=>{
+    setEmail(await AsyncStorage.getItem("email"));
+    setName(await AsyncStorage.getItem("name"));
+  }
   const handleLogout = async () => {
     try {
       await AsyncStorage.multiRemove([
@@ -60,8 +70,8 @@ const StaffDrawer = (props) => {
         />
       </View>
       <View style={styles.userInfoContainer}>
-        <Text style={styles.userName}>Mohtashim</Text>
-        <Text style={styles.userEmail}>staff@gmail.com</Text>
+        <Text style={styles.userName}>{name}</Text>
+        <Text style={styles.userEmail}>{email}</Text>
       </View>
       <View style={styles.menuContainer}>
         {renderDrawerItem("View Activities", "StaffTasks")}
