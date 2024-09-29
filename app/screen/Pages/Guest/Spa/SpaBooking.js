@@ -22,6 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
 import CustomLoader from "../../../../components/CustomLoader";
+import RenderHtml from 'react-native-render-html';
 import {
   getCartFromSecureStore,
   putDataIntoCartAndSaveSecureStore,
@@ -29,7 +30,7 @@ import {
   saveCartToSecureStore,
 } from "../../../../components/secureStore";
 
-const { width } = Dimensions.get("window");
+
 const ServiceCard = ({ spa, navigation }) => {
   const [errorMessages, setErrorMessages] = useState("");
   const [isValid, setIsValid] = useState(true);
@@ -96,7 +97,7 @@ const ServiceCard = ({ spa, navigation }) => {
           [
             {
               text: "Cancel",
-              onPress: () => {},
+              onPress: () => { },
               style: "cancel",
             },
             {
@@ -153,7 +154,7 @@ const ServiceCard = ({ spa, navigation }) => {
           { cancelable: false }
         );
       } else {
-        Alert.alert("Error", response.data.message);
+        Alert.alert("Booking Error", response.data.message);
         setIsValid(false);
         setErrorMessages(response.data.message);
       }
@@ -170,7 +171,13 @@ const ServiceCard = ({ spa, navigation }) => {
         <Text style={styles.price}>{spa.price}</Text>
       </View>
       <View style={styles.cardContent}>
-        <Text style={styles.description}>{spa.description}</Text>
+
+        <RenderHtml contentWidth={100} source={{
+          html: spa.description,
+        }}
+          contentStyle={{
+            padding: 2,
+          }} />
         <Text style={styles.label}>Timing</Text>
         <Text style={styles.dateText}>
           {spa.openingTime}-{spa.closingTime}
@@ -281,7 +288,7 @@ const SpaBooking = ({ navigation }) => {
         setSpaList(response.data.list);
         // console.log("Spa list", spaList);
       } else {
-        Alert.alert("Error", response.data.message);
+        Alert.alert("Spa Error", response.data.message);
       }
     } catch (error) {
       Alert.alert("Error", "Failed to fetch spas.");

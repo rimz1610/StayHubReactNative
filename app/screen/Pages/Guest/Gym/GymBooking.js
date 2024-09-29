@@ -20,6 +20,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
+import RenderHtml from 'react-native-render-html';
 import {
   getCartFromSecureStore,
   putDataIntoCartAndSaveSecureStore,
@@ -28,7 +29,6 @@ import {
 } from "../../../../components/secureStore";
 import CustomLoader from "../../../../components/CustomLoader";
 
-const { width, height } = Dimensions.get("window");
 
 const GymBooking = ({ navigation }) => {
   const [gymList, setGymList] = useState([]);
@@ -74,7 +74,7 @@ const GymBooking = ({ navigation }) => {
     try {
       const response = await axios.get(
         "http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" +
-          selectedGender
+        selectedGender
       );
       if (response.data.success) {
         setGymList(response.data.list);
@@ -154,7 +154,7 @@ const GymBooking = ({ navigation }) => {
             [
               {
                 text: "Cancel",
-                onPress: () => {},
+                onPress: () => { },
                 style: "cancel",
               },
               {
@@ -366,8 +366,13 @@ const GymBooking = ({ navigation }) => {
               <View style={styles.detailModalContent}>
                 <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
                 <Text style={styles.modalDescription}>
-                  {currentGymDetails.description}
                 </Text>
+                <RenderHtml contentWidth={100} source={{
+                  html: currentGymDetails.description,
+                }}
+                  contentStyle={{
+                    padding: 2,
+                  }} />
                 <Text style={styles.modalSubtitle}>Equipment Available:</Text>
                 <Text style={styles.modalText}>
                   {currentGymDetails.equipment}

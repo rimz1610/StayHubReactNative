@@ -118,8 +118,7 @@ const Login = ({ navigation }) => {
         <View style={styles.skipButton}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate("RoomBooking")}
-            // onPress={RoomBooking}
+            onPress={() => navigation.navigate("GuestBottomNav")}          
             activeOpacity={0.7}
           >
             <Text style={styles.text}>Skip</Text>

@@ -21,6 +21,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { CARTMODEL } from "../../../constant";
 import CustomLoader from "../../../../components/CustomLoader";
+import { useWindowDimensions } from 'react-native';
+import RenderHtml from 'react-native-render-html';
 import {
   getCartFromSecureStore,
   putDataIntoCartAndSaveSecureStore,
@@ -28,6 +30,7 @@ import {
   saveCartToSecureStore,
 } from "../../../../components/secureStore";
 const EventBooking = ({ route, navigation }) => {
+ 
   const [eventSelectList, setEventSelectList] = useState([]);
   const [selectEventId, setSelectEventId] = useState(0);
   const [selectedEventDetail, setSelectedEventDetail] = useState({});
@@ -84,7 +87,7 @@ const EventBooking = ({ route, navigation }) => {
       try {
         const response = await axios.get(
           "http://majidalipl-001-site5.gtempurl.com/Event/GetEventDetail?id=" +
-            id
+          id
         );
 
         if (response.data.success) {
@@ -99,7 +102,17 @@ const EventBooking = ({ route, navigation }) => {
             index: 0,
           });
         } else {
-          Alert.alert("Error", response.data.message);
+          setSelectedEventDetail({
+            id: 0,
+            name: 0,
+            childTicketPrice: 0,
+            adultTicketPrice:0,
+            description:"<p></p>",
+            shortDescription:"",
+            eventImage:"",
+
+
+          });
         }
       } catch (error) {
         Alert.alert("Error", "Failed to fetch event detail.");
@@ -143,7 +156,7 @@ const EventBooking = ({ route, navigation }) => {
           [
             {
               text: "Cancel",
-              onPress: () => {},
+              onPress: () => { },
               style: "cancel",
             },
             {
@@ -240,7 +253,7 @@ const EventBooking = ({ route, navigation }) => {
               style={pickerSelectStyles}
             />
           </View>
-          {selectEventId > 0 && (
+          {selectEventId > 0 && selectedEventDetail.id > 0?
             <View style={styles.eventContainer}>
               <Text style={styles.eventTitle}>
                 Event: {selectedEventDetail.name}
@@ -287,15 +300,21 @@ const EventBooking = ({ route, navigation }) => {
                   {selectedEventDetail.shortDescription}
                 </Text>
               </View>
-              <View style={styles.termsContainer}>
+              {/* <View style={styles.termsContainer}> */}
                 <Text style={styles.heading}>Terms and Conditions</Text>
                 {/* <Text style={styles.bullet}>• No refunds available.</Text>
           <Text style={styles.bullet}>• Must present a valid ID.</Text>
           <Text style={styles.bullet}>
             • Event starts at the specified time.
           </Text>  */}
-                <Text>{selectedEventDetail.description}</Text>
-              </View>
+                
+              {/* </View> */}
+              <RenderHtml contentWidth={100} source={{
+                    html: selectedEventDetail.description
+                  }}
+                  contentStyle={{
+                    padding: 2,
+                  }}  />
               <View style={styles.ticketContainer}>
                 <Text style={styles.ticketLabel}>No of Adult Tickets:</Text>
                 <TextInput
@@ -306,7 +325,7 @@ const EventBooking = ({ route, navigation }) => {
                     const totalPrice =
                       value * selectedEventDetail.adultTicketPrice +
                       bookEventModel.childTickets *
-                        selectedEventDetail.childTicketPrice;
+                      selectedEventDetail.childTicketPrice;
                     setBookEventModel({
                       ...bookEventModel,
                       adultTickets: parseInt(value) || 0,
@@ -327,7 +346,7 @@ const EventBooking = ({ route, navigation }) => {
                   onChangeText={(value) => {
                     const totalPrice =
                       bookEventModel.adultTickets *
-                        selectedEventDetail.adultTicketPrice +
+                      selectedEventDetail.adultTicketPrice +
                       value * selectedEventDetail.childTicketPrice;
                     setBookEventModel({
                       ...bookEventModel,
@@ -354,8 +373,8 @@ const EventBooking = ({ route, navigation }) => {
               {isValid === false ? (
                 <Text style={styles.errorText}>{errorMessages}</Text>
               ) : null}
-            </View>
-          )}
+            </View>:<View><Text style={styles.booked}>Booking has been closed for the selected event.</Text></View>
+          }
         </>
       )}
     </ScrollView>
@@ -450,6 +469,14 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: "#180161",
   },
+ booked: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+    color: "#180161",
+    alignItems: "center",
+  },
+  
   description: {
     fontSize: 16,
     color: "#666",
