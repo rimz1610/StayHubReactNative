@@ -57,7 +57,7 @@ const Ticket = ({ route, navigation }) => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://majidalipl-001-site5.gtempurl.com/Event/GetTicketList?bookingId=" +
+          "http://majidalipl-001-site5.gtempurl.com/Ticket/GetTicketList?bookingId=" +
             bookingId,
           {
             headers: {
@@ -173,7 +173,7 @@ const Ticket = ({ route, navigation }) => {
                       />
                       <TicketDetail
                         label="Booking Person"
-                        value={ticketData.bookingPerson}
+                        value={ticketItem.firstName+" "+ticketItem.lastName}
                       />
                       <TicketDetail
                         label="Booking Ref #"
@@ -189,6 +189,10 @@ const Ticket = ({ route, navigation }) => {
                       <TicketDetail
                         label="Serial #"
                         value={ticketItem.ticketNumber}
+                      />
+                       <TicketDetail
+                        label="Location"
+                        value={ticketItem.location}
                       />
                     </View>
                   </View>

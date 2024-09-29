@@ -5,7 +5,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import StaffDrawer from "../../../components/StaffDrawer";
 
 const Drawer = createDrawerNavigator();
-const EditStaffprofile = ({ navigation }) => {
+const EditStaffprofileContent = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -29,7 +29,7 @@ const EditStaff = () => {
         },
       }}
     >
-      <Drawer.Screen name="EditStaffprofile" component={EditStaffprofile} />
+      <Drawer.Screen name="EditStaffprofileContent" component={EditStaffprofileContent} />
     </Drawer.Navigator>
   );
 };
