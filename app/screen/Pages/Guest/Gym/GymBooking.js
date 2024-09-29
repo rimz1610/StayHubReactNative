@@ -366,8 +366,8 @@ const GymBooking = ({ navigation }) => {
             <View style={styles.modalOverlay}>
               <View style={styles.detailModalContent}>
                 <Text style={styles.modalTitle}>{currentGymDetails.name}</Text>
-                <Text style={styles.modalDescription}>
-                </Text>
+                {/* <Text style={styles.modalDescription}>
+                </Text> */}
                 <RenderHtml contentWidth={100} source={{
                   html: currentGymDetails.description,
                 }}
