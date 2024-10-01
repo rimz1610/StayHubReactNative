@@ -282,8 +282,21 @@ const BookingItems = ({ navigation }) => {
                 </TouchableOpacity>
               </>
             ) : (
-              <View>
-                <Text>No items added for booking.</Text>
+              <View style={styles.containerEmpty}>
+                <Icon name="shopping-cart" size={100} color="#ccc" />
+                <Text style={styles.titleEmpty}>
+                  Your booking cart is empty
+                </Text>
+                <Text style={styles.subtitleEmpty}>
+                  Add some exciting items to get started!
+                </Text>
+                <TouchableOpacity
+                  style={styles.exploreButton}
+                  onPress={() => navigation.navigate("RoomBooking")}
+                >
+                  <Text style={styles.exploreButtonText}>Explore Services</Text>
+                  <Icon name="arrow-forward" size={20} color="#fff" />
+                </TouchableOpacity>
               </View>
             )}
           </View>
@@ -501,6 +514,40 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     fontSize: 16,
+  },
+  containerEmpty: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+  },
+  titleEmpty: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  subtitleEmpty: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 30,
+    textAlign: "center",
+  },
+  exploreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#180161",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+  },
+  exploreButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginRight: 10,
   },
 });
 

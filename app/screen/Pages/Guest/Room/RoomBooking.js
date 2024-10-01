@@ -31,7 +31,7 @@ import {
   validateDatesFromSecureStore,
 } from "../../../../components/secureStore";
 import { CARTMODEL } from "../../../constant";
-import RenderHtml from 'react-native-render-html';
+import RenderHtml from "react-native-render-html";
 const filterSchema = Yup.object().shape({
   roomType: Yup.string().notRequired(),
   checkInDate: Yup.date().required("Required"),
@@ -604,12 +604,15 @@ const RoomBooking = ({ navigation }) => {
               {roomDetail.shortDescription}
             </Text>
             {/* <Text>{roomDetail.description}</Text> */}
-            <RenderHtml contentWidth={100} source={{
-                  html: roomDetail.description,
-                }}
-                  contentStyle={{
-                    padding: 2,
-                  }} />
+            <RenderHtml
+              contentWidth={100}
+              source={{
+                html: roomDetail.description,
+              }}
+              contentStyle={{
+                padding: 2,
+              }}
+            />
             {/* <Text style={styles.bulletPoint}>• 2 Bedside Tables</Text>
             <Text style={styles.bulletPoint}>• A Desk & Chair</Text>
             <Text style={styles.bulletPoint}>• Wall-to-wall carpeting</Text>

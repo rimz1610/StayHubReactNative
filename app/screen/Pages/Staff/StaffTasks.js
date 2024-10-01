@@ -1,5 +1,13 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  FlatList,
+  SafeAreaView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import StaffDrawer from "../../../components/StaffDrawer";
@@ -9,53 +17,49 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import CustomLoader from "../../../components/CustomLoader";
+
 const Drawer = createDrawerNavigator();
 
-const TaskCard = ({ item }) => {
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.title}>{item.activityName}</Text>
-       
-      </View>
-      <View style={styles.cardContent}>
-      <TouchableOpacity style={styles.dateButton}>
-          <Icon
-            name="event"
-            size={20}
-            color="#180161"
-            style={styles.dateIcon}
-          />
-          <Text style={styles.dateText}>
-            {moment(item.activityDate).format("MMM DD YYYY")}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.description}>{item.activityDescription}</Text>
+const TaskCard = ({ item }) => (
+  <View style={styles.card}>
+    <View style={styles.cardHeader}>
+      <Text style={styles.title}>{item.activityName}</Text>
+      <View style={styles.dateContainer}>
+        <Icon name="event" size={20} color="#FFF" style={styles.calendarIcon} />
+        <Text style={styles.headerDateText}>
+          {moment(item.activityDate).format("MMM DD")}
+        </Text>
       </View>
     </View>
-  );
-};
+    <View style={styles.cardContent}>
+      <Text style={styles.description}>{item.activityDescription}</Text>
+    </View>
+    <View style={styles.cardFooter}>
+      <Text style={styles.footerDateText}>
+        {moment(item.activityDate).format("MMMM DD, YYYY")}
+      </Text>
+    </View>
+  </View>
+);
 
-const StaffTaskcontent = ({ navigation }) => {
+const StaffTaskContent = ({ navigation }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const isFocused = useIsFocused();
+
   useEffect(() => {
     if (isFocused) {
       fetchData();
     }
   }, [isFocused]);
 
-
   const fetchData = async () => {
-
     const token = await AsyncStorage.getItem("token");
     const staffId = await AsyncStorage.getItem("loginId");
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffActivities?id=" +
-        staffId,
+        `http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffActivities?id=${staffId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -70,7 +74,6 @@ const StaffTaskcontent = ({ navigation }) => {
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        // Redirect to login page
         navigation.navigate("Login");
       } else {
         Alert.alert("Error", "Failed to fetch activities.");
@@ -80,87 +83,105 @@ const StaffTaskcontent = ({ navigation }) => {
     }
   };
 
-
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.openDrawer()}
-        style={styles.menuButton}
-      >
-        <Ionicons name="menu" size={24} color="black" />
-      </TouchableOpacity>
-      <Text style={styles.heading}>Assigned Activities</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.openDrawer()}
+          style={styles.menuButton}
+        >
+          <Ionicons name="menu" size={28} color="#180161" />
+        </TouchableOpacity>
+        <Text style={styles.heading}>Assigned Activities</Text>
+      </View>
 
-      <View style={styles.formContainer}>
-        {loading ? (
-          <View style={styles.loaderContainer}>
-            <CustomLoader />
-            <Text style={styles.loadingText}>Loading...</Text>
-          </View>
-        ) : data.length > 0 ? (
-          data.map((item, index) => (
-            <TaskCard key={index} item={item} />
-          ))
-        ) : (
-          <Text style={styles.noDataText}>No activity assigned yet.</Text>
-        )}</View>
-    </View>
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <CustomLoader />
+          <Text style={styles.loadingText}>Loading activities...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={({ item }) => <TaskCard item={item} />}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.listContainer}
+          ListEmptyComponent={
+            <View style={styles.emptyStateContainer}>
+              <Icon name="assignment" size={64} color="#CCCCCC" />
+              <Text style={styles.noDataText}>No activities assigned yet.</Text>
+            </View>
+          }
+        />
+      )}
+    </SafeAreaView>
   );
 };
-const StaffTasks = () => {
-  return (
-    <Drawer.Navigator
-      drawerContent={(props) => <StaffDrawer {...props} />}
-      screenOptions={{
-        headerShown: false,
-        drawerStyle: {
-          width: "60%",
-        },
-      }}
-    >
-      <Drawer.Screen name="StaffTaskcontent" component={StaffTaskcontent} />
-    </Drawer.Navigator>
-  );
-};
+
+const StaffTasks = () => (
+  <Drawer.Navigator
+    drawerContent={(props) => <StaffDrawer {...props} />}
+    screenOptions={{
+      headerShown: false,
+      drawerStyle: {
+        width: "60%",
+      },
+    }}
+  >
+    <Drawer.Screen name="StaffTaskContent" component={StaffTaskContent} />
+  </Drawer.Navigator>
+);
 
 export default StaffTasks;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: "white",
+    backgroundColor: "#F5F7FA",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  menuButton: {
+    padding: 5,
   },
   heading: {
+    flex: 1,
     color: "#180161",
     fontWeight: "bold",
     fontSize: 24,
     textAlign: "center",
-    marginVertical: 20,
+    marginLeft: -28,
   },
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    height: 200, // Adjust as needed
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
     color: "#666",
   },
-  menuButton: {
-    position: "absolute",
-    top: 40,
-    left: 20,
-    zIndex: 1,
+  listContainer: {
+    paddingVertical: 20,
   },
-  formContainer: {
-    width: "100%",
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 50,
   },
   noDataText: {
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 18,
     color: "#34495e",
     marginTop: 20,
   },
@@ -169,7 +190,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginHorizontal: 20,
     marginBottom: 20,
-    marginTop: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -187,30 +207,43 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 20,
   },
+  cardFooter: {
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     color: "white",
+    flex: 1,
+  },
+  dateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 15,
+  },
+  calendarIcon: {
+    marginRight: 5,
+  },
+  headerDateText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "500",
   },
   description: {
     fontSize: 16,
     color: "#34495e",
-    marginBottom: 15,
     lineHeight: 24,
   },
-  dateButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ecf0f1",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  dateIcon: {
-    marginRight: 10,
-  },
-  dateText: {
-    color: "#34495e",
-    fontSize: 16,
+  footerDateText: {
+    fontSize: 14,
+    color: "#666",
   },
 });

@@ -162,7 +162,7 @@ const Ticket = ({ route, navigation }) => {
                 <>
                   <View key={index} style={styles.ticketContainer}>
                     <Image
-                      source={{ uri: "https://via.placeholder.com/100" }}
+                      source={require("../../../../../assets/images/samplelogo.png")}
                       style={styles.logo}
                       resizeMode="contain"
                     />
@@ -173,7 +173,7 @@ const Ticket = ({ route, navigation }) => {
                       />
                       <TicketDetail
                         label="Booking Person"
-                        value={ticketItem.firstName+" "+ticketItem.lastName}
+                        value={ticketItem.firstName + " " + ticketItem.lastName}
                       />
                       <TicketDetail
                         label="Booking Ref #"
@@ -190,7 +190,7 @@ const Ticket = ({ route, navigation }) => {
                         label="Serial #"
                         value={ticketItem.ticketNumber}
                       />
-                       <TicketDetail
+                      <TicketDetail
                         label="Location"
                         value={ticketItem.location}
                       />
@@ -279,8 +279,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 150,
+    height: 150,
     marginBottom: 10,
   },
   detailsContainer: {

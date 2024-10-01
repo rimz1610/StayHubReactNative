@@ -41,6 +41,9 @@ const addEditSchema = Yup.object().shape({
   activityName: Yup.string().max(25, "Too long").required("Required"),
   activityDate: Yup.date().required("Required"),
   activityDescription: Yup.string().required("Required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
 });
 const StaffActivitiesContent = ({ route, navigation }) => {
   const [data, setData] = useState([]);
@@ -61,6 +64,7 @@ const StaffActivitiesContent = ({ route, navigation }) => {
       activityName: "",
       activityDate: new Date(),
       activityDescription: "",
+      password: "",
     },
     validationSchema: addEditSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -382,20 +386,18 @@ const StaffActivitiesContent = ({ route, navigation }) => {
                       </Text>
                     )}
                   <TextInput
-                    style={[styles.input, styles.textArea]}
-                    placeholder="Description"
+                    style={styles.input}
+                    placeholder="Password"
                     placeholderTextColor="#888"
-                    value={formik.values.activityDescription}
-                    onChangeText={formik.handleChange("activityDescription")}
-                    multiline={true}
-                    numberOfLines={4}
+                    secureTextEntry={true}
+                    value={formik.values.password}
+                    onChangeText={formik.handleChange("password")}
                   />
-                  {formik.touched.activityDescription &&
-                    formik.errors.activityDescription && (
-                      <Text style={styles.errorText}>
-                        {formik.errors.activityDescription}
-                      </Text>
-                    )}
+                  {formik.touched.password && formik.errors.password && (
+                    <Text style={styles.errorText}>
+                      {formik.errors.password}
+                    </Text>
+                  )}
 
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity

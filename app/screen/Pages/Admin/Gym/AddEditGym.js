@@ -321,13 +321,20 @@ const AddEditGymContent = ({
 
                 <View style={styles.fullWidthContainer}>
                   <Text style={styles.heading}>Rules</Text>
-                  <TextInput
+                  {/* <TextInput
                     onChangeText={handleChange("rules")}
                     value={values.rules}
                     style={[styles.input, styles.multilineInput]}
                     placeholder="Rules"
                     placeholderTextColor="#999"
                     multiline
+                  /> */}
+                  <RichTextEditor
+                    initialValue={values.rules}
+                    onChange={(content) => {
+                      setFieldValue("rules", content);
+                      setFieldTouched("rules", true);
+                    }}
                   />
                   {touched.rules && errors.rules && (
                     <Text style={styles.errorText}>{errors.rules}</Text>
@@ -335,13 +342,20 @@ const AddEditGymContent = ({
                 </View>
                 <View style={styles.fullWidthContainer}>
                   <Text style={styles.heading}>Equipment</Text>
-                  <TextInput
+                  {/* <TextInput
                     onChangeText={handleChange("equipment")}
                     value={values.equipment}
                     style={[styles.input, styles.multilineInput]}
                     placeholder="Equipment"
                     placeholderTextColor="#999"
                     multiline
+                  /> */}
+                  <RichTextEditor
+                    initialValue={values.equipment}
+                    onChange={(content) => {
+                      setFieldValue("equipment", content);
+                      setFieldTouched("equipment", true);
+                    }}
                   />
                   {touched.equipment && errors.equipment && (
                     <Text style={styles.errorText}>{errors.equipment}</Text>
@@ -357,6 +371,9 @@ const AddEditGymContent = ({
                       setFieldTouched("description", true);
                     }}
                   />
+                  {touched.description && errors.description && (
+                    <Text style={styles.errorText}>{errors.description}</Text>
+                  )}
                 </View>
 
                 <TouchableOpacity

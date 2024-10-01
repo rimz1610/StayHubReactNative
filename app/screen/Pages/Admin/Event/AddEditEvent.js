@@ -26,13 +26,30 @@ const Drawer = createDrawerNavigator();
 const addEditSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
   shortDescription: Yup.string().required("Required"),
-  eventDate: Yup.date().required("Required"),
-  bookingStartDate: Yup.date().required("Required"),
+  eventDate: Yup.date()
+    .required("Required")
+    .min(
+      Yup.ref("bookingEndDate"),
+      "Event date must be after the booking end date"
+    ),
+  bookingStartDate: Yup.date()
+    .required("Required")
+    .max(
+      Yup.ref("bookingEndDate"),
+      "Booking start date must be before the booking end date"
+    ),
   bookingEndDate: Yup.date().required("Required"),
   description: Yup.string().required("Required"),
   eventImage: Yup.string().notRequired(),
   startTime: Yup.string().required("Required"),
-  endTime: Yup.string().required("Required"),
+  endTime: Yup.string()
+    .required("Required")
+    .test("is-greater", "End time must be after start time", function (value) {
+      const { startTime } = this.parent;
+      const startDate = timeStringToDate(startTime);
+      const endDate = timeStringToDate(value);
+      return endDate > startDate;
+    }),
   location: Yup.string().required("Required"),
   adultTicketPrice: Yup.number().min(0, "Must be positive"),
   childTicketPrice: Yup.number().min(0, "Must be positive"),

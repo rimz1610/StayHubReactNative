@@ -54,7 +54,7 @@ const RichTextEditor = ({ initialValue, onChange }) => {
       <RichEditor
         ref={richEditorRef}
         style={styles.editor}
-        placeholder="Enter your description here..."
+        placeholder="Enter Here..."
         placeholderTextColor="#999"
         onChange={handleContentChange}
         initialContentHTML={editorContent}

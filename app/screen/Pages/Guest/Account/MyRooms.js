@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,6 +15,10 @@ import { useIsFocused } from "@react-navigation/native";
 import moment from "moment";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomLoader from "../../../../components/CustomLoader";
+
+const defaultImage = require("../../../../../assets/images/placeholder.jpg");
+
 const RoomCard = ({
   roomId,
   checkInDate,
@@ -23,7 +28,11 @@ const RoomCard = ({
   navigation,
 }) => (
   <View style={styles.card}>
-    <Image source={{ uri: image }} style={styles.image} />
+    <Image
+      source={{ uri: image || defaultImage }}
+      style={styles.image}
+      onError={() => setImage(defaultImage)}
+    />
     <View style={styles.cardContent}>
       <View style={styles.roomInfo}>
         <Text style={styles.roomNumber}>
@@ -47,11 +56,13 @@ const RoomCard = ({
     </View>
   </View>
 );
-
 const MyRooms = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [profileImageUri, setProfileImageUri] = useState(null);
   const [myRooms, setMyRooms] = useState([]);
   useEffect(() => {
     if (isFocused) {
@@ -91,7 +102,6 @@ const MyRooms = () => {
       setLoading(false);
     }
   };
-
   const rooms = [
     {
       id: 1,
@@ -115,8 +125,13 @@ const MyRooms = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Select Your Room</Text>
-      {myRooms != null &&
+      <View style={styles.headingContainer}>
+        <Text style={styles.header}>Select Your Room</Text>
+      </View>
+      {loading ? ( // Show ActivityIndicator when loading
+        <CustomLoader />
+      ) : (
+        myRooms != null &&
         myRooms.map((room) => (
           <RoomCard
             roomId={room.roomId}
@@ -127,7 +142,8 @@ const MyRooms = () => {
             image={room.roomImage}
             navigation={navigation}
           />
-        ))}
+        ))
+      )}
     </ScrollView>
   );
 };
@@ -139,11 +155,18 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 24,
-    color: "#2c3e50",
+    color: "#180161",
     textAlign: "center",
+  },
+  headingContainer: {
+    // width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingHorizontal: 55,
+    paddingVertical: 5,
+    marginBottom: 20,
   },
   card: {
     backgroundColor: "#fff",
