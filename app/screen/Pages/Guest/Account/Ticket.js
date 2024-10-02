@@ -7,6 +7,8 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  Modal,
+  // pdfUrl,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import ViewShot from "react-native-view-shot";
@@ -15,8 +17,15 @@ import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import moment from "moment";
 import axios from "axios";
+import {
+  PDFDocument,
+  Page,
+  Image as PDFImage,
+  StyleSheet as PDFStyleSheet,
+} from "react-native-pdf-lib";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
+import TicketPDFViewer from "../../../../components/TicketPDFViewer";
 const TicketDetail = ({ label, value }) => (
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>{label}:</Text>
@@ -29,6 +38,8 @@ const Ticket = ({ route, navigation }) => {
   const bookingId = route.params?.bookingId || 0;
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(false);
+  const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
   const ticket = {
     id: 0,
     bookingDate: "",
@@ -103,32 +114,63 @@ const Ticket = ({ route, navigation }) => {
     address: "346 Matangi Road",
     city: "Albama, 23456, United States",
   };
-
-  const downloadTicket = async () => {
+  const generateAndSharePDF = async () => {
     try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission needed",
-          "Please allow access to save the ticket."
-        );
-        return;
-      }
+      // Ensure the view is rendered before capture
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
+      // Capture the current screen view
       const uri = await viewShotRef.current.capture();
-      const asset = await MediaLibrary.createAssetAsync(uri);
-      await MediaLibrary.createAlbumAsync("Tickets", asset, false);
 
-      Alert.alert("Success", "Ticket saved to gallery!");
+      // Create a PDF and add the captured image
+      const pdfPath = `${FileSystem.documentDirectory}ticket.pdf`;
+      const page = PDFDocument.create(pdfPath)
+        .addPages([
+          Page.create()
+            .setMediaBox(600, 800) // Adjust the page size as necessary
+            .drawImage(PDFImage.create(uri).fitToBox(600, 800)),
+        ])
+        .write();
 
-      // Optionally, you can also share the ticket
+      // Check if sharing is available, and share the PDF
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri);
+        await Sharing.shareAsync(pdfPath);
+      } else {
+        Alert.alert("Sharing not available");
       }
+
+      setPdfUrl(pdfPath);
     } catch (error) {
-      Alert.alert("Error", "Failed to save ticket image.");
+      console.error("Error generating and sharing PDF:", error);
+      Alert.alert("Error", "Failed to generate and share PDF.");
     }
   };
+  const viewPDF = () => {
+    if (pdfUrl) {
+      console.log("PDF URL:", pdfUrl); // Debugging
+      setIsPdfModalVisible(true);
+    } else {
+      Alert.alert("Error", "Please generate the PDF first.");
+    }
+  };
+
+  // const hotelData = {
+  //   phone: "+1 884-6789-9876",
+  //   email: "info@stayhub.com",
+  //   name: "StayHub Hotel & Resort",
+  //   address: "346 Matangi Road",
+  //   city: "Albama, 23456, United States",
+  // };
+  const requestPermissions = async () => {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission to access media library is required!");
+    }
+  };
+
+  useEffect(() => {
+    requestPermissions();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -143,12 +185,14 @@ const Ticket = ({ route, navigation }) => {
         <View style={styles.placeholder} />
       </View>
       <ScrollView>
-        <TouchableOpacity
-          style={styles.downloadButton}
-          onPress={downloadTicket}
-        >
-          <Icon name="file-download" size={20} color="white" />
-          <Text style={styles.downloadButtonText}>Download Ticket</Text>
+        <TouchableOpacity style={styles.button} onPress={generateAndSharePDF}>
+          <Icon name="picture-as-pdf" size={20} color="white" />
+          <Text style={styles.buttonText}>Generate and Share PDF</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={viewPDF}>
+          <Icon name="pageview" size={20} color="white" />
+          <Text style={styles.buttonText}>View PDF</Text>
         </TouchableOpacity>
 
         <ViewShot
@@ -156,58 +200,63 @@ const Ticket = ({ route, navigation }) => {
           options={{ format: "jpg", quality: 0.9 }}
           style={styles.viewShot}
         >
-          {data != undefined &&
-            data.map((ticketItem, index) => {
-              return (
-                <>
-                  <View key={index} style={styles.ticketContainer}>
-                    <Image
-                      source={require("../../../../../assets/images/samplelogo.png")}
-                      style={styles.logo}
-                      resizeMode="contain"
-                    />
-                    <View style={styles.detailsContainer}>
-                      <TicketDetail
-                        label="Invoice Date"
-                        value={ticketItem.bookingDate}
-                      />
-                      <TicketDetail
-                        label="Booking Person"
-                        value={ticketItem.firstName + " " + ticketItem.lastName}
-                      />
-                      <TicketDetail
-                        label="Booking Ref #"
-                        value={ticketItem.refNo}
-                      />
-                      <TicketDetail
-                        label="Event"
-                        value={ticketItem.eventName}
-                      />
-                      <TicketDetail label="Date" value={ticketItem.eventDate} />
-                      <TicketDetail label="Time" value={ticketItem.eventTime} />
-                      <TicketDetail label="Ticket" value={ticketItem.ticket} />
-                      <TicketDetail
-                        label="Serial #"
-                        value={ticketItem.ticketNumber}
-                      />
-                      <TicketDetail
-                        label="Location"
-                        value={ticketItem.location}
-                      />
-                    </View>
-                  </View>
-                  <View style={styles.footer}>
-                    <Text style={styles.footerText}>{hotelData.phone}</Text>
-                    <Text style={styles.footerText}>{hotelData.email}</Text>
-                    <Text style={styles.footerText}>{hotelData.name}</Text>
-                    <Text style={styles.footerText}>{hotelData.address}</Text>
-                    <Text style={styles.footerText}>{hotelData.city}</Text>
-                  </View>
-                </>
-              );
-            })}
+          {data.map((ticketItem, index) => (
+            <React.Fragment key={index}>
+              <View style={styles.ticketContainer}>
+                <Image
+                  source={require("../../../../../assets/images/samplelogo.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+                <View style={styles.detailsContainer}>
+                  <TicketDetail
+                    label="Invoice Date"
+                    value={ticketItem.bookingDate}
+                  />
+                  <TicketDetail
+                    label="Booking Person"
+                    value={`${ticketItem.firstName} ${ticketItem.lastName}`}
+                  />
+                  <TicketDetail
+                    label="Booking Ref #"
+                    value={ticketItem.refNo}
+                  />
+                  <TicketDetail label="Event" value={ticketItem.eventName} />
+                  <TicketDetail label="Date" value={ticketItem.eventDate} />
+                  <TicketDetail label="Time" value={ticketItem.eventTime} />
+                  <TicketDetail label="Ticket" value={ticketItem.ticket} />
+                  <TicketDetail
+                    label="Serial #"
+                    value={ticketItem.ticketNumber}
+                  />
+                  <TicketDetail label="Location" value={ticketItem.location} />
+                </View>
+              </View>
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>{hotelData.phone}</Text>
+                <Text style={styles.footerText}>{hotelData.email}</Text>
+                <Text style={styles.footerText}>{hotelData.name}</Text>
+                <Text style={styles.footerText}>{hotelData.address}</Text>
+                <Text style={styles.footerText}>{hotelData.city}</Text>
+              </View>
+            </React.Fragment>
+          ))}
         </ViewShot>
       </ScrollView>
+      <Modal
+        visible={isPdfModalVisible}
+        onRequestClose={() => setIsPdfModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setIsPdfModalVisible(false)}
+          >
+            <Icon name="close" size={24} color="black" />
+          </TouchableOpacity>
+          {pdfUrl && <TicketPDFViewer pdfUrl={pdfUrl} />}
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -226,11 +275,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   viewShot: {
-    backgroundColor: "white", // Set background color to white
-    padding: 16, // Optional: add padding if needed
-    borderRadius: 8, // Optional: keep the rounded corners
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 8,
   },
-
   backButton: {
     padding: 8,
   },
@@ -240,7 +288,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   placeholder: {
-    width: 40, // To balance the header layout
+    width: 40,
   },
   downloadButton: {
     width: "50%",
@@ -261,16 +309,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 8,
   },
-  // header: {
-  //   // backgroundColor: "#dfe4ea",
-  //   paddingVertical: 20,
-  //   alignItems: "center",
-  // },
-  // headerTitle: {
-  //   fontSize: 20,
-  //   fontWeight: "bold",
-  //   color: "#2f3640",
-  // },
   ticketContainer: {
     backgroundColor: "#27496d",
     margin: 16,
@@ -305,14 +343,31 @@ const styles = StyleSheet.create({
     flex: 2,
     textAlign: "right",
   },
-  footer: {
-    // backgroundColor: "#dfe4ea",
-    paddingVertical: 20,
+  button: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#27496d",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginHorizontal: 16,
+    marginVertical: 8,
   },
-  footerText: {
-    fontSize: 12,
-    color: "#34495e",
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 1,
   },
 });
 
