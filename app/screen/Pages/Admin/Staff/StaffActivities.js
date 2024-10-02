@@ -41,9 +41,7 @@ const addEditSchema = Yup.object().shape({
   activityName: Yup.string().max(25, "Too long").required("Required"),
   activityDate: Yup.date().required("Required"),
   activityDescription: Yup.string().required("Required"),
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
+
 });
 const StaffActivitiesContent = ({ route, navigation }) => {
   const [data, setData] = useState([]);
@@ -64,7 +62,6 @@ const StaffActivitiesContent = ({ route, navigation }) => {
       activityName: "",
       activityDate: new Date(),
       activityDescription: "",
-      password: "",
     },
     validationSchema: addEditSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -386,16 +383,16 @@ const StaffActivitiesContent = ({ route, navigation }) => {
                       </Text>
                     )}
                   <TextInput
-                    style={styles.input}
-                    placeholder="Password"
+                   style={[styles.input, styles.multilineInput]}
+                    placeholder="Description"
                     placeholderTextColor="#888"
-                    secureTextEntry={true}
-                    value={formik.values.password}
-                    onChangeText={formik.handleChange("password")}
+                    multiline
+                    value={formik.values.activityDescription}
+                    onChangeText={formik.handleChange("activityDescription")}
                   />
-                  {formik.touched.password && formik.errors.password && (
+                  {formik.touched.activityDescription && formik.errors.activityDescription && (
                     <Text style={styles.errorText}>
-                      {formik.errors.password}
+                      {formik.errors.activityDescription}
                     </Text>
                   )}
 
@@ -463,6 +460,10 @@ const styles = StyleSheet.create({
   },
   activityIndicator: {
     padding: 20,
+  },
+  multilineInput: {
+    height: 100,
+    textAlignVertical: "top",
   },
   roomheading: {
     color: "#180161",
