@@ -34,11 +34,11 @@ const TaskCard = ({ item }) => (
     <View style={styles.cardContent}>
       <Text style={styles.description}>{item.activityDescription}</Text>
     </View>
-    <View style={styles.cardFooter}>
+    {/* <View style={styles.cardFooter}>
       <Text style={styles.footerDateText}>
         {moment(item.activityDate).format("MMMM DD, YYYY")}
-      </Text>
-    </View>
+      </Text> */}
+    {/* </View> */}
   </View>
 );
 
