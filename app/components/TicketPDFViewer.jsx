@@ -1,28 +1,44 @@
+// TicketPDFViewer.js
+
 import React from "react";
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 import { WebView } from "react-native-webview";
 
-const TicketPDFViewer = ({ pdfUrl }) => {
-  // Google Docs viewer URL
-  const googleDocsUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(
-    pdfUrl
-  )}`;
+const TicketPDFViewer = ({ pdfUri, onClose }) => (
+  <View style={styles.container}>
+    {/* Close Button */}
+    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+      <Icon name="close" size={30} color="black" />
+    </TouchableOpacity>
 
-  return (
+    {/* PDF Viewer */}
     <WebView
-      source={{ uri: googleDocsUrl }}
+      source={{ uri: pdfUri }}
       style={styles.webview}
-      startInLoadingState={true}
-      scalesPageToFit={true}
+      originWhitelist={["*"]}
+      useWebKit
     />
-  );
-};
+  </View>
+);
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    zIndex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 5,
+    elevation: 5,
+  },
   webview: {
     flex: 1,
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height,
+    marginTop: 80,
   },
 });
 
