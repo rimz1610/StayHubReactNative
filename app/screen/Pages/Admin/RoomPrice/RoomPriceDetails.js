@@ -89,7 +89,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
         setLoading(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Room/GetRoomsAvailabilityPrice",
+          "http://tehreemimran-001-site1.htempurl.com/Room/GetRoomsAvailabilityPrice",
           values,
           {
             headers: {
@@ -130,7 +130,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Room/UpdateSinglePrice",
+          "http://tehreemimran-001-site1.htempurl.com/Room/UpdateSinglePrice",
           values,
           {
             headers: {
@@ -178,7 +178,7 @@ const RoomPriceAvailabilityDetailsContent = ({ navigation }) => {
     const token = await AsyncStorage.getItem("token");
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Room/GetRoomDD",
+        "http://tehreemimran-001-site1.htempurl.com/Room/GetRoomDD",
         {
           headers: {
             Authorization: `Bearer ${token}`,

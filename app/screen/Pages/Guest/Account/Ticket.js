@@ -79,7 +79,7 @@ const Ticket = ({ route, navigation }) => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://majidalipl-001-site5.gtempurl.com/Ticket/GetTicketList?bookingId=${bookingId}`,
+          `http://tehreemimran-001-site1.htempurl.com/Ticket/GetTicketList?bookingId=${bookingId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -53,7 +53,7 @@ const ChangePasswordStaff = ({ navigation }) => {
 
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Account/ChangePassword",
+          "http://tehreemimran-001-site1.htempurl.com/Account/ChangePassword",
           values,
           {
             headers: {

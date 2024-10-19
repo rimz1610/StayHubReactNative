@@ -76,7 +76,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Room/SaveBulkRoomPrice",
+          "http://tehreemimran-001-site1.htempurl.com/Room/SaveBulkRoomPrice",
           values,
           {
             headers: {
@@ -118,7 +118,7 @@ const RoomPriceSettingContent = ({ navigation }) => {
     const token = await AsyncStorage.getItem("token");
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Room/GetRoomDD",
+        "http://tehreemimran-001-site1.htempurl.com/Room/GetRoomDD",
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -88,7 +88,7 @@ const AddEditRoom = ({
           const token = await AsyncStorage.getItem("token");
 
           const response = await axios.get(
-            `http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=${id}`,
+            `http://tehreemimran-001-site1.htempurl.com/Room/GetRoomById?id=${id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -119,7 +119,7 @@ const AddEditRoom = ({
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Room/SaveRoom",
+          "http://tehreemimran-001-site1.htempurl.com/Room/SaveRoom",
           values,
           {
             headers: {

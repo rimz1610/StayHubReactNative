@@ -110,7 +110,7 @@ const BookingReceipt = ({ route, navigation }) => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId=" +
+          "http://tehreemimran-001-site1.htempurl.com/Booking/GetBookingDetail?bookingId=" +
             bookingId,
           {
             headers: {

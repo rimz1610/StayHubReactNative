@@ -84,7 +84,7 @@ const AddEditGymContent = ({
           const token = await AsyncStorage.getItem("token");
 
           const response = await axios.get(
-            `http://majidalipl-001-site5.gtempurl.com/Gym/GetGymById?id=${id}`,
+            `http://tehreemimran-001-site1.htempurl.com/Gym/GetGymById?id=${id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -119,7 +119,7 @@ const AddEditGymContent = ({
         values.fee = Number(values.fee);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Gym/AddEditGym",
+          "http://tehreemimran-001-site1.htempurl.com/Gym/AddEditGym",
           values,
           {
             headers: { Authorization: `Bearer ${token}` },

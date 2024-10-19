@@ -137,7 +137,7 @@ const BookingItems = ({ navigation }) => {
       FillItems();
     }
   }, [isFocused]);
-  const FillItems = async () => {
+  const   FillItems = async () => {
     setLoading(true);
     try {
       setCartModel(await getCartFromSecureStore());
@@ -158,7 +158,7 @@ const BookingItems = ({ navigation }) => {
     if (data != null)
       try {
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Cart/CalculateCartItems",
+          "http://tehreemimran-001-site1.htempurl.com/Cart/CalculateCartItems",
           data
         );
 

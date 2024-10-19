@@ -65,7 +65,7 @@ const EditMyProfile = ({ navigation }) => {
       try {
         const guestId = await AsyncStorage.getItem("loginId");
         const response = await axios.get(
-          `http://majidalipl-001-site5.gtempurl.com/Guest/GetProfile?guestId=${guestId}`
+          `http://tehreemimran-001-site1.htempurl.com/Guest/GetProfile?guestId=${guestId}`
         );
         if (response.data.success) {
           formikSetValues(response.data.data);
@@ -76,7 +76,7 @@ const EditMyProfile = ({ navigation }) => {
             response.data.data.imgPath != undefined
           ) {
             setImageUri(
-              `http://majidalipl-001-site5.gtempurl.com/guestprofile/${response.data.data.imgPath}`
+              `http://tehreemimran-001-site1.htempurl.com/guestprofile/${response.data.data.imgPath}`
             );
             setImage(null);
           }
@@ -114,7 +114,7 @@ const EditMyProfile = ({ navigation }) => {
         const token = await AsyncStorage.getItem("token");
 
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Guest/EditProfile",
+          "http://tehreemimran-001-site1.htempurl.com/Guest/EditProfile",
           formData,
           {
             headers: {

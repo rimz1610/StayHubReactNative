@@ -43,7 +43,7 @@ const Account = ({ navigation }) => {
 
       if (newData.profile) {
         setProfileImageUri(
-          `http://majidalipl-001-site5.gtempurl.com/guestprofile/${newData.profile}`
+          `http://tehreemimran-001-site1.htempurl.com/guestprofile/${newData.profile}`
         );
       }
     } catch (error) {

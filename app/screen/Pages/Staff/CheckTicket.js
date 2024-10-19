@@ -58,7 +58,7 @@ const CheckTicketContent = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://majidalipl-001-site5.gtempurl.com/Ticket/GetTicketByTicketNo?ticketNo=${ticketNumber}`
+        `http://tehreemimran-001-site1.htempurl.com/Ticket/GetTicketByTicketNo?ticketNo=${ticketNumber}`
       );
       setHasSearched(true);
       if (response.data.success) {
@@ -77,7 +77,7 @@ const CheckTicketContent = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://majidalipl-001-site5.gtempurl.com/Ticket/UpdateTicketStatus?id=${ticketData.id}&status=Scanned`
+        `http://tehreemimran-001-site1.htempurl.com/Ticket/UpdateTicketStatus?id=${ticketData.id}&status=Scanned`
       );
 
       if (response.data.success) {

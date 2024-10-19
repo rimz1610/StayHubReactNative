@@ -52,7 +52,7 @@ const ResetPassword = ({ navigation }) => {
       setSubmitting(true);
       axios
         .post(
-          "http://majidalipl-001-site5.gtempurl.com/Account/ResetPassword",
+          "http://tehreemimran-001-site1.htempurl.com/Account/ResetPassword",
           values
         )
         .then(function (response) {

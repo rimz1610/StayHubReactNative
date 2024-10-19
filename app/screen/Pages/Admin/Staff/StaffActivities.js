@@ -69,7 +69,7 @@ const StaffActivitiesContent = ({ route, navigation }) => {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Staff/SaveActivity",
+          "http://tehreemimran-001-site1.htempurl.com/Staff/SaveActivity",
           values,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -114,7 +114,7 @@ const StaffActivitiesContent = ({ route, navigation }) => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffActivities?id=" +
+          "http://tehreemimran-001-site1.htempurl.com/Staff/GetStaffActivities?id=" +
             staffId,
           {
             headers: {
@@ -165,7 +165,7 @@ const StaffActivitiesContent = ({ route, navigation }) => {
 
             const token = await AsyncStorage.getItem("token");
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Staff/DeleteActivity?id=${activityId}`,
+              `http://tehreemimran-001-site1.htempurl.com/Staff/DeleteActivity?id=${activityId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

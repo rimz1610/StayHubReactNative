@@ -77,7 +77,7 @@ const AddEditSpaContent = ({
           const token = await AsyncStorage.getItem("token");
 
           const response = await axios.get(
-            `http://majidalipl-001-site5.gtempurl.com/Spa/GetSpaById?id=${id}`,
+            `http://tehreemimran-001-site1.htempurl.com/Spa/GetSpaById?id=${id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -112,7 +112,7 @@ const AddEditSpaContent = ({
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Spa/AddEditSpa",
+          "http://tehreemimran-001-site1.htempurl.com/Spa/AddEditSpa",
           values,
           {
             headers: { Authorization: `Bearer ${token}` },

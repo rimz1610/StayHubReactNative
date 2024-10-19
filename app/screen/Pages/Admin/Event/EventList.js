@@ -41,7 +41,7 @@ const EventListContent = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Event/GetEvents",
+        "http://tehreemimran-001-site1.htempurl.com/Event/GetEvents",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -81,7 +81,7 @@ const EventListContent = ({ route, navigation }) => {
 
             // Send the delete request
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Event/DeleteEvent?Id=${eventId}`,
+              `http://tehreemimran-001-site1.htempurl.com/Event/DeleteEvent?Id=${eventId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

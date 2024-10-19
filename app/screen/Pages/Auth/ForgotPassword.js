@@ -32,7 +32,7 @@ const ForgotPassword = ({ navigation }) => {
       setSubmitting(true);
       axios
         .post(
-          "http://majidalipl-001-site5.gtempurl.com/Account/ForgotPassword",
+          "http://tehreemimran-001-site1.htempurl.com/Account/ForgotPassword",
           values
         )
         .then(function (response) {

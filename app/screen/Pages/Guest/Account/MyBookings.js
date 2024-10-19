@@ -88,7 +88,7 @@ const MyBookings = () => {
     const status = "";
     try {
       const response = await axios.get(
-        `http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
+        `http://tehreemimran-001-site1.htempurl.com/Booking/GetBookings?guestId=${guestId}
           &status=${status}`,
         {
           headers: {

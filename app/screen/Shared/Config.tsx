@@ -1,6 +1,6 @@
 const Constants = {
   
     HEADER_MAX_HEIGHT: 200,
-    apiBase: "http://majidalipl-001-site5.gtempurl.com/",
+    apiBase: "http://tehreemimran-001-site1.htempurl.com/",
 }
 export default Constants

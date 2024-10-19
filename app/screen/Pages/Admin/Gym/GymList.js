@@ -49,7 +49,7 @@ const GymListContent = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=All",
+        "http://tehreemimran-001-site1.htempurl.com/Gym/GetGyms?gender=All",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -86,7 +86,7 @@ const GymListContent = ({ route, navigation }) => {
             const token = await AsyncStorage.getItem("token");
 
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Gym/DeleteGym?Id=${gymId}`,
+              `http://tehreemimran-001-site1.htempurl.com/Gym/DeleteGym?Id=${gymId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

@@ -85,7 +85,7 @@ const ServiceCard = ({ spa, navigation }) => {
     }
     try {
       const response = await axios.post(
-        "http://majidalipl-001-site5.gtempurl.com/Spa/ValidateSpaCapacity",
+        "http://tehreemimran-001-site1.htempurl.com/Spa/ValidateSpaCapacity",
         bookSpaModel
       );
       if (response.data.success) {
@@ -282,7 +282,7 @@ const SpaBooking = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Spa/GetSpas"
+        "http://tehreemimran-001-site1.htempurl.com/Spa/GetSpas"
       );
       if (response.data.success) {
         setSpaList(response.data.list);

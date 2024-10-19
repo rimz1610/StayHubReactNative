@@ -137,7 +137,7 @@ const AddEditEvent = ({
           const token = await AsyncStorage.getItem("token");
 
           const response = await axios.get(
-            `http://majidalipl-001-site5.gtempurl.com/Event/GetEventById?id=${id}`,
+            `http://tehreemimran-001-site1.htempurl.com/Event/GetEventById?id=${id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -209,7 +209,7 @@ const AddEditEvent = ({
         });
 
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Event/AddEditEvent",
+          "http://tehreemimran-001-site1.htempurl.com/Event/AddEditEvent",
           formData,
           {
             headers: {
@@ -566,7 +566,7 @@ const AddEditEvent = ({
                         <Image
                           source={{
                             uri:
-                              "http://majidalipl-001-site5.gtempurl.com/eventimages/" +
+                              "http://tehreemimran-001-site1.htempurl.com/eventimages/" +
                               values.eventImage,
                           }}
                           style={{

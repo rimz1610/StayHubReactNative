@@ -63,7 +63,7 @@ const EventBooking = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Event/GetEventsForBooking"
+        "http://tehreemimran-001-site1.htempurl.com/Event/GetEventsForBooking"
       );
 
       if (response.data.success) {
@@ -86,7 +86,7 @@ const EventBooking = ({ route, navigation }) => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://majidalipl-001-site5.gtempurl.com/Event/GetEventDetail?id=" +
+          "http://tehreemimran-001-site1.htempurl.com/Event/GetEventDetail?id=" +
           id
         );
 
@@ -144,7 +144,7 @@ const EventBooking = ({ route, navigation }) => {
     }
     try {
       const response = await axios.post(
-        "http://majidalipl-001-site5.gtempurl.com/Event/ValidateBookingEvent",
+        "http://tehreemimran-001-site1.htempurl.com/Event/ValidateBookingEvent",
         bookEventModel
       );
       if (response.data.success) {
@@ -232,7 +232,7 @@ const EventBooking = ({ route, navigation }) => {
     return () => clearTimeout(timer);
   }, [imageLoading]);
 
-  const imageUrl = `http://majidalipl-001-site5.gtempurl.com/eventimages/${selectedEventDetail.eventImage}`;
+  const imageUrl = `http://tehreemimran-001-site1.htempurl.com/eventimages/${selectedEventDetail.eventImage}`;
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {loading ? (

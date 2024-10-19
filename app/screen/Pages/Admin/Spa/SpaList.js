@@ -50,7 +50,7 @@ const SpaListContent = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Spa/GetSpas"
+        "http://tehreemimran-001-site1.htempurl.com/Spa/GetSpas"
       );
 
       if (response.data.success) {
@@ -85,7 +85,7 @@ const SpaListContent = ({ route, navigation }) => {
 
             // Send the delete request
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Spa/DeleteSpa?Id=${spaId}`,
+              `http://tehreemimran-001-site1.htempurl.com/Spa/DeleteSpa?Id=${spaId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

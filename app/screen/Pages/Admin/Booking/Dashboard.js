@@ -53,7 +53,7 @@ const DashboardContent = ({ navigation }) => {
     const token = await AsyncStorage.getItem("token");
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Guest/GetGuestDD",
+        "http://tehreemimran-001-site1.htempurl.com/Guest/GetGuestDD",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ const DashboardContent = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${selectedGuest}
+        `http://tehreemimran-001-site1.htempurl.com/Booking/GetBookings?guestId=${selectedGuest}
         &status=${selectedStatus}`,
         {
           headers: {

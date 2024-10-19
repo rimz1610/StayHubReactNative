@@ -76,7 +76,7 @@ const StaffListContent = ({ navigation }) => {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Staff/AddEditStaff",
+          "http://tehreemimran-001-site1.htempurl.com/Staff/AddEditStaff",
           values,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -120,7 +120,7 @@ const StaffListContent = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffs",
+        "http://tehreemimran-001-site1.htempurl.com/Staff/GetStaffs",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ const StaffListContent = ({ navigation }) => {
 
             const token = await AsyncStorage.getItem("token");
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Staff/Delete?id=${staffId}`,
+              `http://tehreemimran-001-site1.htempurl.com/Staff/Delete?id=${staffId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -199,7 +199,7 @@ const StaffListContent = ({ navigation }) => {
 
             const token = await AsyncStorage.getItem("token");
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Staff/ChangeStatus?id=${item.id}`,
+              `http://tehreemimran-001-site1.htempurl.com/Staff/ChangeStatus?id=${item.id}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

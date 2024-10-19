@@ -18,13 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
-const initialData = Array.from({ length: 25 }, (_, index) => ({
-  id: index.toString(),
-  name: `Room ${index + 1}`,
-  type: "Deluxe",
-  shortDescription: `Description ${index + 1}`,
-  status: "Available",
-}));
+
 
 const Drawer = createDrawerNavigator();
 const RoomListContent = ({ route, navigation }) => {
@@ -48,7 +42,7 @@ const RoomListContent = ({ route, navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Room/GetRooms",
+        "http://tehreemimran-001-site1.htempurl.com/Room/GetRooms",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,7 +82,7 @@ const RoomListContent = ({ route, navigation }) => {
 
             // Send the delete request
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Room/DeleteRoom?id=${roomId}`,
+              `http://tehreemimran-001-site1.htempurl.com/Room/DeleteRoom?id=${roomId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

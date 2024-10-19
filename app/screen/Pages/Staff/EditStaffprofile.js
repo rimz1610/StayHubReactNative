@@ -57,7 +57,7 @@ const EditStaffProfileContent = ({ navigation }) => {
     try {
       const staffId = await AsyncStorage.getItem("loginId");
       const response = await axios.get(
-        `http://majidalipl-001-site5.gtempurl.com/Staff/GetById?id=${staffId}`
+        `http://tehreemimran-001-site1.htempurl.com/Staff/GetById?id=${staffId}`
       );
       if (response.data.success) {
         formikSetValues(response.data.data);
@@ -75,7 +75,7 @@ const EditStaffProfileContent = ({ navigation }) => {
       setSubmitting(true);
       const token = await AsyncStorage.getItem("token");
       const response = await axios.post(
-        "http://majidalipl-001-site5.gtempurl.com/Staff/AddEditStaff",
+        "http://tehreemimran-001-site1.htempurl.com/Staff/AddEditStaff",
         values,
         {
           headers: { Authorization: `Bearer ${token}` },

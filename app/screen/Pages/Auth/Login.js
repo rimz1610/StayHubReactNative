@@ -64,7 +64,7 @@ const Login = ({ navigation }) => {
     onSubmit: (values) => {
       setSubmitting(true);
       axios
-        .post("http://majidalipl-001-site5.gtempurl.com/Account/Login", values)
+        .post("http://tehreemimran-001-site1.htempurl.com/Account/Login", values)
         .then(function (response) {
           if (response.data.success) {
             SetToken(response.data.data);

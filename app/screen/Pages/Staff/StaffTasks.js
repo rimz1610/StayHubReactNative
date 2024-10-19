@@ -59,7 +59,7 @@ const StaffTaskContent = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://majidalipl-001-site5.gtempurl.com/Staff/GetStaffActivities?id=${staffId}`,
+        `http://tehreemimran-001-site1.htempurl.com/Staff/GetStaffActivities?id=${staffId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

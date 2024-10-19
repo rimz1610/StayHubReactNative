@@ -89,7 +89,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
 
       try {
         const response = await axios.get(
-          `http://majidalipl-001-site5.gtempurl.com/Booking/GetBookings?guestId=${guestId}
+          `http://tehreemimran-001-site1.htempurl.com/Booking/GetBookings?guestId=${guestId}
           &status=${status}`,
           {
             headers: {
@@ -115,7 +115,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
       }
       try {
         const response2 = await axios.get(
-          `http://majidalipl-001-site5.gtempurl.com/Guest/GetGuestById?guestId=${guestId}`,
+          `http://tehreemimran-001-site1.htempurl.com/Guest/GetGuestById?guestId=${guestId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -148,7 +148,7 @@ const GuestDetailsContent = ({ route, navigation }) => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://majidalipl-001-site5.gtempurl.com/Booking/GetBookingDetail?bookingId=" +
+          "http://tehreemimran-001-site1.htempurl.com/Booking/GetBookingDetail?bookingId=" +
             currentBookingId,
           {
             headers: {

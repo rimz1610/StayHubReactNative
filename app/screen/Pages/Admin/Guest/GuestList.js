@@ -48,7 +48,7 @@ const GuestListContent = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Guest/GetGuests",
+        "http://tehreemimran-001-site1.htempurl.com/Guest/GetGuests",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,7 +88,7 @@ const GuestListContent = ({ navigation }) => {
 
             // Send the delete request
             const response = await axios.get(
-              `http://majidalipl-001-site5.gtempurl.com/Guest/Delete?guestId=${guestId}`,
+              `http://tehreemimran-001-site1.htempurl.com/Guest/Delete?guestId=${guestId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

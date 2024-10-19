@@ -75,7 +75,7 @@ const RoomBooking = ({ navigation }) => {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Room/GetRoomsByFilter",
+          "http://tehreemimran-001-site1.htempurl.com/Room/GetRoomsByFilter",
           values
         );
 
@@ -222,7 +222,7 @@ const RoomBooking = ({ navigation }) => {
     if (currentRoomId > 0) {
       try {
         const response = await axios.get(
-          `http://majidalipl-001-site5.gtempurl.com/Room/GetRoomById?id=${currentRoomId}`
+          `http://tehreemimran-001-site1.htempurl.com/Room/GetRoomById?id=${currentRoomId}`
         );
         if (response.data.success) {
           setRoomDetail(response.data.data);

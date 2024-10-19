@@ -74,7 +74,7 @@ const GymBooking = ({ navigation }) => {
     setSelectedMonths({});
     try {
       const response = await axios.get(
-        "http://majidalipl-001-site5.gtempurl.com/Gym/GetGyms?gender=" +
+        "http://tehreemimran-001-site1.htempurl.com/Gym/GetGyms?gender=" +
         selectedGender
       );
       if (response.data.success) {
@@ -137,7 +137,7 @@ const GymBooking = ({ navigation }) => {
       }
       try {
         const response = await axios.post(
-          "http://majidalipl-001-site5.gtempurl.com/Gym/ValidateGymCapacity",
+          "http://tehreemimran-001-site1.htempurl.com/Gym/ValidateGymCapacity",
           {
             price: gym.fee,
             name: gym.name + ", For " + gym.gender,
